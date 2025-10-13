@@ -1,1 +1,7 @@
-@tailwind utilities;
+@import 'tailwindcss';
+
+@layer components {
+  .input-box {
+    @apply bg-white text-slate-900 rounded-sm p-2 outline-none;
+  }
+}

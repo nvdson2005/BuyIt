@@ -1,6 +1,4 @@
-<script setup lang="ts">
-import '../../assets/styles/Variables.css'
-</script>
+<script setup lang="ts"></script>
 
 <template>
   <nav>
@@ -28,7 +26,7 @@ import '../../assets/styles/Variables.css'
       <div class="middle-section" style="flex-grow: 1">
         <div class="search-section" style="display: flex; align-items: center; flex-grow: 1">
           <input
-            class=""
+            class="input-box"
             type="text"
             placeholder="Tìm kiếm sản phẩm, danh mục hay thương hiệu mong muốn..."
             style="width: 100%; height: 40px; border-radius: 5px; padding: 0 10px; font-size: 14px"
