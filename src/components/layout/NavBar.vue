@@ -22,12 +22,13 @@ import '../../assets/styles/Variables.css'
     </div>
     <div class="navbar-header-with-search">
       <div class="logo-section">
-        <img src="/public/Logo.png" alt="Logo" style="width: 50px; height: 50px" />
+        <img src="/src/assets/images/Logo.png" alt="Logo" style="width: 50px; height: 50px" />
         <h2>BuyIt</h2>
       </div>
       <div class="middle-section" style="flex-grow: 1">
         <div class="search-section" style="display: flex; align-items: center; flex-grow: 1">
           <input
+            class=""
             type="text"
             placeholder="Tìm kiếm sản phẩm, danh mục hay thương hiệu mong muốn..."
             style="width: 100%; height: 40px; border-radius: 5px; padding: 0 10px; font-size: 14px"
