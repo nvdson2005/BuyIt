@@ -10,11 +10,13 @@ import PageFooter from '@/components/layout/PageFooter.vue'
 
 <template>
   <div class="homeview">
-    <NavBar />
-    <div class="w-[80%] h-64 my-12">
+    <div class="w-full">
+      <NavBar />
+    </div>
+    <div class="w-[80%] h-64 my-6">
       <SlideNotification />
     </div>
-    <div class="w-[80%] h-64 my-12">
+    <div class="w-[80%] h-32 my-4">
       <MainPageHighlightPanel />
     </div>
     <div class="w-[80%] h-64 my-8">
