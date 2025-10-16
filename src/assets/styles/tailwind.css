@@ -4,4 +4,8 @@
   .input-box {
     @apply bg-white text-slate-900 rounded-sm p-2 outline-none;
   }
+
+  .basic-hyperlink {
+    @apply text-slate-600 hover:text-slate-800 transition-colors duration-200 cursor-pointer;
+  }
 }
