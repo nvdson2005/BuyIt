@@ -21,7 +21,8 @@ import {
   Bike,
 } from 'lucide-vue-next'
 import { type FunctionalComponent } from 'vue'
-
+import { useRouter } from 'vue-router'
+const router = useRouter()
 const categories: Array<{
   icon: FunctionalComponent
   label: string
@@ -120,7 +121,7 @@ const categories: Array<{
         :backgroundColor="category.backgroundColor"
         :navigateOnClick="
           () => {
-            // console.log(category.label)
+            router.push('/category/' + category.label)
           }
         "
         :is-rounded-full="false"

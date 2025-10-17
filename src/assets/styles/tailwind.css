@@ -2,7 +2,7 @@
 
 @layer components {
   .input-box {
-    @apply bg-white text-slate-900 rounded-sm p-2 outline-none;
+    @apply bg-white text-slate-900 rounded-xl p-2 outline-none focus:ring-1;
   }
 
   .basic-hyperlink {

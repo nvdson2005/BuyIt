@@ -1,6 +1,13 @@
 <script setup lang="ts">
 import SearchButton from '../ui/SearchButton.vue'
 import ShopButton from '../ui/ShopButton.vue'
+
+import { useRouter } from 'vue-router'
+const router = useRouter()
+
+const navigateToLogin: () => void = () => {
+  router.push('/login')
+}
 </script>
 
 <template>
@@ -18,11 +25,11 @@ import ShopButton from '../ui/ShopButton.vue'
         <p class="divider">|</p>
         <p>Tiếng Việt</p>
         <p class="divider">|</p>
-        <p>Đăng ký/ Đăng nhập</p>
+        <p @click="navigateToLogin">Đăng ký/ Đăng nhập</p>
       </div>
     </div>
     <div class="navbar-header-with-search">
-      <div class="logo-section">
+      <div class="logo-section" @click="router.push('/')">
         <img src="/src/assets/images/Logo.png" alt="Logo" style="width: 50px; height: 50px" />
         <h2 class="font-bold text-2xl">BuyIt</h2>
       </div>
@@ -52,7 +59,7 @@ import ShopButton from '../ui/ShopButton.vue'
 <style scoped>
 nav {
   width: 100%;
-  height: 100%;
+  /* height: 100%; */
   background-color: var(--red);
   color: white;
 }
