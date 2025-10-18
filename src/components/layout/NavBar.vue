@@ -1,12 +1,22 @@
 <script setup lang="ts">
 import SearchButton from '../ui/SearchButton.vue'
 import ShopButton from '../ui/ShopButton.vue'
-
+import { ref, type Ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-const router = useRouter()
+import { CircleUserRound, Package, LogOut } from 'lucide-vue-next'
 
+const router = useRouter()
+const isLoggedIn: Ref<boolean> = ref(true)
+const loginStatus = computed(() => (isLoggedIn.value ? true : false))
+const isShowingDropdown: Ref<boolean> = ref(false)
 const navigateToLogin: () => void = () => {
   router.push('/login')
+}
+const navigateToSignup: () => void = () => {
+  router.push('/signup')
+}
+const navigateToCart: () => void = () => {
+  router.push('/cart')
 }
 </script>
 
@@ -14,18 +24,66 @@ const navigateToLogin: () => void = () => {
   <nav>
     <div class="navbar-header">
       <div class="left-section">
-        <p>Trung tâm người bán</p>
+        <p>Seller Center</p>
         <p class="divider">|</p>
-        <p>Tải xuống</p>
+        <p>Download</p>
         <p class="divider">|</p>
-        <p>Theo dõi chúng tôi</p>
+        <p>Follow Us</p>
       </div>
       <div class="right-section">
-        <p>Thông báo</p>
+        <p>Notifications</p>
         <p class="divider">|</p>
         <p>Tiếng Việt</p>
-        <p class="divider">|</p>
-        <p @click="navigateToLogin">Đăng ký/ Đăng nhập</p>
+        <div v-if="!loginStatus">
+          <p class="divider">|</p>
+          <p @click="navigateToSignup">Sign Up</p>
+          <p class="divider">|</p>
+          <p @click="navigateToLogin">Log In</p>
+        </div>
+        <div v-if="loginStatus" class="relative">
+          <p class="divider">|</p>
+          <p @mouseenter="isShowingDropdown = true" @mouseleave="isShowingDropdown = false">
+            My Account
+          </p>
+          <!-- Dropdown menu can be added here -->
+          <div
+            class="absolute top-4 right-0 w-50 bg-white text-black rounded-md shadow-lg mt-2 transition-all duration-200 z-10"
+            :class="[
+              isShowingDropdown
+                ? 'block opacity-100 -translate-y-2'
+                : 'hidden opacity-0 pointer-events-none translate-y-2',
+            ]"
+            @mouseenter="isShowingDropdown = true"
+            @mouseleave="isShowingDropdown = false"
+          >
+            <div class="w-full h-full flex flex-col items-baseline-last">
+              <div
+                class="px-4 py-2 hover:text-orange-500 cursor-pointer flex items-center justify-between gap-2"
+                @click="router.push('/profile')"
+              >
+                <CircleUserRound class="w-6 h-6" /> My Profile
+              </div>
+              <div
+                class="px-4 py-2 hover:text-orange-500 cursor-pointer flex items-center justify-between gap-2"
+                @click="router.push('/orders')"
+              >
+                <Package class="w-6 h-6" /> My Orders
+              </div>
+              <div
+                class="px-4 py-2 hover:text-orange-500 cursor-pointer flex items-center justify-between gap-2"
+                @click="router.push('/orders')"
+              >
+                <Package class="w-6 h-6" /> My Orders
+              </div>
+              <div
+                class="px-4 py-2 hover:text-orange-500 cursor-pointer flex items-center justify-between gap-2"
+                @click="isLoggedIn = false"
+              >
+                <LogOut class="w-6 h-6" /> Log Out
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
     <div class="navbar-header-with-search">
@@ -46,10 +104,10 @@ const navigateToLogin: () => void = () => {
           </div>
         </div>
         <p style="font-size: 14px; margin-top: 3px; margin-bottom: 5px">
-          Điện thoại, Laptop, Tai nghe, Phụ kiện
+          Phone, Laptop, Tablet, Accessories
         </p>
       </div>
-      <div class="h-full w-25 scale-125 flex items-center justify-center">
+      <div @click="navigateToCart" class="h-full w-25 scale-125 flex items-center justify-center">
         <ShopButton></ShopButton>
       </div>
     </div>

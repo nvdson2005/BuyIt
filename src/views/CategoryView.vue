@@ -1,11 +1,18 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import NavBar from '@/components/layout/NavBar.vue'
 import CategoryDetail from '@/components/layout/CategoryDetail.vue'
 import ProductCard from '@/components/ui/ProductCard.vue'
 import BrandItem from '@/components/ui/BrandItem.vue'
+import PageFooter from '@/components/layout/PageFooter.vue'
+import SortPanel from '@/components/layout/SortPanel.vue'
 const route = useRoute()
+const router = useRouter()
+const handleBrandClick = (brandName: string) => {
+  console.log(`Brand clicked: ${brandName}`)
+  router.push(`/brands/${brandName}`)
+}
 const brands = Array.from({ length: 6 }, (_, i) => `brand-${i}`)
 const products = ref([
   {
@@ -70,7 +77,7 @@ function formatPrice(v: number) {
 </script>
 
 <template>
-  <div class="w-screen h-screen bg-[var(--light-pink)] flex flex-col items-center">
+  <div class="w-fit h-fit bg-[var(--light-pink)] flex flex-col items-center overflow-y-auto">
     <NavBar />
     <div class="w-full">
       <CategoryDetail
@@ -78,19 +85,17 @@ function formatPrice(v: number) {
       />
     </div>
     <!-- Header / category banner -->
-    <div class="w-full max-w-4/5 px-6 mt-6">
-      <div class="bg-white rounded-lg p-4 flex items-start justify-between gap-4 shadow-sm">
-        <div class="flex-1">
+    <div class="w-full max-w-4/5 px-6 mt-6 mb-6 h-70 min-h-60">
+      <div
+        class="bg-white h-full w-full rounded-lg p-4 flex items-start justify-between gap-4 shadow-sm"
+      >
+        <div class="flex flex-col items-start h-full">
           <h3 class="text-sm font-semibold text-slate-600 uppercase">Shopee Mall</h3>
 
           <!-- brand chips -->
-          <div class="mt-3 flex gap-3 overflow-x-auto pb-1">
-            <div
-              v-for="brand in brands"
-              :key="brand"
-              class="min-w-[84px] h-20 rounded-lg p-2 flex items-center justify-center bg-white"
-            >
-              <BrandItem :brandName="brand" />
+          <div class="mt-3 grid grid-cols-6 gap-4">
+            <div v-for="brand in brands" :key="brand">
+              <BrandItem :brandName="brand" @click="handleBrandClick(brand)" />
             </div>
           </div>
         </div>
@@ -100,23 +105,19 @@ function formatPrice(v: number) {
     </div>
 
     <!-- Filters -->
-    <div class="w-full max-w-4/5 px-6 mt-6">
-      <div class="bg-white/60 rounded-lg p-4 flex items-center justify-between gap-4 shadow-sm">
-        <div class="flex items-center gap-3 flex-wrap">
-          <span class="text-sm text-slate-500">Sắp xếp theo:</span>
-          <button class="px-3 py-1 rounded-md bg-rose-500 text-white text-sm">Phổ biến</button>
-          <button class="px-3 py-1 rounded-md bg-white text-slate-600 border">Mới nhất</button>
-          <button class="px-3 py-1 rounded-md bg-white text-slate-600 border">Bán chạy</button>
-        </div>
-
-        <div class="flex items-center gap-3">
-          <select class="input-box text-sm">
-            <option>Tất cả giá</option>
-            <option>0 - 500</option>
-            <option>500 - 2000</option>
-          </select>
-        </div>
-      </div>
+    <div class="w-full max-w-4/5 mt-6">
+      <SortPanel
+        @sort-changed="
+          (newSort) => {
+            console.log('Sort changed to:', newSort)
+          }
+        "
+        @price-filter-changed="
+          (newFilter) => {
+            console.log('Price filter changed to:', newFilter)
+          }
+        "
+      />
     </div>
 
     <!-- Products grid -->
@@ -137,6 +138,7 @@ function formatPrice(v: number) {
         />
       </div>
     </div>
+    <PageFooter />
   </div>
 </template>
 <style scoped></style>

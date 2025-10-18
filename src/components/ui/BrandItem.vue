@@ -1,8 +1,12 @@
 <script lang="ts" setup>
-import { defineProps } from 'vue'
-import { useRouter } from 'vue-router'
-const router = useRouter()
-defineProps({
+import { defineProps, defineEmits } from 'vue'
+const emits = defineEmits<{
+  (e: 'click', brandName: string): void
+}>()
+function onClicking() {
+  emits('click', props.brandName)
+}
+const props = defineProps({
   brandName: {
     type: String,
     required: true,
@@ -13,15 +17,13 @@ defineProps({
     required: false,
     default: '@/assets/images/BrandPlaceholder.png',
   },
-  directUrl: {
-    type: String,
-    required: false,
-    default: '#',
-  },
 })
 </script>
 <template>
-  <div class="w-full h-full flex flex-col items-center px-6 py-8" @click="router.push(directUrl)">
+  <div
+    class="w-full h-full min-h-fit min-w-fit flex flex-col items-center px-6 py-8 rounded-xl border border-gray-200 hover:border-[var(--orange)] transition-colors duration-200"
+    @click="onClicking()"
+  >
     <img :src="imgUrl" alt="Brand Logo" class="w-24 h-24 mb-4" />
     <span class="text-lg font-medium text-slate-700">{{ brandName }}</span>
   </div>
