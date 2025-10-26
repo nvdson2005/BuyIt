@@ -1,5 +1,35 @@
 # buyit
 
+## UPDATE 26/10: TUTORIAL FOR INTEGRATING CHATBOT API WITH THE CHATBOT COMPONENT
+
+The component used for the Chatbot interface lies in `/src/components/layout/ChatBot.vue`
+
+Elements that should be noticed:
+
+- `messages`: Representing the message flow. This is an object array, containing two attributes: `from` for the sender information, `text` for the content of the message.
+
+- `input`: A state variable, representing the current input that user types in.
+
+- `sendMessage()`: The function used to send the request to the chatbot. Modify this to integrate with the chatbot.
+
+In the `sendMessage()` function, two things should be done to integrate successfully:
+
+- Send the content inside the `input` variable to chatbot.
+
+- Replace the `setTimeOut` function with the response from the chatbot:
+
+```
+  // Simulate bot reply, remove when integrating with real backend
+    setTimeout(() => {
+      messages.value.push({
+        from: 'bot',
+        text: 'Thank you for your message! We will assist you as soon as possible.',
+      })
+    }, 800)
+```
+
+#
+
 This template should help get you started developing with Vue 3 in Vite.
 
 ## Recommended IDE Setup
@@ -9,7 +39,7 @@ This template should help get you started developing with Vue 3 in Vite.
 ## Recommended Browser Setup
 
 - Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd) 
+  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
   - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
 - Firefox:
   - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)

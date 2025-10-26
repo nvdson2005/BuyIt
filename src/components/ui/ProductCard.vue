@@ -24,12 +24,12 @@ const isHovered = ref(false)
     class="bg-white shadow-lg rounded-lg relative overflow-hidden"
   >
     <div
-      class="absolute top-2 left-2 bg-yellow-500 text-white text-xs font-bold px-2 py-1 rounded-full z-10"
+      class="absolute top-2 left-2 bg-yellow-500 text-white text-xs font-bold px-2 py-1 rounded-full"
     >
       SALE
     </div>
     <div
-      class="absolute top-2 right-2 bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded-full z-10"
+      class="absolute top-2 right-2 bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded-full"
     >
       50% OFF
     </div>

@@ -6,6 +6,7 @@ import MainPageHighlightPanel from '@/components/layout/MainPageHighlightPanel.v
 import MainPageCategoryPanel from '@/components/layout/MainPageCategoryPanel.vue'
 import MainPageFlashSalePanel from '@/components/layout/MainPageFlashSalePanel.vue'
 import PageFooter from '@/components/layout/PageFooter.vue'
+import ChatBot from '@/components/layout/ChatBot.vue'
 </script>
 
 <template>
@@ -28,6 +29,7 @@ import PageFooter from '@/components/layout/PageFooter.vue'
     <div class="w-full">
       <PageFooter />
     </div>
+    <ChatBot />
   </div>
 </template>
 <style scoped>
