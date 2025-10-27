@@ -1,8 +1,28 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, defineEmits, type Ref } from 'vue'
 import { Eye, EyeOff } from 'lucide-vue-next'
-const isShowPassword = ref(false)
 
+const emit = defineEmits<{
+  login: [username: string, password: string]
+}>()
+
+const isShowPassword = ref(false)
+const username: Ref<string, string> = ref('')
+const password: Ref<string, string> = ref('')
+
+const onChangeUsername = (event: Event) => {
+  const target = event.target as HTMLInputElement
+  username.value = target.value
+}
+
+const onChangePassword = (event: Event) => {
+  const target = event.target as HTMLInputElement
+  password.value = target.value
+}
+
+const handleLogin = () => {
+  emit('login', username.value, password.value)
+}
 defineProps({
   backgroundColor: {
     type: String,
@@ -16,12 +36,14 @@ defineProps({
       type="text"
       placeholder="Username"
       class="input-box w-full mb-4 border border-gray-300"
+      @change="onChangeUsername"
     />
     <div class="w-full relative mb-6">
       <input
         placeholder="Password"
         class="input-box w-full border border-gray-300"
         :type="isShowPassword ? 'text' : 'password'"
+        @change="onChangePassword"
       />
       <div
         class="absolute top-1/2 right-3 -translate-y-1/2 cursor-pointer"
@@ -32,6 +54,7 @@ defineProps({
     </div>
     <button
       class="w-full bg-[var(--orange)] text-white py-2 rounded hover:bg-orange-600 transition-colors duration-200"
+      @click="handleLogin()"
     >
       Login
     </button>

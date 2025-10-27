@@ -2,10 +2,44 @@
 import { useRouter } from 'vue-router'
 import SignupForm from '@/components/layout/SignupForm.vue'
 import BasicNavBar from '@/components/layout/BasicNavBar.vue'
+import apiClient from '@/api/client'
 const router = useRouter()
 
 function onLoginClick() {
   router.push({ name: 'login' })
+}
+
+function onSignupClick(
+  firstName: string,
+  lastName: string,
+  email: string,
+  username: string,
+  password: string,
+  retypePassword: string,
+  phoneNumber: string,
+  role: 'Buyer' | 'Seller',
+) {
+  if (password !== retypePassword) {
+    console.error('Passwords do not match')
+    return
+  }
+  apiClient
+    .post('http://localhost:3000/api/signup', {
+      firstName,
+      lastName,
+      email,
+      username,
+      password,
+      phoneNumber,
+      role,
+    })
+    .then((response) => {
+      console.log('Signup successful:', response.data)
+      router.push({ name: 'login' })
+    })
+    .catch((error) => {
+      console.error('Signup failed:', error)
+    })
 }
 </script>
 
@@ -37,7 +71,7 @@ function onLoginClick() {
           </div>
         </div>
       </div>
-      <SignupForm />
+      <SignupForm @signup="onSignupClick" />
     </div>
   </div>
 </template>
