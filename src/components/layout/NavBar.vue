@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import SearchButton from '../ui/SearchButton.vue'
 import ShopButton from '../ui/ShopButton.vue'
-import { ref, type Ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { CircleUserRound, Package, LogOut } from 'lucide-vue-next'
+import { ref, type Ref, computed, defineProps } from 'vue'
 
+defineProps<{
+  username: string
+}>()
 const router = useRouter()
 const isLoggedIn: Ref<boolean> = ref(true)
 const loginStatus = computed(() => (isLoggedIn.value ? true : false))
@@ -17,6 +20,13 @@ const navigateToSignup: () => void = () => {
 }
 const navigateToCart: () => void = () => {
   router.push('/cart')
+}
+
+const logOut: () => Promise<void> = async () => {
+  isLoggedIn.value = false
+  await cookieStore.delete('connect.sid')
+  localStorage.removeItem('username')
+  router.push('/login')
 }
 </script>
 
@@ -43,7 +53,7 @@ const navigateToCart: () => void = () => {
         <div v-if="loginStatus" class="relative">
           <p class="divider">|</p>
           <p @mouseenter="isShowingDropdown = true" @mouseleave="isShowingDropdown = false">
-            My Account
+            {{ username }}
           </p>
           <!-- Dropdown menu can be added here -->
           <div
@@ -71,13 +81,7 @@ const navigateToCart: () => void = () => {
               </div>
               <div
                 class="px-4 py-2 hover:text-orange-500 cursor-pointer flex items-center justify-between gap-2"
-                @click="router.push('/orders')"
-              >
-                <Package class="w-6 h-6" /> My Orders
-              </div>
-              <div
-                class="px-4 py-2 hover:text-orange-500 cursor-pointer flex items-center justify-between gap-2"
-                @click="isLoggedIn = false"
+                @click="logOut"
               >
                 <LogOut class="w-6 h-6" /> Log Out
               </div>

@@ -3,6 +3,7 @@ import apiClient from '@/api/client'
 import LoginForm from '@/components/layout/LoginForm.vue'
 import { useRouter } from 'vue-router'
 import BasicNavBar from '@/components/layout/BasicNavBar.vue'
+import { onMounted } from 'vue'
 const router = useRouter()
 function onSignupClick() {
   router.push({ name: 'signup' })
@@ -17,13 +18,20 @@ async function onLoginClick(username: string, password: string) {
         password,
       })
       .finally(() => {
+        localStorage.setItem('username', username)
         router.push({ name: 'home' })
       })
-    console.log('Login successful:', response.data)
+    console.log('Login successful:', response)
   } catch (error) {
     console.error('Login failed:', error)
   }
 }
+
+onMounted(async () => {
+  if (localStorage.getItem('username') && (await cookieStore.get('connect.sid'))) {
+    router.push({ name: 'home' })
+  }
+})
 </script>
 
 <template>

@@ -54,7 +54,12 @@ defineProps({
     </div>
     <button
       class="w-full bg-[var(--orange)] text-white py-2 rounded hover:bg-orange-600 transition-colors duration-200"
-      @click="handleLogin()"
+      @click="
+        (e) => {
+          e.preventDefault()
+          handleLogin()
+        }
+      "
     >
       Login
     </button>
