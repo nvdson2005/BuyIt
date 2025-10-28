@@ -1,13 +1,63 @@
 <script lang="ts" setup>
 import { MessageCircleMore, X, Send } from 'lucide-vue-next'
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watch, nextTick } from 'vue'
 const showPopup = ref(false)
 const showChatPanel = ref(false)
-onMounted(() => {
+
+// LINK PORT OF CHATBOT ON CODESPACE
+const API_URL = "link codespace"+ "webhooks/rest/webhook"
+
+const chatContainer = ref<HTMLElement | null>(null)
+
+// ChatMessage type definition
+interface ChatMessage {
+  from: 'user' | 'bot'
+  text: string
+  buttons?: { title: string; payload: string }[]
+}
+
+const messages = ref<ChatMessage[]>([
+])
+
+onMounted(async() => {
   setTimeout(() => {
     showPopup.value = true
   }, 1000)
+  try {
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        sender: "user",
+        message: "/start", // gửi intent start
+      }),
+    });
+
+    const data = await response.json();
+    if (data && data.length > 0) {
+      data.forEach((msg) => {
+        messages.value.push({
+          from: "bot",
+          text: msg.text,
+          buttons: msg.buttons || [],
+        });
+      });
+    }
+  } catch (err) {
+    console.error("Error sending button payload:", err);
+  }
 })
+
+
+// AUTO SCROLL TO THE CURRENT MESSAGE
+watch(messages, async () => {
+  await nextTick()
+  const el = chatContainer.value
+  if (el) {
+    el.scrollTop = el.scrollHeight
+  }
+}, { deep: true })
+
 
 const hidePopup = () => {
   setTimeout(() => {
@@ -15,30 +65,103 @@ const hidePopup = () => {
   }, 3000)
 }
 
-const messages = ref([
-  { from: 'bot', text: 'Hello! I am BuyIt Chat Bot. How can I assist you today?' },
-])
+// =======================================
+//      FOR CHATBOT IMPLEMENTATION
+// =======================================
 
-// =======================================
-// FOR CHATBOT IMPLEMENTATION
-// =======================================
+
 const input = ref('')
-function sendMessage() {
+
+// BUTTON CLICK
+async function handleButtonClick(button: { title: string; payload: string }) {
+
+  messages.value.push({ from: 'user', text: button.title });
+
+  try {
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        sender: "user",
+        message: button.payload,
+      }),
+    });
+
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+    const data = await response.json();
+
+    if (data && data.length > 0) {
+      data.forEach((msg) => {
+        if (msg.text) {
+          messages.value.push({
+            from: "bot",
+            text: msg.text,
+            buttons: msg.buttons || [],
+          });
+        }
+      });
+    }
+  } catch (error) {
+    console.error("Error sending button payload:", error);
+    messages.value.push({
+      from: "bot",
+      text: "⚠️ No connection to the chatbot! Try later",
+    });
+  }
+}
+
+
+async function sendMessage() {
   if (!input.value.trim()) return
   messages.value.push({ from: 'user', text: input.value })
-
-  // Simulate bot reply, remove when integrating with real backend
-  setTimeout(() => {
-    messages.value.push({
-      from: 'bot',
-      text: 'Thank you for your message! We will assist you as soon as possible.',
-    })
-  }, 800)
-
+  const userMessage = input.value
   input.value = ''
+
+  try {
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        sender: "user",
+        message: userMessage,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    if (data && data.length > 0) {
+      data.forEach((msg) => {
+        if (msg.text) {
+          messages.value.push({
+            from: "bot",
+            text: msg.text,
+            buttons: msg.buttons || [],
+          });
+        }
+      });
+    } else {
+      messages.value.push({
+        from: "bot",
+        text: " Sorry, I receive no response from the server!😅",
+      });
+    }
+  } catch (error) {
+    console.error("Lỗi khi gửi tin nhắn:", error);
+    messages.value.push({
+      from: "bot",
+      text: "⚠️ No connection to the chatbot! Try later",
+    });
+  }
+
 }
 </script>
 <template>
+
   <div class="fixed bottom-8 right-8">
     <!-- Chat Bot Icon -->
     <transition name="scale-slide">
@@ -85,22 +208,40 @@ function sendMessage() {
             </div>
           </div>
           <!-- Messages -->
-          <div class="flex-1 px-4 py-3 overflow-y-auto bg-gray-50 z-50">
+          <div ref="chatContainer" class="flex-1 px-4 py-3 overflow-y-auto bg-gray-50 z-50 scroll-smooth">
             <div
               v-for="(msg, idx) in messages"
               :key="idx"
-              class="mb-3 flex"
-              :class="msg.from === 'user' ? 'justify-end' : 'justify-start'"
+              class="mb-3"
+              :class="msg.from === 'user' ? 'flex justify-end' : 'flex justify-start'"
             >
               <div
-                class="relative max-w-[70%] px-4 py-2 rounded-2xl text-sm"
-                :class="
-                  msg.from === 'bot'
-                    ? 'bg-white text-slate-800 shadow border border-slate-100'
-                    : 'bg-[var(--red)] text-white'
-                "
+                class="relative max-w-[70%]"
+                :class="msg.from === 'user' ? 'text-right' : 'text-left'"
               >
-                {{ msg.text }}
+                <!-- Message bubble -->
+                <div
+                  class="px-4 py-2 rounded-2xl text-sm mb-1"
+                  :class="msg.from === 'bot'
+                    ? 'bg-white text-slate-800 shadow border border-slate-100'
+                    : 'bg-[var(--red)] text-white'"
+                  v-html="msg.text"
+                ></div>
+
+                <!-- Buttons (only for bot messages) -->
+                <div
+                  v-if="msg.from === 'bot' && msg.buttons && msg.buttons.length > 0"
+                  class="flex flex-wrap gap-2 mt-2"
+                >
+                  <button
+                    v-for="(button, btnIdx) in msg.buttons"
+                    :key="btnIdx"
+                    @click="handleButtonClick(button)"
+                    class="px-3 py-2 bg-white text-slate-700 text-xs rounded-lg border border-slate-200 hover:bg-slate-50 hover:border-slate-300 transition-colors duration-200 shadow-sm"
+                  >
+                    {{ button.title }}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
