@@ -1,10 +1,28 @@
 <script setup lang="ts">
+import apiClient from '@/api/client'
 import LoginForm from '@/components/layout/LoginForm.vue'
 import { useRouter } from 'vue-router'
 import BasicNavBar from '@/components/layout/BasicNavBar.vue'
 const router = useRouter()
 function onSignupClick() {
   router.push({ name: 'signup' })
+}
+
+async function onLoginClick(username: string, password: string) {
+  try {
+    const response = await apiClient
+      .post('http://localhost:3000/api/login', {
+        // Provide login credentials here
+        username,
+        password,
+      })
+      .finally(() => {
+        router.push({ name: 'home' })
+      })
+    console.log('Login successful:', response.data)
+  } catch (error) {
+    console.error('Login failed:', error)
+  }
 }
 </script>
 
@@ -36,7 +54,7 @@ function onSignupClick() {
           </div>
         </div>
       </div>
-      <LoginForm />
+      <LoginForm @login="onLoginClick" />
     </div>
   </div>
 </template>
