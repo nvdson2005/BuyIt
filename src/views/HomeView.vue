@@ -51,7 +51,7 @@ async function RetrieveUsername() {
 <template>
   <div v-if="isLoading == false" class="homeview">
     <div class="w-full">
-      <NavBar :username="username" />
+      <NavBar />
     </div>
     <div class="w-[80%] h-64 my-6">
       <SlideNotification />

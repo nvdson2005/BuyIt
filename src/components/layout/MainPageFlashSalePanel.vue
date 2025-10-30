@@ -40,16 +40,6 @@ onMounted(async () => {
           Math.round(((product.price - product.sale_price) / product.price) * 100)
         "
         :description="product.description"
-        v-on:add-to-cart="
-          (productId) => {
-            console.log('Add to cart clicked for product ID:', productId)
-          }
-        "
-        v-on:view-details="
-          (productId) => {
-            console.log('View details clicked for product ID:', productId)
-          }
-        "
       />
     </div>
   </div>

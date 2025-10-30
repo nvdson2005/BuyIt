@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { ref, defineEmits } from 'vue'
 import { SortOption, PriceFilterOption } from '@/utils/enum'
-const currentSort = ref(SortOption.POPULAR)
+const currentSort = ref(SortOption.MOST_SOLD)
 const currentPriceFilter = ref(PriceFilterOption.ALL_PRICES)
 
 const emits = defineEmits<{
@@ -41,48 +41,63 @@ const handleSortChange = (newSort: SortOption) => {
       <span class="text-sm text-slate-500">Sort in:</span>
       <button
         :class="
-          currentSort === SortOption.POPULAR
+          currentSort === SortOption.MOST_SOLD
             ? 'bg-[var(--orange)] text-white'
             : 'text-slate-600 transition-colors duration-150 hover:bg-slate-300'
         "
         class="px-3 py-1 rounded-md border"
         @click="
           () => {
-            handleSortChange(SortOption.POPULAR)
+            handleSortChange(SortOption.MOST_SOLD)
           }
         "
       >
-        Popular
+        Most Sold
       </button>
       <button
         :class="
-          currentSort === SortOption.NEWEST
+          currentSort === SortOption.MOST_RATED
             ? 'bg-[var(--orange)] text-white'
             : 'text-slate-600 transition-colors duration-150 hover:bg-slate-300'
         "
         class="px-3 py-1 rounded-md border"
         @click="
           () => {
-            handleSortChange(SortOption.NEWEST)
+            handleSortChange(SortOption.MOST_RATED)
           }
         "
       >
-        Newest
+        Most Rated
       </button>
       <button
         :class="
-          currentSort === SortOption.SELLING_FASTEST
+          currentSort === SortOption.PRICE_LOW_TO_HIGH
             ? 'bg-[var(--orange)] text-white'
             : 'text-slate-600 transition-colors duration-150 hover:bg-slate-300'
         "
         class="px-3 py-1 rounded-md border"
         @click="
           () => {
-            handleSortChange(SortOption.SELLING_FASTEST)
+            handleSortChange(SortOption.PRICE_LOW_TO_HIGH)
           }
         "
       >
-        Selling Fastest
+        Price: Low to High
+      </button>
+      <button
+        :class="
+          currentSort === SortOption.PRICE_HIGH_TO_LOW
+            ? 'bg-[var(--orange)] text-white'
+            : 'text-slate-600 transition-colors duration-150 hover:bg-slate-300'
+        "
+        class="px-3 py-1 rounded-md border"
+        @click="
+          () => {
+            handleSortChange(SortOption.PRICE_HIGH_TO_LOW)
+          }
+        "
+      >
+        Price: High to Low
       </button>
     </div>
 

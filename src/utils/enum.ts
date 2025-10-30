@@ -4,8 +4,8 @@ export enum UserInputMode {
 }
 
 export enum SortOption {
-  POPULAR,
-  NEWEST,
+  MOST_SOLD,
+  MOST_RATED,
   SELLING_FASTEST,
   PRICE_LOW_TO_HIGH,
   PRICE_HIGH_TO_LOW,

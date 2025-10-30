@@ -3,11 +3,9 @@ import SearchButton from '../ui/SearchButton.vue'
 import ShopButton from '../ui/ShopButton.vue'
 import { useRouter } from 'vue-router'
 import { CircleUserRound, Package, LogOut } from 'lucide-vue-next'
-import { ref, type Ref, computed, defineProps } from 'vue'
+import { ref, type Ref, computed, onMounted } from 'vue'
 
-defineProps<{
-  username: string
-}>()
+const username = ref('')
 const router = useRouter()
 const isLoggedIn: Ref<boolean> = ref(true)
 const loginStatus = computed(() => (isLoggedIn.value ? true : false))
@@ -28,6 +26,17 @@ const logOut: () => Promise<void> = async () => {
   localStorage.removeItem('username')
   router.push('/login')
 }
+
+onMounted(() => {
+  const storedUsername = localStorage.getItem('username')
+  if (storedUsername) {
+    isLoggedIn.value = true
+    username.value = storedUsername
+  } else {
+    isLoggedIn.value = false
+    username.value = ''
+  }
+})
 </script>
 
 <template>

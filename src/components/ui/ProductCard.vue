@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { defineProps, ref } from 'vue'
 import { Star } from 'lucide-vue-next'
+import { useRouter } from 'vue-router'
+const router = useRouter()
 const props = defineProps({
-  id: { type: Number, required: true },
+  id: { type: String, required: true },
   isSale: { type: Boolean, default: false },
   discountPercentage: { type: Number, default: 0 },
   imageUrl: { type: String, default: 'https://via.placeholder.com/150' },
@@ -14,10 +16,13 @@ const props = defineProps({
   soldAmount: { type: Number, default: 0 },
 })
 
-defineEmits<{
-  (e: 'add-to-cart', productId: number): boolean
-  (e: 'view-details', productId: number): void
-}>()
+function NavigateToDetails() {
+  router.push(`/product/${props.id}`)
+}
+
+function AddToCart() {
+  console.log(`Add to cart clicked for product ID: ${props.id}`)
+}
 
 const isHovered = ref(false)
 </script>
@@ -26,7 +31,7 @@ const isHovered = ref(false)
     @mouseenter="isHovered = true"
     @mouseleave="isHovered = false"
     class="bg-white shadow-lg rounded-lg relative overflow-hidden cursor-pointer hover:shadow-xl transition-shadow duration-200"
-    @click="$emit('view-details', props.id)"
+    @click="NavigateToDetails()"
   >
     <div
       class="absolute top-2 left-2 bg-yellow-500 text-white text-xs font-bold px-2 py-1 rounded-full"
@@ -38,11 +43,7 @@ const isHovered = ref(false)
     >
       50% OFF
     </div>
-    <img
-      src="https://via.placeholder.com/150"
-      alt="Product Image"
-      class="aspect-square min-w-full"
-    />
+    <img :src="imageUrl" alt="Product Image" class="aspect-square min-w-full" />
     <div class="p-4">
       <h3 class="text-lg font-semibold line-clamp-2 overflow-clip">{{ name }}</h3>
       <p class="text-gray-600 line-clamp-2 overflow-clip">{{ description }}</p>
@@ -63,7 +64,12 @@ const isHovered = ref(false)
       :class="[isHovered ? 'opacity-100' : 'opacity-0', 'transition-opacity duration-100']"
     >
       <button
-        @click="(event) => $emit('add-to-cart', props.id)"
+        @click="
+          (e) => {
+            e.stopPropagation()
+            AddToCart()
+          }
+        "
         class="w-full h-full bg-orange-500 text-white hover:bg-orange-600 transition-colors duration-200"
       >
         Add to Cart
