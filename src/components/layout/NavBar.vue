@@ -100,7 +100,7 @@ const logOut: () => Promise<void> = async () => {
           <input
             class="input-box"
             type="text"
-            placeholder="Tìm kiếm sản phẩm, danh mục hay thương hiệu mong muốn..."
+            placeholder="Search for products, brands and more"
             style="width: 100%; height: 40px; border-radius: 5px; padding: 0 10px; font-size: 14px"
           />
           <div class="w-20 h-10">

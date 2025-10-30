@@ -24,7 +24,7 @@ function onSignupClick(
     return
   }
   apiClient
-    .post('http://localhost:3000/api/signup', {
+    .post('/signup', {
       firstName,
       lastName,
       email,

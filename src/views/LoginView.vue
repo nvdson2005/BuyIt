@@ -12,7 +12,7 @@ function onSignupClick() {
 async function onLoginClick(username: string, password: string) {
   try {
     const response = await apiClient
-      .post('http://localhost:3000/api/login', {
+      .post('/login', {
         // Provide login credentials here
         username,
         password,
