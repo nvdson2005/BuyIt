@@ -5,7 +5,7 @@ const showPopup = ref(false)
 const showChatPanel = ref(false)
 
 // LINK PORT OF CHATBOT ON CODESPACE
-const API_URL = "link codespace"+ "webhooks/rest/webhook"
+const API_URL = "https://terrible-spooky-corpse-jj9wg97g9w443g54-5005.app.github.dev/webhooks/rest/webhook"
 
 const chatContainer = ref<HTMLElement | null>(null)
 

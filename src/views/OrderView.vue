@@ -4,6 +4,7 @@ import { ref } from 'vue'
 import { type Ref } from 'vue'
 import { OrderFilterOptions } from '@/utils/enum'
 import { Search, Store } from 'lucide-vue-next'
+import CustomImage from '@/components/ui/CustomImage.vue'
 const selectedFilterOption: Ref<OrderFilterOptions> = ref(OrderFilterOptions.ALL)
 </script>
 <template>
@@ -123,7 +124,7 @@ const selectedFilterOption: Ref<OrderFilterOptions> = ref(OrderFilterOptions.ALL
             </div>
           </div>
           <div class="px-6 py-4 flex gap-4 border-b">
-            <img
+            <CustomImage
               src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=80&q=80"
               alt="product"
               class="w-20 h-20 object-cover rounded"

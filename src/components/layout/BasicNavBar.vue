@@ -24,6 +24,10 @@ function navigateToHelp() {
 function navigateToHome() {
   router.push({ name: 'home' })
 }
+
+function navigateToSeller(){
+  router.push({name:'sellerlog'})
+}
 </script>
 <template>
   <div
@@ -38,7 +42,14 @@ function navigateToHome() {
       <span class="ml-2 text-white">|</span>
       <span class="ml-6 text-white font-medium">{{ title }}</span>
     </div>
-    <button @click="navigateToHelp" class="mr-6 text-orange-200 px-4 py-2">Need Support?</button>
+    <div class="ml-auto flex items-center gap-6">
+      <button @click="navigateToSeller" class="hover:text-white hover:underline text-gray-200 cursor-pointer">
+      Kênh người bán
+      </button>
+      <button @click="navigateToHelp" class="hover:text-white hover:underline text-gray-200 cursor-pointer">
+        Need Support?
+      </button>
+    </div>
   </div>
 </template>
 <style scoped></style>

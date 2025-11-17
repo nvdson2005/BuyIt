@@ -1,0 +1,140 @@
+<script setup lang="ts">
+import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
+
+import { Bell } from 'lucide-vue-next'
+import AddProductView from './AddProductView.vue'
+import SellerDashBoard from './SellerDashBoard.vue'
+import SellerProductsView from './SellerProductsView.vue'
+import SellerOrdersView from './SellerOrdersView.vue'
+
+
+
+const router = useRouter()
+const activeView = ref('dashboard')
+const isUserMenuOpen = ref(false)
+
+const initialProducts = [
+  {
+    id: '3703936560',
+    name: 'Dong Nai Water Supply Construction And Services',
+    sku: 'SKU sản phẩm: 3703936560',
+    price: '₫100.000',
+    stock: '10k',
+    sales: 1
+  }
+]
+
+const products = ref(initialProducts)
+
+const sidebarNav = {
+  'Quản Lý Đơn Hàng': ['Tất cả', 'Bàn Giao Đơn Hàng'],
+  'Quản Lý Sản Phẩm': ['Tất Cả Sản Phẩm', 'Thêm Sản Phẩm'],
+  'Kênh Marketing': [
+    'Khuyến Mãi của Shop',
+    'Mã giảm giá của Shop'
+  ],
+  'Chăm sóc khách hàng': ['Quản lý Đánh Giá']
+}
+
+function handleAddProduct(newProduct: any) {
+  products.value = [newProduct, ...products.value]
+  activeView.value = 'all-products'
+}
+
+function handleNavClick(item: string) {
+  if (item === 'Tất cả') activeView.value = 'all-orders'
+  else if (item === 'Tất Cả Sản Phẩm') activeView.value = 'all-products'
+  else if (item === 'Thêm Sản Phẩm') activeView.value = 'add-product'
+}
+
+const currentView = computed(() => {
+  switch (activeView.value) {
+    case 'all-orders':
+      return SellerOrdersView
+    case 'all-products':
+      return SellerProductsView
+    case 'add-product':
+      return AddProductView
+    case 'dashboard':
+    default:
+      return SellerDashBoard
+  }
+})
+
+
+function toggleUserMenu() {
+  isUserMenuOpen.value = !isUserMenuOpen.value
+}
+
+function handleLogout() {
+  router.push({ name: 'sellerlog' })
+}
+
+</script>
+<template>
+  <div class="min-h-screen bg-gray-100 flex">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white text-gray-800 flex flex-col border-r border-gray-300 flex-shrink-0">
+      <div class="p-4 bg-[rgb(189,6,4)] text-white shadow cursor-pointer" @click="activeView = 'dashboard'">
+        <h2 class="text-xl font-semibold">Kênh Người Bán</h2>
+      </div>
+      <nav class="flex-1 overflow-y-auto">
+        <div v-for="(items, section) in sidebarNav" :key="section" class="p-4">
+          <h3 class="text-xs uppercase text-gray-500 font-bold mb-2">{{ section }}</h3>
+          <ul>
+            <li v-for="item in items" :key="item">
+              <button
+                @click="handleNavClick(item)"
+                class="w-full text-left py-1.5 px-2 rounded hover:bg-gray-100 text-sm cursor-pointer"
+              >
+                {{ item }}
+              </button>
+            </li>
+          </ul>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col overflow-hidden">
+      <header class="bg-[rgb(189,6,4)] text-white p-4 flex items-center justify-between flex-shrink-0">
+        <div></div>
+        <div class="flex items-center gap-4">
+          <button><Bell class="w-5 h-5 text-white" /></button>
+          <div class="relative">
+            <button @click="toggleUserMenu" class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-full bg-gray-200 cursor-pointer"></div>
+              <span class="text-sm cursor-pointer">seller1</span>
+            </button>
+
+            <!-- Dropdown -->
+            <div
+              v-if="isUserMenuOpen"
+              class="absolute right-0 mt-2 w-40 bg-white text-gray-800 rounded-md shadow-lg py-2 z-50"
+            >
+              <button
+                @click="handleLogout"
+                class="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+              >
+                Đăng xuất
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main class="flex-1 p-6 overflow-y-auto">
+        <component
+          :is="currentView"
+          :products="products"
+          @add-new-product="() => (activeView = 'add-product')"
+          @cancel="() => (activeView = 'all-products')"
+          @save="handleAddProduct"
+        />
+      </main>
+    </div>
+  </div>
+</template>
+<style scoped>
+</style>

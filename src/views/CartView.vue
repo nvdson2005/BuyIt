@@ -3,6 +3,14 @@ import { ref, computed, onMounted } from 'vue'
 import NavBar from '@/components/layout/NavBar.vue'
 import PageFooter from '@/components/layout/PageFooter.vue'
 import apiClient from '@/api/client'
+import CustomImage from '@/components/ui/CustomImage.vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
+const onNavigateToCheckout = () => {
+  router.push({ name: 'checkout' })
+}
 
 interface CartItem {
   quantity: number
@@ -164,7 +172,7 @@ function removeSelected() {
           </div>
           <div class="flex items-center gap-4">
             <!-- Variant image -->
-            <img
+            <CustomImage
               :src="item.productVariant.image_url || item.product.image_url"
               alt=""
               class="w-20 h-20 object-cover rounded-md"
@@ -188,14 +196,14 @@ function removeSelected() {
           </div>
           <div class="flex items-center gap-2">
             <button
-              class="w-8 h-8 rounded border text-lg flex items-center justify-center"
+              class="w-8 h-8 rounded border border-gray-400 text-lg flex items-center justify-center cursor-pointer"
               @click="decrease(item)"
             >
               -
             </button>
             <span class="w-8 text-center">{{ item.quantity }}</span>
             <button
-              class="w-8 h-8 rounded border text-lg flex items-center justify-center"
+              class="w-8 h-8 rounded border border-gray-400 text-lg flex items-center justify-center cursor-pointer"
               @click="increase(item)"
             >
               +
@@ -205,7 +213,7 @@ function removeSelected() {
             {{ formatPrice(item.productVariant.price * item.quantity) }}
           </div>
           <div>
-            <button @click="removeItem(item.prod_var_id)" class="text-slate-400 hover:text-red-500">
+            <button @click="removeItem(item.prod_var_id)" class="text-slate-400 hover:text-red-500 cursor-pointer">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 class="w-6 h-6"
@@ -232,13 +240,14 @@ function removeSelected() {
         <div class="flex items-center gap-4">
           <input type="checkbox" v-model="allChecked" />
           <span>Select all ({{ cartItems.length }})</span>
-          <button @click="removeSelected" class="text-rose-500 hover:underline">Delete</button>
+          <button @click="removeSelected" class="text-rose-500 hover:underline cursor-pointer">Delete</button>
         </div>
         <div class="flex items-center gap-4">
           <span class="text-base text-slate-600">Total purchase ({{ selectedCount }} items):</span>
           <span class="text-2xl font-bold text-rose-600">{{ formatPrice(totalPrice) }}</span>
           <button
-            class="bg-rose-400 text-white px-8 py-2 rounded-lg text-lg font-semibold hover:bg-rose-500 transition"
+            class="bg-rose-400 text-white px-8 py-2 rounded-lg text-lg font-semibold hover:bg-rose-600 transition cursor-pointer"
+            @click="onNavigateToCheckout"
           >
             Checkout
           </button>

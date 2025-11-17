@@ -4,13 +4,14 @@ import PageFooter from '@/components/layout/PageFooter.vue'
 import apiClient from '@/api/client'
 import { type Product, type Shop, type ProductVariant } from '@/utils/interface'
 import { onMounted, ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import LoadingScreen from '@/components/layout/LoadingScreen.vue'
 import ProductCard from '@/components/ui/ProductCard.vue'
 
 const product = ref<Product | null>(null)
 const shop = ref<Shop | null>(null)
 const route = useRoute()
+const router = useRouter()
 const isLoading = ref(true)
 const sale = ref(0)
 const quantity = ref(1)
@@ -50,6 +51,11 @@ function OnAddToCart() {
     quantity: quantity.value,
     price: chosenVariant.value.price,
   })
+}
+
+
+const onNavigateToCheckout = () => {
+  router.push({ name: 'checkout' })
 }
 </script>
 <template>
@@ -121,9 +127,9 @@ function OnAddToCart() {
         </div>
         <div class="flex items-center gap-4 mt-2">
           <span class="text-slate-600">Quantity</span>
-          <button class="w-8 h-8 border rounded text-lg" @click="quantity--">-</button>
+          <button class="w-8 h-8 border border-gray-400 rounded text-lg" @click="quantity--">-</button>
           <span> 1 </span>
-          <button class="w-8 h-8 border rounded text-lg" @click="quantity++">+</button>
+          <button class="w-8 h-8 border border-gray-400 rounded text-lg" @click="quantity++">+</button>
           <span class="text-slate-400 ml-2"
             >{{
               chosenVariant ? chosenVariant.stock_quantity : product?.stock_quantity
@@ -174,6 +180,7 @@ function OnAddToCart() {
           </button>
           <button
             class="flex-1 bg-orange-500 text-white px-6 py-3 rounded font-semibold hover:bg-orange-600"
+            @click="onNavigateToCheckout"
           >
             Buy Now
           </button>
@@ -196,7 +203,7 @@ function OnAddToCart() {
       </div>
       <div class="flex gap-3">
         <button
-          class="border px-6 py-2 rounded text-slate-700 hover:bg-gray-50 flex items-center gap-2"
+          class="border border-gray-300 px-6 py-2 rounded text-slate-700 hover:bg-gray-50 flex items-center gap-2"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -215,7 +222,7 @@ function OnAddToCart() {
           Chat
         </button>
         <button
-          class="border px-6 py-2 rounded text-slate-700 hover:bg-gray-50 flex items-center gap-2"
+          class="border border-gray-300 px-6 py-2 rounded text-slate-700 hover:bg-gray-50 flex items-center gap-2"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -281,7 +288,7 @@ function OnAddToCart() {
           <div
             v-for="product in recommendedProducts"
             :key="product.id"
-            class="bg-white rounded-xl border p-3 shadow-sm hover:shadow-md transition"
+            class="bg-white rounded-xl border border-gray-400 p-3 shadow-sm hover:shadow-md transition"
           >
             <ProductCard
               :id="product.id"

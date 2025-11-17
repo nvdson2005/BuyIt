@@ -38,3 +38,26 @@ export interface ProductVariant {
   stock_quantity: number
   image_url: string
 }
+
+export interface Address {
+  id: number;
+  name: string;
+  phone: string;
+  address: string;
+  isDefault: boolean;
+}
+
+export interface SellerProduct {
+    id: string;
+    name: string;
+    sku: string;
+    price: string;
+    stock: string;
+    sales: number;
+}
+
+export interface AllProductsViewProps {
+    products: SellerProduct[];
+    onAddNewProduct: () => void;
+}
+
