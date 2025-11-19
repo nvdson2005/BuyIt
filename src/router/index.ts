@@ -13,6 +13,9 @@ import SellerProductsView from '@/views/SellerProductsView.vue'
 import SellerOrdersView from '@/views/SellerOrdersView.vue'
 import SellerLoginView from '@/views/SellerLoginView.vue'
 import CheckoutView from '@/views/CheckoutView.vue'
+import SellerVoucherView from '@/views/SellerVoucherView.vue'
+import MarketingView from '@/views/MarketingView.vue'
+import ShopProgram from '@/views/ShopProgram.vue'
 const router = createRouter({
   history: createWebHistory(),
   routes: [
@@ -75,6 +78,21 @@ const router = createRouter({
       path: '/all_orders',
       name: 'all_orders',
       component: SellerOrdersView,
+    },
+     {
+      path: '/marketing',
+      name: 'marketing',
+      component: MarketingView,
+    },
+     {
+      path: '/program',
+      name: 'program',
+      component: ShopProgram,
+    },
+     {
+      path: '/voucher',
+      name: 'voucher',
+      component: SellerVoucherView,
     },
     {
       path: '/sellerlog',

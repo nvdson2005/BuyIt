@@ -17,7 +17,6 @@ import {
 
 
 const checked_all = ref(false)
-const checked = false
 const isOpen = ref(true)
 
 const toggleAccordion = () => {
@@ -36,7 +35,8 @@ const mockOrders = [
     statusColor: 'text-orange-500',
     carrier: 'Chưa xác định',
     createdTime: '24/11/2023 09:30',
-    deliveryDate: '-'
+    deliveryDate: '-',
+    selected: false
   },
   {
     id: 'ORDER002',
@@ -49,7 +49,9 @@ const mockOrders = [
     statusColor: 'text-green-600',
     carrier: 'VNPost Tiết kiệm',
     createdTime: '23/11/2023 17:20',
-    deliveryDate: '28/11/2023 23:00'
+    deliveryDate: '28/11/2023 23:00',
+    selected: false
+
   },
   {
     id: 'ORDER003',
@@ -62,7 +64,9 @@ const mockOrders = [
     statusColor: 'text-blue-500',
     carrier: 'Giao Hàng Nhanh',
     createdTime: '23/11/2023 11:45',
-    deliveryDate: '26/11/2023 23:00'
+    deliveryDate: '26/11/2023 23:00',
+    selected: false
+
   },
   {
     id: 'ORDER004',
@@ -75,7 +79,9 @@ const mockOrders = [
     statusColor: 'text-red-500',
     carrier: 'VNPost Tiết kiệm',
     createdTime: '22/11/2023 10:03',
-    deliveryDate: '27/11/2023 23:00'
+    deliveryDate: '27/11/2023 23:00',
+    selected: false
+
   }
 ]
 
@@ -102,6 +108,13 @@ watch(activeTab, () => {
     )
   }
 })
+
+watch(() => checked_all.value, (value) => {
+  filteredOrders.value.forEach((o) => {
+    o.selected = value
+  })
+})
+
 </script>
 
 <template>
@@ -110,11 +123,11 @@ watch(activeTab, () => {
     <div class="flex justify-between items-center">
       <h2 class="text-2xl font-semibold">Quản lý đơn hàng</h2>
       <div class="flex items-center gap-2">
-        <button class="inline-flex items-center gap-2 rounded-md text-sm font-medium transition-all focus-visible:ring-[3px] text-primary underline-offset-4 hover:underline text-blue-600"
+        <button class="inline-flex items-center gap-2 rounded-md text-sm font-medium transition-all focus-visible:ring-[3px] text-primary underline-offset-4 hover:underline text-blue-600 cursor-pointer"
           >Không tìm thấy đơn hàng?</button
         >
         <button class="inline-flex items-center justify-center gap-2 px-3 py-2 whitespace-nowrap rounded-md
-                text-sm font-medium transition-all duration-200
+                text-sm font-medium transition-all duration-200 cursor-pointer
                 border border-gray-300
                 bg-white text-gray-700
                 hover:bg-gray-100 hover:border-gray-400
@@ -124,7 +137,7 @@ watch(activeTab, () => {
           Thêm đơn hàng
         </button>
         <button class="inline-flex items-center justify-center gap-2 px-3 py-2 whitespace-nowrap rounded-md
-                text-sm font-medium transition-all duration-200
+                text-sm font-medium transition-all duration-200 cursor-pointer
                 border border-gray-300
                 text-white
                 active:bg-gray-200
@@ -142,7 +155,7 @@ watch(activeTab, () => {
         v-for="tab in tabs"
         :key="tab"
         @click="activeTab = tab"
-        class="py-3 px-4 text-sm whitespace-nowrap"
+        class="py-3 px-4 text-sm whitespace-nowrap cursor-pointer"
         :class="[
           activeTab === tab
             ? 'border-b-2 border-red-500 text-red-500'
@@ -166,7 +179,7 @@ watch(activeTab, () => {
       >
         <span>Filter</span>
         <svg
-          class="w-5 h-5 shrink-0 transition-transform duration-200"
+          class="w-5 h-5 shrink-0 transition-transform duration-200 cursor-pointer"
           :class="{ 'rotate-180': isOpen }"
           aria-hidden="true"
           xmlns="http://www.w3.org/2000/svg"
@@ -197,46 +210,46 @@ watch(activeTab, () => {
           />
           <input
             type="date"
-            class="w-full rounded-md bg-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-[3px] focus:ring-gray-300"
+            class="w-full rounded-md bg-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-[3px] focus:ring-gray-300 cursor-pointer"
             placeholder="Ngày tạo đơn"
           />
           <div class="flex items-center gap-2">
             <input
               type="date"
-              class="w-32 rounded-md bg-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-[3px] focus:ring-gray-300"
+              class="w-32 rounded-md bg-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-[3px] focus:ring-gray-300 cursor-pointer"
               placeholder="Từ ngày"
             />
             <span>-</span>
             <input
               type="date"
-              class="w-32 rounded-md bg-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-[3px] focus:ring-gray-300"
+              class="w-32 rounded-md bg-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-[3px] focus:ring-gray-300 cursor-pointer"
               placeholder="Đến ngày"
             />
           </div>
         </div>
 
         <div class="grid grid-cols-4 gap-4">
-          <button class="inline-flex items-center px-3 py-2 whitespace-nowrap rounded-md text-sm font-medium transition-all border border-gray-200 w-full h-8 justify-between bg-background text-foreground text-gray-700 hover:bg-gray-200 border-gray-300">
+          <button class="inline-flex items-center px-3 py-2 whitespace-nowrap rounded-md text-sm font-medium transition-all border border-gray-200 w-full h-8 justify-between bg-background text-foreground text-gray-700 hover:bg-gray-200 border-gray-300 cursor-pointer">
             Tên Shop <ChevronDown :size="16" />
           </button>
           <button class="inline-flex items-center  px-3 py-2 whitespace-nowrap rounded-md
-                text-sm font-medium transition-all
+                text-sm font-medium transition-all cursor-pointer
                 border border-gray-200 w-full h-8 justify-between
                 bg-background text-foreground
                 text-gray-700
                 hover:bg-gray-200 border-gray-300 ">
             Đơn vị vận chuyển <ChevronDown :size="16"
           /></button>
-          <button class="inline-flex items-center  px-3 py-2 whitespace-nowrap rounded-md
-                text-sm font-medium transition-all
+          <button class="inline-flex items-center px-3 py-2 whitespace-nowrap rounded-md
+                text-sm font-medium transition-all cursor-pointer
                 border border-gray-200 w-full h-8 justify-between
                 bg-background text-foreground
                 text-gray-700
                 hover:bg-gray-200 border-gray-300 ">
             Phương thức thanh toán <ChevronDown :size="16"
           /></button>
-          <button class="inline-flex items-center  px-3 py-2 whitespace-nowrap rounded-md
-                text-sm font-medium transition-all
+          <button class="inline-flex items-center px-3 py-2 whitespace-nowrap rounded-md
+                text-sm font-medium transition-all cursor-pointer
                 border border-gray-200 w-full h-8 justify-between
                 bg-background text-foreground
                 text-gray-700
@@ -270,7 +283,7 @@ watch(activeTab, () => {
               :key="order.id"
               class="align-top"
             >
-              <TableCell><Checkbox v-model="checked"></Checkbox></TableCell>
+              <TableCell><Checkbox v-model="order.selected"></Checkbox></TableCell>
               <TableCell>
                 <div class="flex gap-3">
                   <CustomImage

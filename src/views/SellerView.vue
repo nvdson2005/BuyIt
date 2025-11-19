@@ -7,7 +7,9 @@ import AddProductView from './AddProductView.vue'
 import SellerDashBoard from './SellerDashBoard.vue'
 import SellerProductsView from './SellerProductsView.vue'
 import SellerOrdersView from './SellerOrdersView.vue'
-
+import SellerVoucherView from './SellerVoucherView.vue'
+import ShopProgram from './ShopProgram.vue'
+import MarketingView from './MarketingView.vue'
 
 
 const router = useRouter()
@@ -31,6 +33,7 @@ const sidebarNav = {
   'Quản Lý Đơn Hàng': ['Tất cả', 'Bàn Giao Đơn Hàng'],
   'Quản Lý Sản Phẩm': ['Tất Cả Sản Phẩm', 'Thêm Sản Phẩm'],
   'Kênh Marketing': [
+    'Kênh Marketing',
     'Khuyến Mãi của Shop',
     'Mã giảm giá của Shop'
   ],
@@ -46,6 +49,10 @@ function handleNavClick(item: string) {
   if (item === 'Tất cả') activeView.value = 'all-orders'
   else if (item === 'Tất Cả Sản Phẩm') activeView.value = 'all-products'
   else if (item === 'Thêm Sản Phẩm') activeView.value = 'add-product'
+  else if (item === 'Kênh Marketing') activeView.value = 'marketing'
+  else if (item === 'Mã giảm giá của Shop') activeView.value = 'voucher'
+  else if (item === 'Khuyến Mãi của Shop') activeView.value = 'program'
+
 }
 
 const currentView = computed(() => {
@@ -56,6 +63,12 @@ const currentView = computed(() => {
       return SellerProductsView
     case 'add-product':
       return AddProductView
+    case 'marketing':
+      return MarketingView
+    case 'voucher':
+      return SellerVoucherView
+    case 'program':
+      return ShopProgram
     case 'dashboard':
     default:
       return SellerDashBoard
@@ -131,6 +144,8 @@ function handleLogout() {
           @add-new-product="() => (activeView = 'add-product')"
           @cancel="() => (activeView = 'all-products')"
           @save="handleAddProduct"
+          @voucher="() => (activeView = 'voucher')"
+          @program="() => (activeView = 'program')"
         />
       </main>
     </div>

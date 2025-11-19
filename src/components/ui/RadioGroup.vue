@@ -34,7 +34,7 @@ const handleChange = (value: string) => {
 <style scoped>
 .radio-group {
   display: flex;
-  gap: 20px;
+  gap: 0px;
 }
 
 .radio-group.horizontal {

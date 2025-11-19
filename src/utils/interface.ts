@@ -47,17 +47,8 @@ export interface Address {
   isDefault: boolean;
 }
 
-export interface SellerProduct {
-    id: string;
-    name: string;
-    sku: string;
-    price: string;
-    stock: string;
-    sales: number;
-}
-
 export interface AllProductsViewProps {
-    products: SellerProduct[];
+    products: Product[];
     onAddNewProduct: () => void;
 }
 
