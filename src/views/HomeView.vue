@@ -8,7 +8,7 @@ import MainPageFlashSalePanel from '@/components/layout/MainPageFlashSalePanel.v
 import PageFooter from '@/components/layout/PageFooter.vue'
 import ChatBot from '@/components/layout/ChatBot.vue'
 import LoadingScreen from '@/components/layout/LoadingScreen.vue'
-// import apiClient from '@/api/client'
+import apiClient from '@/api/client'
 import { onMounted, ref } from 'vue'
 import router from '@/router'
 const isLoading = ref(true)
@@ -41,13 +41,13 @@ onMounted(async () => {
 
 async function RetrieveUsername() {
   console.error('RetrieveUsername function is currently disabled.')
-  // try {
-  //   const response = await apiClient.get('/user/profile')
-  //   username.value = response.data.username
-  //   localStorage.setItem('username', username.value)
-  // } catch (error) {
-  //   console.error('Error retrieving username:', error)
-  // }
+  try {
+    const response = await apiClient.get('/user/profile')
+    username.value = response.data.username
+    localStorage.setItem('username', username.value)
+  } catch (error) {
+    console.error('Error retrieving username:', error)
+  }
 }
 </script>
 

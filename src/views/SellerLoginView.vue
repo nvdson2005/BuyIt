@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref, watch, onMounted } from "vue";
+import { ref, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+<<<<<<< HEAD
 import { Eye, EyeOff } from "lucide-vue-next";
 import apiClient from '@/api/client'
 
@@ -14,6 +15,18 @@ const loginMode = ref<"password" | "qr">("password");
 const qrCode = ref("");
 const errorMessage = ref('')
 
+=======
+import { Eye, EyeOff } from 'lucide-vue-next'
+
+const router = useRouter()
+const username = ref('')
+const password = ref('')
+const showPassword = ref(false)
+const usernameError = ref(false)
+const passwordError = ref(false)
+const loginMode = ref<'password' | 'qr'>('password')
+const qrCode = ref('')
+>>>>>>> 122e513b5338673beefe596ae8aedec09145a229
 
 onMounted(async () => {
   if (localStorage.getItem('username') && (await cookieStore.get('connect.sid'))) {
@@ -21,20 +34,19 @@ onMounted(async () => {
   }
 })
 
-
 // Sinh mã QR ngẫu nhiên
 watch(loginMode, (newMode) => {
-  if (newMode === "qr") {
+  if (newMode === 'qr') {
     const randomId =
-      Math.random().toString(36).substring(2, 15) +
-      Math.random().toString(36).substring(2, 15);
-    const qrData = `buyit-seller-login-${randomId}`;
+      Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+    const qrData = `buyit-seller-login-${randomId}`
     qrCode.value = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(
-      qrData
-    )}`;
+      qrData,
+    )}`
   }
-});
+})
 
+<<<<<<< HEAD
 async function handleLogin(){
   errorMessage.value = ''
   usernameError.value = false
@@ -52,19 +64,25 @@ async function handleLogin(){
     })
     localStorage.setItem('username', response.data.user.username)
     localStorage.setItem('role', response.data.user.role)
+=======
+const handleLogin = () => {
+  usernameError.value = !username.value
+  passwordError.value = !password.value
+  if (!usernameError.value && !passwordError.value) {
+>>>>>>> 122e513b5338673beefe596ae8aedec09145a229
     router.push({ name: 'dashboard' })
     console.log('Login successful:', response)
   } catch (error: any) {
     errorMessage.value = 'Login failed: ' + error?.response?.data?.message
     console.error('Login failed:', error)
   }
-};
+}
 
 const onNavigateToHome = () => {
   router.push({ name: 'dashboard' })
 }
-const onNavigateToLogin = () =>{
-  router.push({name:'login'})
+const onNavigateToLogin = () => {
+  router.push({ name: 'login' })
 }
 
 // Tạm thời đang tới signup chung của người dùng
@@ -80,10 +98,7 @@ function onSignupClick() {
     <header class="bg-white border-b">
       <div class="container mx-auto px-8 py-4 flex items-center justify-between">
         <div class="flex items-center gap-4">
-          <button
-            @click="onNavigateToHome"
-            class="flex items-center gap-2 text-2xl text-red-600"
-          >
+          <button @click="onNavigateToHome" class="flex items-center gap-2 text-2xl text-red-600">
             <svg
               width="32"
               height="32"
@@ -99,7 +114,9 @@ function onSignupClick() {
           <span class="text-xl">Kênh Người Bán</span>
         </div>
         <div class="ml-auto flex items-center gap-6">
-          <a href="#" class="text-sm text-red-600 hover:underline" @click="onNavigateToLogin">Quay lại đăng nhập khách hàng?</a>
+          <a href="#" class="text-sm text-red-600 hover:underline" @click="onNavigateToLogin"
+            >Quay lại đăng nhập khách hàng?</a
+          >
           <a href="#" class="text-sm text-red-600 hover:underline">Bạn cần giúp đỡ?</a>
         </div>
       </div>
@@ -130,9 +147,11 @@ function onSignupClick() {
                 <button
                   type="button"
                   class="px-4 py-3 border-b-2 transition-colors"
-                  :class="loginMode === 'password'
-                    ? 'border-[#ee4d2d] text-[#ee4d2d]'
-                    : 'border-transparent text-gray-600 hover:text-[#ee4d2d]'"
+                  :class="
+                    loginMode === 'password'
+                      ? 'border-[#ee4d2d] text-[#ee4d2d]'
+                      : 'border-transparent text-gray-600 hover:text-[#ee4d2d]'
+                  "
                   @click="loginMode = 'password'"
                 >
                   Đăng Nhập
@@ -140,9 +159,11 @@ function onSignupClick() {
                 <button
                   type="button"
                   class="px-4 py-3 border-b-2 ml-4 transition-colors"
-                  :class="loginMode === 'qr'
-                    ? 'border-[#ee4d2d] text-[#ee4d2d]'
-                    : 'border-transparent text-gray-600 hover:text-[#ee4d2d]'"
+                  :class="
+                    loginMode === 'qr'
+                      ? 'border-[#ee4d2d] text-[#ee4d2d]'
+                      : 'border-transparent text-gray-600 hover:text-[#ee4d2d]'
+                  "
                   @click="loginMode = 'qr'"
                 >
                   Đăng Nhập Bằng QR
@@ -168,8 +189,7 @@ function onSignupClick() {
                 <input
                   v-model="username"
                   type="text"
-                  class="w-full rounded-md bg-gray-100 px-3 py-2 text-sm
-              focus:outline-none focus:ring-[3px] focus:ring-gray-300"
+                  class="w-full rounded-md bg-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-[3px] focus:ring-gray-300"
                   placeholder="Email/Số điện thoại/Tên đăng nhập"
                   :class="{ 'border-red-500': usernameError }"
                 />
@@ -184,8 +204,7 @@ function onSignupClick() {
                   <input
                     v-model="password"
                     :type="showPassword ? 'text' : 'password'"
-                    class="w-full rounded-md bg-gray-100 px-3 py-2 text-sm
-                          focus:outline-none focus:ring-[3px] focus:ring-gray-300 pr-10"
+                    class="w-full rounded-md bg-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-[3px] focus:ring-gray-300 pr-10"
                     placeholder="Mật khẩu"
                     :class="{ 'border-red-500': passwordError }"
                   />
@@ -203,8 +222,7 @@ function onSignupClick() {
               </div>
               <button
                 type="submit"
-                class="inline-flex items-center justify-center gap-2 px-3 py-2 whitespace-nowrap rounded-md
-                      text-sm font-medium transition-all w-full bg-[#ee4d2d] hover:bg-[#d73211] text-white h-11 mt-2"
+                class="inline-flex items-center justify-center gap-2 px-3 py-2 whitespace-nowrap rounded-md text-sm font-medium transition-all w-full bg-[#ee4d2d] hover:bg-[#d73211] text-white h-11 mt-2"
               >
                 ĐĂNG NHẬP
               </button>
@@ -225,12 +243,10 @@ function onSignupClick() {
 
               <!-- Social Buttons -->
               <div class="grid grid-cols-2 gap-4">
-                <button type="button" class="inline-flex items-center justify-center gap-2 px-3 py-2 whitespace-nowrap rounded-md
-                text-sm font-medium transition-all duration-200
-                border border-gray-300
-                bg-white text-gray-700
-                hover:bg-gray-100 hover:border-gray-400
-                active:bg-gray-200">
+                <button
+                  type="button"
+                  class="inline-flex items-center justify-center gap-2 px-3 py-2 whitespace-nowrap rounded-md text-sm font-medium transition-all duration-200 border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 hover:border-gray-400 active:bg-gray-200"
+                >
                   <svg class="w-5 h-5 mr-2" viewBox="0 0 24 24">
                     <path
                       fill="#1877F2"
@@ -238,14 +254,12 @@ function onSignupClick() {
                     />
                   </svg>
                   Facebook
-                </Button>
+                </button>
 
-                <button type="button" class="inline-flex items-center justify-center gap-2 px-3 py-2 whitespace-nowrap rounded-md
-                text-sm font-medium transition-all duration-200
-                border border-gray-300
-                bg-white text-gray-700
-                hover:bg-gray-100 hover:border-gray-400
-                active:bg-gray-200">
+                <button
+                  type="button"
+                  class="inline-flex items-center justify-center gap-2 px-3 py-2 whitespace-nowrap rounded-md text-sm font-medium transition-all duration-200 border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 hover:border-gray-400 active:bg-gray-200"
+                >
                   <svg class="w-5 h-5 mr-2" viewBox="0 0 24 24">
                     <path
                       fill="#4285F4"
@@ -265,7 +279,7 @@ function onSignupClick() {
                     />
                   </svg>
                   Google
-                </Button>
+                </button>
               </div>
 
               <div class="text-center text-sm text-gray-600 mt-4">
@@ -279,5 +293,3 @@ function onSignupClick() {
     </main>
   </div>
 </template>
-
-
