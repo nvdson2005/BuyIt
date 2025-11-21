@@ -1,21 +1,6 @@
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-<<<<<<< HEAD
-import { Eye, EyeOff } from "lucide-vue-next";
-import apiClient from '@/api/client'
-
-const router = useRouter()
-const username = ref("");
-const password = ref("");
-const showPassword = ref(false);
-const usernameError = ref(false);
-const passwordError = ref(false);
-const loginMode = ref<"password" | "qr">("password");
-const qrCode = ref("");
-const errorMessage = ref('')
-
-=======
 import { Eye, EyeOff } from 'lucide-vue-next'
 
 const router = useRouter()
@@ -26,7 +11,6 @@ const usernameError = ref(false)
 const passwordError = ref(false)
 const loginMode = ref<'password' | 'qr'>('password')
 const qrCode = ref('')
->>>>>>> 122e513b5338673beefe596ae8aedec09145a229
 
 onMounted(async () => {
   if (localStorage.getItem('username') && (await cookieStore.get('connect.sid'))) {
@@ -46,36 +30,16 @@ watch(loginMode, (newMode) => {
   }
 })
 
-<<<<<<< HEAD
-async function handleLogin(){
-  errorMessage.value = ''
-  usernameError.value = false
-  passwordError.value = false
-
-  if (!username.value) usernameError.value = true
-  if (!password.value) passwordError.value = true
-
-  if (usernameError.value || passwordError.value) return
-  try {
-    const response = await apiClient.post('/login', {
-      username: username.value,
-      password: password.value,
-      roleType: 'shop',
-    })
-    localStorage.setItem('username', response.data.user.username)
-    localStorage.setItem('role', response.data.user.role)
-=======
 const handleLogin = () => {
-  usernameError.value = !username.value
-  passwordError.value = !password.value
-  if (!usernameError.value && !passwordError.value) {
->>>>>>> 122e513b5338673beefe596ae8aedec09145a229
-    router.push({ name: 'dashboard' })
-    console.log('Login successful:', response)
-  } catch (error: any) {
-    errorMessage.value = 'Login failed: ' + error?.response?.data?.message
-    console.error('Login failed:', error)
-  }
+  // usernameError.value = !username.value
+  // passwordError.value = !password.value
+  // if (!usernameError.value && !passwordError.value) {
+  //   router.push({ name: 'dashboard' })
+  //   console.log('Login successful:', response)
+  // } catch (error: any) {
+  //   errorMessage.value = 'Login failed: ' + error?.response?.data?.message
+  //   console.error('Login failed:', error)
+  // }
 }
 
 const onNavigateToHome = () => {

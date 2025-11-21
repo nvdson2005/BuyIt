@@ -40,15 +40,22 @@ export interface ProductVariant {
 }
 
 export interface Address {
-  id: number;
-  name: string;
-  phone: string;
-  address: string;
-  isDefault: boolean;
+  id: number
+  name: string
+  phone: string
+  address: string
+  isDefault: boolean
 }
 
 export interface AllProductsViewProps {
-    products: Product[];
-    onAddNewProduct: () => void;
+  products: Product[]
+  onAddNewProduct: () => void
 }
 
+export interface ProfileDetail {
+  username: string
+  name: string
+  phone: string
+  email: string
+  description: string
+}

@@ -5,6 +5,7 @@ import { useRouter } from 'vue-router'
 import BasicNavBar from '@/components/layout/BasicNavBar.vue'
 import { onMounted, ref } from 'vue'
 import { CircleX } from 'lucide-vue-next'
+import { AxiosError } from 'axios'
 const router = useRouter()
 
 const errorMessage = ref('')
@@ -27,9 +28,22 @@ async function onLoginClick(username: string, password: string) {
     router.push({ name: 'home' })
 
     console.log('Login successful:', response)
-  } catch (error: any) {
-    errorMessage.value = 'Login failed: ' + error?.response?.data?.message
-    console.error('Login failed:', error)
+  } catch (error: unknown) {
+    if (error instanceof AxiosError) {
+      if (error.response) {
+        errorMessage.value = `Login failed: ${error.response.data.message || 'Unknown error'}`
+        console.error('Login failed:', error.response.data)
+      } else if (error.request) {
+        errorMessage.value = 'Login failed: No response from server'
+        console.error('Login failed: No response from server', error.request)
+      } else {
+        errorMessage.value = `Login failed: ${error.message}`
+        console.error('Login failed:', error.message)
+      }
+    } else if (error instanceof Error) {
+      errorMessage.value = `Login failed: ${error.message}`
+      console.error('Login failed:', error.message)
+    }
   }
 }
 
@@ -68,7 +82,10 @@ onMounted(async () => {
           </div>
         </div>
       </div>
-      <p v-if="errorMessage" class="flex justify-center ml-10 mr-10 px-4 py-4 bg-red-200 rounded border border-red-500 select-none outline-none focus:outline-none focus:ring-0">
+      <p
+        v-if="errorMessage"
+        class="flex justify-center ml-10 mr-10 px-4 py-4 bg-red-200 rounded border border-red-500 select-none outline-none focus:outline-none focus:ring-0"
+      >
         <CircleX class="text-red-500 mr-4"></CircleX>
         {{ errorMessage }}
       </p>

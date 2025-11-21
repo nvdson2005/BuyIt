@@ -2,8 +2,69 @@
 import NavBar from '@/components/layout/NavBar.vue'
 import { User, Bell, Package, Ticket, Coins, Star } from 'lucide-vue-next'
 import { ProfileOptions } from '@/utils/enum'
-import { ref, type Ref } from 'vue'
+import { type ProfileDetail } from '@/utils/interface'
+import { onMounted, ref, type Ref } from 'vue'
+import apiClient from '@/api/client'
+import type { AxiosResponse } from 'axios'
 const chosenProfileOption: Ref<ProfileOptions> = ref(ProfileOptions.PROFILE)
+const profile = ref<ProfileDetail | null>(null)
+const editedProfile = ref<ProfileDetail>({
+  username: '',
+  name: '',
+  email: '',
+  phone: '',
+  description: '',
+})
+onMounted(async () => {
+  const result: AxiosResponse = await apiClient.get('/user/profile')
+  const raw = result.data.user
+  const userData = {
+    username: raw.username ?? '',
+    name: raw.name ?? '',
+    email: raw.email ?? '',
+    phoneNumber: raw.phone_number ?? '',
+    description: raw.description ?? '',
+  }
+  profile.value = {
+    username: userData['username'],
+    name: userData['name'],
+    email: userData['email'],
+    phone: userData['phoneNumber'],
+    description: userData['description'],
+  }
+  editedProfile.value = { ...profile.value }
+  console.log('Profile data:', profile.value.username)
+})
+const isEditingProfile = ref(false)
+
+const changeMode = (isEditing: boolean) => {
+  if (isEditing) {
+    if (profile.value) {
+      editedProfile.value = { ...profile.value }
+      isEditingProfile.value = true
+    }
+  } else {
+    isEditingProfile.value = false
+    editedProfile.value = { ...profile.value! }
+  }
+}
+const handleSubmit = async (e: Event) => {
+  e.preventDefault()
+  const response = await apiClient.put('/user/profile/update', {
+    username: editedProfile.value?.username,
+    name: editedProfile.value?.name,
+    email: editedProfile.value?.email,
+    phone_number: editedProfile.value?.phone,
+    description: editedProfile.value?.description,
+  })
+  if (response.status === 200) {
+    console.log('Profile updated successfully')
+    profile.value = { ...editedProfile.value! }
+    isEditingProfile.value = false
+  } else {
+    console.error('Failed to update profile')
+  }
+}
 </script>
 <template>
   <NavBar />
@@ -18,7 +79,7 @@ const chosenProfileOption: Ref<ProfileOptions> = ref(ProfileOptions.PROFILE)
             <User class="w-10 h-10" />
           </div>
           <div class="flex flex-col">
-            <div class="font-semibold text-lg">User1</div>
+            <div class="font-semibold text-lg">{{ profile?.name }}</div>
             <div class="text-xs text-slate-500 flex items-center gap-1 cursor-pointer">
               Edit profile
             </div>
@@ -136,68 +197,101 @@ const chosenProfileOption: Ref<ProfileOptions> = ref(ProfileOptions.PROFILE)
       <section class="flex-3 bg-white rounded-xl shadow p-8 flex flex-col gap-6">
         <div class="flex items-center justify-between border-b pb-4">
           <div>
-            <h2 class="text-xl font-semibold text-slate-800">Hồ Sơ Của Tôi</h2>
-            <p class="text-sm text-slate-500 mt-1">Quản lý thông tin hồ sơ để bảo mật tài khoản</p>
+            <h2 class="text-xl font-semibold text-slate-800">My Profile</h2>
+            <p class="text-sm text-slate-500 mt-1">
+              Manage your profile information to secure your account
+            </p>
           </div>
         </div>
         <div class="flex gap-8">
           <!-- Profile form -->
-          <form class="flex-1 flex flex-col gap-4">
+          <form class="flex-1 flex flex-col gap-4" @submit="handleSubmit">
             <div class="flex items-center gap-4">
-              <label class="w-40 text-slate-600 font-medium">Tên đăng nhập</label>
-              <span class="text-slate-800 font-semibold">User1</span>
-              <span class="text-xs text-slate-400"
-                >(Tên đăng nhập chỉ có thể thay đổi một lần.)</span
-              >
+              <label class="w-40 text-slate-600 font-medium">Username</label>
+              <input
+                type="text"
+                :disabled="!isEditingProfile"
+                class="text-slate-800 font-semibold"
+                :class="
+                  isEditingProfile
+                    ? 'p-2 input-box w-80 bg-slate-50'
+                    : 'p-2 bg-transparent border-0 w-80 focus:ring-0 focus:outline-none'
+                "
+                v-model="editedProfile.username"
+              />
             </div>
             <div class="flex items-center gap-4">
-              <label class="w-40 text-slate-600 font-medium">Tên</label>
-              <input type="text" value="PHUONG" class="input-box w-80" />
+              <label class="w-40 text-slate-600 font-medium">Name</label>
+              <input
+                type="text"
+                :disabled="!isEditingProfile"
+                :class="
+                  isEditingProfile
+                    ? 'p-2 input-box w-80 bg-slate-50'
+                    : 'p-2 bg-transparent border-0 w-80 focus:ring-0 focus:outline-none'
+                "
+                v-model="editedProfile.name"
+              />
             </div>
             <div class="flex items-center gap-4">
               <label class="w-40 text-slate-600 font-medium">Email</label>
-              <span class="text-slate-800">ph*********@hcmut.edu.vn</span>
-              <a href="#" class="text-blue-500 text-sm ml-2">Thay đổi</a>
+              <input
+                type="email"
+                :disabled="!isEditingProfile"
+                :class="
+                  isEditingProfile
+                    ? 'p-2 input-box w-80 bg-slate-50'
+                    : 'p-2 bg-transparent border-0 w-80 focus:ring-0 focus:outline-none'
+                "
+                v-model="editedProfile.email"
+              />
             </div>
             <div class="flex items-center gap-4">
-              <label class="w-40 text-slate-600 font-medium">Số điện thoại</label>
-              <a href="#" class="text-blue-500 text-sm">Thêm</a>
+              <label class="w-40 text-slate-600 font-medium">Phone number</label>
+              <input
+                type="text"
+                :disabled="!isEditingProfile"
+                :class="
+                  isEditingProfile
+                    ? 'p-2 input-box w-80 bg-slate-50'
+                    : 'p-2 bg-transparent border-0 w-80 focus:ring-0 focus:outline-none'
+                "
+                v-model="editedProfile.phone"
+              />
             </div>
-            <div class="flex items-center gap-4">
-              <label class="w-40 text-slate-600 font-medium">Giới tính</label>
-              <label class="flex items-center gap-1">
-                <input type="radio" name="gender" checked class="accent-blue-500" />
-                Nam
-              </label>
-              <label class="flex items-center gap-1">
-                <input type="radio" name="gender" class="accent-blue-500" />
-                Nữ
-              </label>
-              <label class="flex items-center gap-1">
-                <input type="radio" name="gender" class="accent-blue-500" />
-                Khác
-              </label>
-            </div>
-            <div class="flex items-center gap-4">
-              <label class="w-40 text-slate-600 font-medium">Ngày sinh</label>
-              <select class="input-box w-24">
-                <option>Ngày</option>
-              </select>
-              <select class="input-box w-24">
-                <option>Tháng</option>
-              </select>
-              <select class="input-box w-24">
-                <option>Năm</option>
-              </select>
+            <div class="flex flex-col gap-4">
+              <label class="w-40 text-slate-600 font-medium">Description</label>
+              <textarea
+                rows="4"
+                class="input-box w-full resize-none bg-slate-50"
+                placeholder="Tell us about yourself"
+                :disabled="!isEditingProfile"
+                v-model="editedProfile.description"
+              >
+              </textarea>
             </div>
             <div class="flex items-center gap-4 mt-2">
-              <label class="w-40"></label>
+              <button
+                type="button"
+                :class="
+                  isEditingProfile
+                    ? 'border px-6 py-2 rounded font-medium text-slate-700 hover:bg-gray-50'
+                    : 'bg-[var(--red)] text-white px-6 py-2 rounded font-medium hover:bg-red-600'
+                "
+                @click="
+                  () => {
+                    changeMode(isEditingProfile ? false : true)
+                  }
+                "
+              >
+                {{ isEditingProfile ? 'Cancel' : 'Edit Profile' }}
+              </button>
               <button
                 type="submit"
-                class="bg-rose-500 text-white px-8 py-2 rounded font-semibold hover:bg-rose-600 transition"
-                v-on:submit="$event.preventDefault()"
+                class="bg-[var(--red)] text-white px-6 py-2 rounded font-medium hover:bg-red-600"
+                v-if="isEditingProfile"
               >
-                Lưu
+                Save Changes
               </button>
             </div>
           </form>
