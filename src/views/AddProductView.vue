@@ -4,6 +4,8 @@ import { Upload, Video, Info, PlusCircle, ChevronDown } from 'lucide-vue-next'
 import FormSection from '@/components/layout/FormSection.vue'
 import Checkbox from '@/components/ui/Checkbox.vue'
 import RadioGroup from '@/components/ui/RadioGroup.vue'
+import apiClient from '@/api/client'
+
 // Product trong utils được tạo từ trước
 import { Product } from '@/utils/interface'
 
@@ -60,16 +62,17 @@ function handleSave() {
   props.onSave(newProduct)
 
   // Nếu có backend:
-  /*
-  fetch('/api/products', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(newProduct)
-  })
-    .then(res => res.json())
-    .then(data => console.log('Saved to DB:', data))
-    .catch(err => console.error('Save failed', err))
-  */
+  // apiClient
+  // .get('/')
+  // fetch('/api/products', {
+  //   method: 'POST',
+  //   headers: { 'Content-Type': 'application/json' },
+  //   body: JSON.stringify(newProduct)
+  // })
+  //   .then(res => res.json())
+  //   .then(data => console.log('Saved to DB:', data))
+  //   .catch(err => console.error('Save failed', err))
+
 }
 </script>
 

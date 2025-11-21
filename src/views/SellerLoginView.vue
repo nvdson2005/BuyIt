@@ -2,6 +2,7 @@
 import { ref, watch, onMounted } from "vue";
 import { useRouter } from 'vue-router'
 import { Eye, EyeOff } from "lucide-vue-next";
+import apiClient from '@/api/client'
 
 const router = useRouter()
 const username = ref("");
@@ -11,6 +12,7 @@ const usernameError = ref(false);
 const passwordError = ref(false);
 const loginMode = ref<"password" | "qr">("password");
 const qrCode = ref("");
+const errorMessage = ref('')
 
 
 onMounted(async () => {
@@ -33,11 +35,28 @@ watch(loginMode, (newMode) => {
   }
 });
 
-const handleLogin = () => {
-  usernameError.value = !username.value;
-  passwordError.value = !password.value;
-  if (!usernameError.value && !passwordError.value) {
+async function handleLogin(){
+  errorMessage.value = ''
+  usernameError.value = false
+  passwordError.value = false
+
+  if (!username.value) usernameError.value = true
+  if (!password.value) passwordError.value = true
+
+  if (usernameError.value || passwordError.value) return
+  try {
+    const response = await apiClient.post('/login', {
+      username: username.value,
+      password: password.value,
+      roleType: 'shop',
+    })
+    localStorage.setItem('username', response.data.user.username)
+    localStorage.setItem('role', response.data.user.role)
     router.push({ name: 'dashboard' })
+    console.log('Login successful:', response)
+  } catch (error: any) {
+    errorMessage.value = 'Login failed: ' + error?.response?.data?.message
+    console.error('Login failed:', error)
   }
 };
 

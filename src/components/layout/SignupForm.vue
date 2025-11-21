@@ -28,7 +28,7 @@ defineProps({
   },
 })
 
-const chosenRole = ref<'Buyer' | 'Seller' | null>(null)
+const chosenRole = ref<'buyer' | 'shop' | null>(null)
 </script>
 <template>
   <div class="w-full h-full flex flex-col items-center px-6 py-8">
@@ -87,15 +87,15 @@ const chosenRole = ref<'Buyer' | 'Seller' | null>(null)
       <div class="flex items-center gap-6 w-full">
         <button
           class="cursor-pointer px-4 py-2 h-full rounded w-full transition-colors duration-200"
-          :class="chosenRole === 'Buyer' ? 'bg-orange-600' : 'bg-[var(--orange)]'"
-          @click="chosenRole = 'Buyer'"
+          :class="chosenRole === 'buyer' ? 'bg-orange-600' : 'bg-[var(--orange)]'"
+          @click="chosenRole = 'buyer'"
         >
           Buyer
         </button>
         <button
           class="cursor-pointer px-4 py-2 h-full rounded w-full transition-colors duration-200"
-          :class="chosenRole === 'Seller' ? 'bg-orange-600' : 'bg-[var(--orange)]'"
-          @click="chosenRole = 'Seller'"
+          :class="chosenRole === 'shop' ? 'bg-orange-600' : 'bg-[var(--orange)]'"
+          @click="chosenRole = 'shop'"
         >
           Seller
         </button>

@@ -9,9 +9,12 @@ const emit = defineEmits<{
 const isShowPassword = ref(false)
 const username: Ref<string, string> = ref('')
 const password: Ref<string, string> = ref('')
-
+const usernameError = ref(false)
+const passwordError = ref(false)
 
 const handleLogin = () => {
+  usernameError.value = !username.value;
+  passwordError.value = !password.value;
   emit('login', username.value, password.value)
 }
 defineProps({
@@ -20,6 +23,8 @@ defineProps({
     default: 'var(--red)',
   },
 })
+
+
 </script>
 <template>
   <form
@@ -29,12 +34,15 @@ defineProps({
     <input
       type="text"
       placeholder="Username"
-      class="input-box w-full mb-6 border border-gray-300 px-3 py-2
+      class="input-box w-full border border-gray-300 px-3 py-2
               focus:outline-none focus:ring-[3px] focus:ring-gray-300"
       v-model="username"
     />
+    <p v-if="usernameError" class="w-full text-left text-white text-sm mt-1">
+      Vui lòng nhập thông tin này
+    </p>
 
-    <div class="w-full relative mb-8">
+    <div class="w-full relative mb-8 mt-6">
       <input
         placeholder="Password"
         class="input-box w-full border border-gray-300 px-3 py-2
@@ -43,8 +51,11 @@ defineProps({
         v-model="password"
         @keyup.enter="handleLogin"
       />
+      <p v-if="passwordError" class="text-white text-sm mt-1">
+        Vui lòng nhập thông tin này
+      </p>
       <div
-        class="absolute top-1/2 right-3 -translate-y-1/2 cursor-pointer"
+        class="absolute top-5 right-3 -translate-y-1/2 cursor-pointer"
         @click="isShowPassword = !isShowPassword"
       >
         <component :is="isShowPassword ? EyeOff : Eye" class="w-5 h-5 text-gray-500" />

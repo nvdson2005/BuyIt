@@ -14,9 +14,14 @@ import router from '@/router'
 const isLoading = ref(true)
 const username = ref('')
 onMounted(async () => {
-  document.title = 'BuyIt - Home'
   const cookie = await cookieStore.get('connect.sid')
-  console.log('Cookie:', cookie)
+  const role = localStorage.getItem('role')
+
+  if (!cookie || role !== 'buyer') {
+    router.push('/login')
+    return
+  }
+
   if (cookie) {
     username.value = localStorage.getItem('username') || ''
     if (username.value) {
@@ -31,8 +36,6 @@ onMounted(async () => {
     setTimeout(() => {
       isLoading.value = false
     }, 1000)
-  } else {
-    router.push('/login')
   }
 })
 

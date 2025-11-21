@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 
 import { Bell } from 'lucide-vue-next'
@@ -15,6 +15,9 @@ import MarketingView from './MarketingView.vue'
 const router = useRouter()
 const activeView = ref('dashboard')
 const isUserMenuOpen = ref(false)
+const isLoading = ref(true)
+const username = ref('')
+const isLoggedIn = ref(true)
 
 const initialProducts = [
   {
@@ -80,8 +83,43 @@ function toggleUserMenu() {
   isUserMenuOpen.value = !isUserMenuOpen.value
 }
 
-function handleLogout() {
-  router.push({ name: 'sellerlog' })
+const handleLogout: () => Promise<void> = async () => {
+  isLoggedIn.value = false
+  await cookieStore.delete('connect.sid')
+  localStorage.removeItem('username')
+  localStorage.removeItem('role')
+  router.push('/sellerlog')
+}
+
+
+
+onMounted(async () => {
+  const cookie = await cookieStore.get('connect.sid')
+  const role = localStorage.getItem('role')
+  // console.log('Cookie:', cookie)
+  if (!cookie || role !== 'shop') {
+    router.push('/sellerlog')
+    return
+  }
+  if (cookie) {
+    username.value = localStorage.getItem('username') || ''
+    if (username.value) {
+      setTimeout(() => {
+        isLoading.value = false
+      }, 1000)
+      return
+    } else {
+      await RetrieveUsername()
+      isLoading.value = false
+    }
+    setTimeout(() => {
+      isLoading.value = false
+    }, 1000)
+  }
+})
+
+async function RetrieveUsername() {
+  console.error('RetrieveUsername function is currently disabled.')
 }
 
 </script>
@@ -118,7 +156,7 @@ function handleLogout() {
           <div class="relative">
             <button @click="toggleUserMenu" class="flex items-center gap-2">
               <div class="w-8 h-8 rounded-full bg-gray-200 cursor-pointer"></div>
-              <span class="text-sm cursor-pointer">seller1</span>
+              <span class="text-sm cursor-pointer">{{ username }}</span>
             </button>
 
             <!-- Dropdown -->

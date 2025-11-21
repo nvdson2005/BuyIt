@@ -3,26 +3,32 @@ import apiClient from '@/api/client'
 import LoginForm from '@/components/layout/LoginForm.vue'
 import { useRouter } from 'vue-router'
 import BasicNavBar from '@/components/layout/BasicNavBar.vue'
-import { onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
+import { CircleX } from 'lucide-vue-next'
 const router = useRouter()
+
+const errorMessage = ref('')
+
 function onSignupClick() {
   router.push({ name: 'signup' })
 }
 
 async function onLoginClick(username: string, password: string) {
+  errorMessage.value = '' // reset lỗi mỗi lần login
   try {
-    const response = await apiClient
-      .post('/login', {
-        // Provide login credentials here
-        username,
-        password,
-      })
-      .finally(() => {
-        localStorage.setItem('username', username)
-        router.push({ name: 'home' })
-      })
+    const response = await apiClient.post('/login', {
+      username,
+      password,
+      roleType: 'buyer',
+    })
+    localStorage.setItem('username', username)
+    localStorage.setItem('role', response.data.user.role)
+
+    router.push({ name: 'home' })
+
     console.log('Login successful:', response)
-  } catch (error) {
+  } catch (error: any) {
+    errorMessage.value = 'Login failed: ' + error?.response?.data?.message
     console.error('Login failed:', error)
   }
 }
@@ -62,6 +68,10 @@ onMounted(async () => {
           </div>
         </div>
       </div>
+      <p v-if="errorMessage" class="flex justify-center ml-10 mr-10 px-4 py-4 bg-red-200 rounded border border-red-500 select-none outline-none focus:outline-none focus:ring-0">
+        <CircleX class="text-red-500 mr-4"></CircleX>
+        {{ errorMessage }}
+      </p>
       <LoginForm @login="onLoginClick" />
     </div>
   </div>

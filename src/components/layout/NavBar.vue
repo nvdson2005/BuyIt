@@ -24,6 +24,7 @@ const logOut: () => Promise<void> = async () => {
   isLoggedIn.value = false
   await cookieStore.delete('connect.sid')
   localStorage.removeItem('username')
+  localStorage.removeItem('role')
   router.push('/login')
 }
 
