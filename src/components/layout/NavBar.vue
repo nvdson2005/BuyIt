@@ -120,7 +120,10 @@ onMounted(() => {
           Phone, Laptop, Tablet, Accessories
         </p>
       </div>
-      <div @click="navigateToCart" class="h-full w-25 scale-125 flex items-center justify-center cursor-pointer">
+      <div
+        @click="navigateToCart"
+        class="h-full w-25 scale-125 flex items-center justify-center cursor-pointer"
+      >
         <ShopButton></ShopButton>
       </div>
     </div>
