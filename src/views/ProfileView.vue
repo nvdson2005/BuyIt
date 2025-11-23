@@ -2,6 +2,7 @@
 import NavBar from '@/components/layout/NavBar.vue'
 import { User, Lock, MapPin, CreditCard, Users, Star, Ticket } from 'lucide-vue-next'
 import { ref, onMounted, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import PasswordInput from '@/components/ui/PasswordInput.vue'
 // Sidebar section options
 type SidebarOption =
@@ -16,6 +17,8 @@ import { type ProfileDetail } from '@/utils/interface' // Not used
 import apiClient from '@/api/client'
 import { AxiosError, type AxiosResponse } from 'axios'
 
+// ROUTER
+const router = useRouter()
 // -------------- For password section -------------------------
 const password = ref<string>('')
 const retypePassword = ref<string>('')
@@ -325,30 +328,63 @@ const fetchAvailablePaymentMethods = async () => {
     availablePaymentMethods.value = response.data.options
   }
 }
+
 // ---------------- Following Section -------------------
 interface Shop {
-  id: number
+  id: string
   name: string
   description: string
   followers: number
   rating: number
 }
-const followedShops = ref<Shop[]>([
-  {
-    id: 1,
-    name: 'SuperShop',
-    description: 'Best gadgets and electronics',
-    followers: 1200,
-    rating: 4.8,
-  },
-  {
-    id: 2,
-    name: 'Fashionista',
-    description: 'Trendy clothes for everyone',
-    followers: 950,
-    rating: 4.5,
-  },
-])
+const followedShops = ref<Shop[]>([])
+
+const goToShop = (shopId: string) => {
+  router.push({ name: 'ShopView', params: { shopId } })
+}
+const fetchFollowedShops = async () => {
+  try {
+    const response: AxiosResponse = await apiClient.get('/buyer/followed-shops')
+    if (Object.prototype.hasOwnProperty.call(response.data, 'shops')) {
+      followedShops.value = response.data.shops
+    }
+    // console.log('Fetched followed shops:', response)
+    followedShops.value = response.data.shops
+    // console.log(followedShops.value)
+  } catch (error) {
+    console.error('Error fetching followed shops:', error)
+  }
+}
+
+// ============= REVIEWS Section ==============
+interface Review {
+  review_id: string
+  product_id: string
+  product_variant_id: string
+  rating: number
+  comment: string | null
+  created_at: string
+  updated_at: string
+  buyer_id: string
+}
+const reviewsList = ref<Review[]>([])
+const fetchReviews = async () => {
+  try {
+    const response: AxiosResponse = await apiClient.get('/buyer/reviews')
+    if (Object.prototype.hasOwnProperty.call(response.data, 'reviews')) {
+      reviewsList.value = response.data.reviews
+    }
+  } catch (error) {
+    console.error('Error fetching reviews:', error)
+  }
+}
+const formatDate = (iso: string) => {
+  const d = new Date(iso)
+  return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
+}
+const goToProduct = (productId: string) => {
+  router.push({ name: 'ProductView', params: { productId } })
+}
 
 // ============ Fetch Data based on sidebar option =====================
 watch(chosenSidebarOption, (newOption) => {
@@ -360,6 +396,13 @@ watch(chosenSidebarOption, (newOption) => {
     console.log('Fetching payment options...')
     fetchPayments()
     fetchAvailablePaymentMethods()
+  } else if (newOption == 'FOLLOWING') {
+    // Fetch followed shops if needed
+    console.log('Viewing followed shops...')
+    fetchFollowedShops()
+  } else if (newOption == 'REVIEWS') {
+    console.log('Fetching reviews...')
+    fetchReviews()
   }
 })
 </script>
@@ -844,7 +887,8 @@ watch(chosenSidebarOption, (newOption) => {
             <div
               v-for="shop in followedShops"
               :key="shop.id"
-              class="border rounded p-4 flex flex-col gap-1 bg-slate-50"
+              class="border rounded p-4 flex flex-col gap-1 bg-slate-50 cursor-pointer"
+              @click="goToShop(shop.id)"
             >
               <div class="flex items-center justify-between">
                 <div class="font-semibold text-lg">{{ shop.name }}</div>
@@ -860,8 +904,42 @@ watch(chosenSidebarOption, (newOption) => {
 
         <!-- Reviews Section -->
         <div v-else-if="chosenSidebarOption === 'REVIEWS'">
-          <h2 class="text-xl font-semibold text-slate-800 mb-4">Reviews</h2>
-          <div class="text-slate-500">[Reviews placeholder]</div>
+          <h2 class="text-xl font-semibold text-slate-800 mb-4">My Reviews</h2>
+          <div v-if="reviewsList.length === 0" class="text-slate-500">
+            You haven't posted any reviews yet.
+          </div>
+          <div v-else class="flex flex-col gap-4">
+            <div
+              v-for="review in reviewsList"
+              :key="review.review_id"
+              class="border rounded p-4 bg-slate-50 flex flex-col gap-2 cursor-pointer"
+              @click="goToProduct(review.product_id)"
+            >
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-1">
+                  <Star
+                    v-for="n in 5"
+                    :key="n"
+                    class="w-5 h-5"
+                    :class="
+                      n <= Math.round(review.rating)
+                        ? 'text-yellow-500 fill-yellow-500'
+                        : 'text-gray-300'
+                    "
+                  />
+                  <span class="ml-2 text-sm font-medium text-slate-600">{{
+                    review.rating.toFixed(1)
+                  }}</span>
+                </div>
+                <span class="text-xs text-slate-500">{{ formatDate(review.created_at) }}</span>
+              </div>
+              <div v-if="review.comment" class="text-sm text-slate-700">{{ review.comment }}</div>
+              <div class="text-xs text-slate-400 flex gap-4 flex-wrap">
+                <span>Product: {{ review.product_id.slice(0, 8) }}…</span>
+                <span>Variant: {{ review.product_variant_id.slice(0, 8) }}…</span>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Vouchers Section -->
