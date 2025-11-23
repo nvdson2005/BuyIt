@@ -248,10 +248,14 @@ const setDefaultAddress = async (addressId: string) => {
 
 // ---------------- Payment Section -------------------
 interface PaymentOption {
-  id: string
-  type: 'COD' | 'ONLINE'
+  name: string
+  method_id: string
+  option_id: string
+  description: string
   account_number?: string
   expiry_date?: string
+  is_default: boolean
+  is_enabled: boolean
 }
 interface AvailablePaymentMethod {
   option_id: string
@@ -286,9 +290,22 @@ const addNewPayment = async () => {
       console.log('Added new payment method:', response)
       // Optionally refresh the payment methods list
       fetchPayments()
+      showPaymentModal.value = false
     }
   } catch (error) {
     console.error('Error adding new payment method:', error)
+  }
+}
+const deletePayment = async (method_id: string) => {
+  try {
+    const response: AxiosResponse = await apiClient.delete(`/buyer/payment/${method_id}`)
+    if (response.status === 200) {
+      console.log('Deleted payment method:', response)
+      // Refresh the payment methods list
+      fetchPayments()
+    }
+  } catch (error) {
+    console.error('Error deleting payment method:', error)
   }
 }
 const fetchPayments = async () => {
@@ -297,6 +314,7 @@ const fetchPayments = async () => {
   if (Object.prototype.hasOwnProperty.call(response.data, 'payments')) {
     console.log('Fetched payments:', response)
     paymentOptions.value = response.data.payments
+    console.log(paymentOptions.value)
   }
 }
 const fetchAvailablePaymentMethods = async () => {
@@ -729,21 +747,30 @@ watch(chosenSidebarOption, (newOption) => {
             <div v-else class="flex flex-col gap-3">
               <div
                 v-for="option in paymentOptions"
-                :key="option.id"
+                :key="option.method_id"
                 class="border p-4 rounded flex items-center gap-4 relative"
                 :class="
-                  option.type === 'COD'
+                  option.name === 'Cash On Delivery'
                     ? 'border-green-500 bg-green-50'
                     : 'border-blue-500 bg-blue-50'
                 "
               >
-                <div class="flex-1">
-                  <div class="font-semibold">
-                    {{ option.type === 'COD' ? 'Cash on Delivery (COD)' : 'Online Banking' }}
+                <div class="flex-1 flex">
+                  <div>
+                    <div class="font-semibold">
+                      <!-- {{ option=== 'COD' ? 'Cash on Delivery (COD)' : 'Online Banking' }} -->
+                      {{ option.name }}
+                    </div>
+                    <div v-if="option.name !== 'Cash On Delivery'" class="text-sm text-slate-600">
+                      Account Number: {{ option.account_number }}<br />
+                      Expiry Date: {{ new Date(option.expiry_date ?? '').toDateString() }}
+                    </div>
                   </div>
-                  <div v-if="option.type === 'ONLINE'" class="text-sm text-slate-600">
-                    Account Number: {{ option.account_number }}<br />
-                    Expiry Date: {{ option.expiry_date }}
+                  <div>
+                    <Trash
+                      class="absolute top-4 right-4 w-5 h-5 text-red-500 cursor-pointer"
+                      @click="deletePayment(option.method_id)"
+                    />
                   </div>
                 </div>
               </div>
