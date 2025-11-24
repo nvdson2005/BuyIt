@@ -10,9 +10,9 @@ const props = defineProps({
   imageUrl: { type: String, default: 'https://via.placeholder.com/150' },
   name: { type: String, default: 'Product Title' },
   description: { type: String, default: 'Product description goes here.' },
-  price: { type: Number, default: 99.99 },
-  originalPrice: { type: Number, default: 199.99 },
-  rating: { type: Number, default: 5.0 },
+  price: { type: Number, default: 0 },
+  originalPrice: { type: Number, default: 0 },
+  rating: { type: Number, default: 0.0 },
   soldAmount: { type: Number, default: 0 },
 })
 
@@ -20,9 +20,9 @@ function NavigateToDetails() {
   router.push(`/product/${props.id}`)
 }
 
-function AddToCart() {
-  console.log(`Add to cart clicked for product ID: ${props.id}`)
-}
+// function AddToCart() {
+//   console.log(`Add to cart clicked for product ID: ${props.id}`)
+// }
 
 const isHovered = ref(false)
 </script>
@@ -35,20 +35,24 @@ const isHovered = ref(false)
   >
     <div
       class="absolute top-2 left-2 bg-yellow-500 text-white text-xs font-bold px-2 py-1 rounded-full"
+      v-if="isSale"
     >
       SALE
     </div>
     <div
       class="absolute top-2 right-2 bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded-full"
+      v-if="isSale"
     >
-      50% OFF
+      -{{ discountPercentage }}%
     </div>
     <img :src="imageUrl" alt="Product Image" class="aspect-square min-w-full" />
     <div class="p-4">
-      <h3 class="text-lg font-semibold line-clamp-2 overflow-clip">{{ name }}</h3>
-      <p class="text-gray-600 line-clamp-2 overflow-clip">{{ description }}</p>
+      <h3 class="h-15 text-lg font-semibold line-clamp-2 overflow-clip">{{ name }}</h3>
+      <p class="h-12 text-gray-600 line-clamp-2 overflow-clip">{{ description }}</p>
       <span class="text-orange-600 font-bold text-xl">${{ price }}</span>
-      <span class="text-gray-500 line-through ml-2 text-sm">${{ originalPrice }}</span>
+      <span v-if="isSale" class="text-gray-500 line-through ml-2 text-sm"
+        >${{ originalPrice }}</span
+      >
     </div>
     <div class="w-full px-4 pb-10 flex items-center justify-between">
       <div class="flex items-center">
@@ -59,7 +63,7 @@ const isHovered = ref(false)
         <span class="text-sm text-gray-600 px-4">{{ soldAmount }} sold</span>
       </div>
     </div>
-    <div
+    <!-- <div
       class="w-full h-10 absolute bottom-0 left-0"
       :class="[isHovered ? 'opacity-100' : 'opacity-0', 'transition-opacity duration-100']"
     >
@@ -74,7 +78,7 @@ const isHovered = ref(false)
       >
         Add to Cart
       </button>
-    </div>
+    </div> -->
   </div>
 </template>
 <style scoped></style>

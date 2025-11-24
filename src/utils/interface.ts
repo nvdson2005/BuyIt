@@ -19,7 +19,10 @@ export interface Product {
   sold_amount: number
   stock_quantity: number
   shop_id: string
-  sub_category_id: number
+  sub_category_id: string
+  shop_name?: string
+  sub_category_name?: string
+  category_name?: string
 }
 
 export interface Shop {

@@ -10,6 +10,7 @@ const router = useRouter()
 const isLoggedIn: Ref<boolean> = ref(true)
 const loginStatus = computed(() => (isLoggedIn.value ? true : false))
 const isShowingDropdown: Ref<boolean> = ref(false)
+const searchQuery: Ref<string> = ref('')
 const navigateToLogin: () => void = () => {
   router.push('/login')
 }
@@ -112,9 +113,10 @@ onMounted(() => {
             type="text"
             placeholder="Search for products, brands and more"
             style="width: 100%; height: 40px; border-radius: 5px; padding: 0 10px; font-size: 14px"
+            v-model="searchQuery"
           />
           <div class="w-20 h-10">
-            <SearchButton></SearchButton>
+            <SearchButton v-model="searchQuery"></SearchButton>
           </div>
         </div>
         <p style="font-size: 14px; margin-top: 3px; margin-bottom: 5px">
