@@ -1,6 +1,6 @@
 <script lang='ts' setup>
-import { ref, defineEmits, onMounted, computed } from "vue";
-import { Plus, Trash2 } from "lucide-vue-next";
+import { ref, onMounted, computed, defineEmits } from "vue";
+import { Plus } from "lucide-vue-next";
 import apiClient from "@/api/client";
 import {
   Table,
@@ -11,9 +11,8 @@ import {
   TableRow
 } from '@/utils/Table.ts'
 import CustomImage from "@/components/ui/CustomImage.vue";
-const emit = defineEmits(["onCancel", "onSave"]);
-const loading = ref(true)
-const errorMsg = ref("")
+
+const emit = defineEmits(['onsale_change', 'onSave', 'onCancel'])
 const products = ref([])
 const selectedProduct = ref(null)
 
@@ -31,19 +30,13 @@ onMounted(async () => {
     const response = await apiClient.get(`/products/get-by-shopid/${shopId}`)
     products.value = response.data.products
   } catch (err:any) {
-    errorMsg.value = err.message
-  } finally {
-    loading.value = false
+    alert(err.message)
   }
 })
 
 const showProductSelector = ref(false);
 
 
-const handleDelete = () => {
-  // Xử lý xoá
-
-};
 
 async function handleConfirmProduct() {
   try {
@@ -52,28 +45,48 @@ async function handleConfirmProduct() {
     if (product) {
       product.is_onsale = true
     }
-
     selectedProduct.value = null
   } catch (err:any) {
-    errorMsg.value = err.message
-  } finally {
-    loading.value = false
+    alert(err.message)
   }
   showProductSelector.value = false
+  emit('onsale_change', onsale_products.value);
+
 }
 
-const handleSaveChange = () => {
-  // Xử lý lưu dữ liệu backend
+async function handleSaveChange(product_id, sale_price) {
+  // Xử lý cập nhật sale_price
+  try {
+    await apiClient.patch(`/products/update_saleprice/${product_id}/${sale_price}`)
+    const product = products.value.find(p => p.id === product_id)
+    if (product) {
+      product.sale_price = sale_price
+    }
 
-  // Quay lại màn hình program
+  } catch (err:any) {
+    alert(err.message)
+  }
+    emit('onsale_change', onsale_products.value);
 
 };
 
-const handleSave = () => {
-  // Xử lý lưu dữ liệu backend
+async function handleDelete(product_id, price){
+  // Xử lý xoá
+  try {
+    await apiClient.patch(`/products/update_saleprice/${product_id}/${price}`)
+    await apiClient.patch(`/products/update_onsale/${product_id}`)
+    const product = products.value.find(p => p.id === product_id)
+    if (product) {
+      product.is_onsale = false
+      product.sale_price = price
+    }
 
-  // Quay lại màn hình program
-  emit('onSave')
+  } catch (err:any) {
+    alert(err.message)
+  }
+    emit('onsale_change', onsale_products.value);
+
+
 };
 </script>
 
@@ -196,11 +209,11 @@ const handleSave = () => {
               <TableCell>
                 <div class="flex flex-col items-start">
                 <button class="inline-flex items-center gap-2 rounded-md text-sm text-red-600 transition-all focus-visible:ring-[3px] text-primary underline-offset-4 hover:underline p-0 h-auto cursor-pointer"
-                  @click="handleSaveChange">
+                  @click="handleSaveChange(product.id, product.sale_price)">
                   Lưu thay đổi
                 </button>
                 <button class="inline-flex items-center gap-2 rounded-md text-sm text-red-600 transition-all focus-visible:ring-[3px] text-primary underline-offset-4 hover:underline p-0 h-auto cursor-pointer"
-                  @click="handleDelete">
+                  @click="handleDelete(product.id, product.price)">
                   Xoá khuyến mãi
                 </button>
               </div>
@@ -267,7 +280,7 @@ const handleSave = () => {
                 active:bg-gray-200
                 focus:outline-none focus:ring-2 focus:ring-gray-300
                 mt-2"
-        @click="handleSave"
+        @click="$emit('onSave')"
       >Xác nhận</button>
     </div>
   </div>

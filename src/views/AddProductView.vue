@@ -21,8 +21,6 @@ const categories = ref([])
 const subcategories = ref([])
 const newSubcategory = ref('')
 
-const loading = ref(true)
-const errorMsg = ref("")
 
 // Variables support for button and input
 const showCategories = ref(false)
@@ -60,9 +58,7 @@ onMounted(async () => {
 
 
   } catch (err:any) {
-    errorMsg.value = err.message
-  } finally {
-    loading.value = false
+    alert(err.message)
   }
 })
 const selectCategory = async (category) => {

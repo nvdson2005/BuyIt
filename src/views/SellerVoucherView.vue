@@ -14,8 +14,6 @@ import {
 
 const showCreateVoucher = ref(false)
 const vouchers = ref([])
-const loading = ref(true)
-const errorMsg = ref("")
 const onCreateVoucher = () => {
   showCreateVoucher.value = true
 }
@@ -31,9 +29,7 @@ onMounted(async () => {
     vouchers.value = res.data.vouchers
 
   } catch (err:any) {
-    errorMsg.value = err.message
-  } finally {
-    loading.value = false
+    alert(err.message)
   }
 })
 const formatted = (t) => {

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {ref, watch, onMounted, computed } from "vue";
 import { ChevronDown } from "lucide-vue-next";
-import Checkbox from "@/components/ui/Checkbox.vue";
+// import Checkbox from "@/components/ui/Checkbox.vue";
 import CustomImage from "@/components/ui/CustomImage.vue";
 import apiClient from "@/api/client";
 import {
@@ -24,8 +24,6 @@ const tabProducts = ref([])
 const tab = ref('all')
 
 // Support
-const loading = ref(true)
-const errorMsg = ref("")
 const keyword = ref("")
 const showSubCategories = ref(false)
 const selectedSubcategory = ref('Tìm theo ngành hàng con')
@@ -65,9 +63,7 @@ onMounted(async () => {
     tabProducts.value = products.value
     subcategories.value = subcategory_res.data.subcategories
   } catch (err:any) {
-    errorMsg.value = err.message
-  } finally {
-    loading.value = false
+    alert(err.message)
   }
 })
 
@@ -78,9 +74,7 @@ async function filteredProducts() {
       tabProducts.value = response.data.products
 
     } catch (err:any) {
-      errorMsg.value = err.message
-    } finally {
-      loading.value = false
+      alert(err.message)
     }
   }
   if (keyword.value.trim()) {
