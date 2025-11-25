@@ -2,42 +2,84 @@
 import NavBar from '@/components/layout/NavBar.vue'
 import PageFooter from '@/components/layout/PageFooter.vue'
 import apiClient from '@/api/client'
-import { type Product, type Shop, type ProductVariant } from '@/utils/interface'
-import { onMounted, ref } from 'vue'
+import {
+  type Product,
+  type Shop,
+  type ProductInfoResponse,
+  type ApiProduct,
+  type ApiProductVariant,
+  type ApiProductAttribute,
+} from '@/utils/interface'
+import { onMounted, ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import LoadingScreen from '@/components/layout/LoadingScreen.vue'
 import ProductCard from '@/components/ui/ProductCard.vue'
 
-const product = ref<Product | null>(null)
+const product = ref<ApiProduct | null>(null)
 const shop = ref<Shop | null>(null)
 const route = useRoute()
 const router = useRouter()
 const isLoading = ref(true)
-const sale = ref(0)
 const quantity = ref(1)
 const recommendedProducts = ref<Product[]>([])
-const productVariants = ref<Array<ProductVariant>>([])
-const chosenVariant = ref<ProductVariant | null>(null)
-onMounted(async () => {
-  const response = await apiClient.get(`/products/get-by-id/${route.params.id}`)
-  product.value = response.data.product
-  console.log('Fetched product details:', product.value)
-  isLoading.value = false
-  if (product.value) {
-    sale.value = Math.round(
-      ((product.value.price - product.value.sale_price) / product.value.price) * 100,
-    )
-  }
-  const shopResponse = await apiClient.get(`/shop/get-detail/${product.value?.shop_id}`)
-  console.log('Fetched shop details:', shopResponse.data.shop)
-  shop.value = shopResponse.data.shop
-  const recommendedResponse = await apiClient.get(`/products/explore-today`)
-  recommendedProducts.value = recommendedResponse.data.products
-  console.log('Fetched recommended products:', recommendedProducts.value)
+const productVariants = ref<ApiProductVariant[]>([])
+const productAttributes = ref<ApiProductAttribute[]>([])
+const chosenVariant = ref<ApiProductVariant | null>(null)
 
-  const variantsResponse = await apiClient.get(`/products/get-variants/${product.value?.id}`)
-  console.log('Fetched product variants:', variantsResponse.data.variants)
-  productVariants.value = variantsResponse.data.variants
+// Computed property for sale percentage
+const sale = computed(() => {
+  if (!product.value) return 0
+  return Math.round(((product.value.price - product.value.sale_price) / product.value.price) * 100)
+})
+
+// Computed property for current stock quantity
+const currentStockQuantity = computed(() => {
+  if (chosenVariant.value) {
+    return typeof chosenVariant.value.stock_quantity === 'string'
+      ? Number(chosenVariant.value.stock_quantity)
+      : chosenVariant.value.stock_quantity
+  }
+  if (product.value) {
+    return typeof product.value.stock_quantity === 'string'
+      ? Number(product.value.stock_quantity)
+      : product.value.stock_quantity
+  }
+  return 0
+})
+
+// Computed property for current price
+const currentPrice = computed(() => {
+  return chosenVariant.value ? chosenVariant.value.price : (product.value?.sale_price ?? 0)
+})
+
+onMounted(async () => {
+  try {
+    const response = await apiClient.get<ProductInfoResponse>(`/products/info/${route.params.id}`)
+    product.value = response.data.product || null
+    console.log('Fetched product details:', response.data.product)
+    productAttributes.value = response.data.product.attributes || []
+    console.log('Product attributes:', productAttributes.value)
+
+    if (product.value) {
+      // Fetch shop details
+      const shopResponse = await apiClient.get(`/shop/get-detail/${product.value.shop_id}`)
+      console.log('Fetched shop details:', shopResponse.data.shop)
+      shop.value = shopResponse.data.shop
+
+      // Set variants from the product response
+      productVariants.value = product.value.variants || []
+      console.log('Product variants:', productVariants.value)
+    }
+
+    // Fetch recommended products
+    const recommendedResponse = await apiClient.get(`/products/explore-today`)
+    recommendedProducts.value = recommendedResponse.data.products
+    console.log('Fetched recommended products:', recommendedProducts.value)
+  } catch (error) {
+    console.error('Error fetching product data:', error)
+  } finally {
+    isLoading.value = false
+  }
 })
 
 function OnAddToCart() {
@@ -53,9 +95,15 @@ function OnAddToCart() {
   })
 }
 
-
 const onNavigateToCheckout = () => {
   router.push({ name: 'checkout' })
+}
+
+const onNavigateToShop = () => {
+  console.log('Navigating to shop page...')
+  // if (shop.value) {
+  //   router.push({ name: 'shop', params: { id: shop.value.id } })
+  // }
 }
 </script>
 <template>
@@ -99,9 +147,7 @@ const onNavigateToCheckout = () => {
           <span>{{ product?.sold_amount }} sold</span>
         </div>
         <div class="bg-gray-50 rounded-lg p-4 flex items-center gap-4 mt-2">
-          <div class="text-3xl text-rose-500 font-bold">
-            {{ chosenVariant ? chosenVariant.price : product?.sale_price }} đ
-          </div>
+          <div class="text-3xl text-rose-500 font-bold">{{ currentPrice }} đ</div>
           <div v-if="sale > 0" class="text-slate-400 line-through">{{ product?.price }} đ</div>
           <div v-if="sale > 0" class="bg-rose-500 text-white text-xs px-2 py-0.5 rounded">
             -{{ sale }}%
@@ -127,15 +173,38 @@ const onNavigateToCheckout = () => {
         </div>
         <div class="flex items-center gap-4 mt-2">
           <span class="text-slate-600">Quantity</span>
-          <button class="w-8 h-8 border border-gray-400 rounded text-lg" @click="quantity--">-</button>
+          <button class="w-8 h-8 border border-gray-400 rounded text-lg" @click="quantity--">
+            -
+          </button>
           <span> 1 </span>
-          <button class="w-8 h-8 border border-gray-400 rounded text-lg" @click="quantity++">+</button>
-          <span class="text-slate-400 ml-2"
-            >{{
-              chosenVariant ? chosenVariant.stock_quantity : product?.stock_quantity
-            }}
-            Available</span
+          <button class="w-8 h-8 border border-gray-400 rounded text-lg" @click="quantity++">
+            +
+          </button>
+          <span class="text-slate-400 ml-2">{{ currentStockQuantity }} Available</span>
+        </div>
+        <div class="mt-2">
+          <p class="font-bold text-slate-600">Attributes</p>
+          <div
+            v-for="attribute in productAttributes"
+            :key="attribute.id"
+            class="flex flex-col gap-4"
           >
+            <div class="flex">
+              <span class="text-slate-700">{{ attribute.name }}: </span>
+              <span class="font-medium text-slate-800">
+                {{ attribute.values.map((v) => v.value).join(', ') }}
+              </span>
+            </div>
+            <!-- <select class="border border-gray-300 rounded px-2 py-1">
+              <option
+                v-for="value in attribute.values"
+                :key="value.attribute_value_id"
+                :value="value.value"
+              >
+                {{ value.value }}
+              </option>
+            </select> -->
+          </div>
         </div>
         <div class="mt-4 flex gap-2">
           <button v-for="variant in productVariants" :key="variant.variant_id" class="p-0">
@@ -155,7 +224,7 @@ const onNavigateToCheckout = () => {
         <div class="flex gap-4 mt-4">
           <button
             :class="
-              chosenVariant && chosenVariant.stock_quantity > 0
+              chosenVariant && currentStockQuantity > 0
                 ? 'hover:bg-orange-200'
                 : 'opacity-50 cursor-not-allowed'
             "
@@ -223,6 +292,12 @@ const onNavigateToCheckout = () => {
         </button>
         <button
           class="border border-gray-300 px-6 py-2 rounded text-slate-700 hover:bg-gray-50 flex items-center gap-2"
+          @click="
+            (e) => {
+              e.preventDefault()
+              onNavigateToShop()
+            }
+          "
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -327,7 +402,7 @@ const onNavigateToCheckout = () => {
         <div class="font-semibold text-slate-700 mb-4">PRODUCT REVIEWS</div>
         <div class="flex gap-8 mb-6">
           <div class="flex flex-col items-center justify-center w-40">
-            <div class="text-3xl font-bold text-rose-500">4.8 out of 5</div>
+            <div class="text-3xl font-bold text-rose-500">{{ product?.rating }} out of 5</div>
             <div class="flex items-center gap-1 text-yellow-400 text-lg mt-1">
               <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
             </div>

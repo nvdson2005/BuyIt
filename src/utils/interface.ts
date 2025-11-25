@@ -25,6 +25,63 @@ export interface Product {
   category_name?: string
 }
 
+// Response shape for GET /products/info/:id
+export interface ProductInfoResponse {
+  error: boolean
+  product: ApiProduct
+}
+
+// Attributes on product (API shape)
+export interface ApiProductAttributeValue {
+  attribute_value_id: string
+  value: string
+}
+
+export interface ApiProductAttribute {
+  id: string
+  name: string
+  values: ApiProductAttributeValue[]
+}
+
+// Attributes on variant (API shape)
+export interface ApiProductVariantAttributeValue {
+  attribute_value_id: string
+  attribute_name: string
+  value: string
+}
+
+export interface ApiProductVariant {
+  variant_id: string
+  name: string
+  price: number
+  image_url: string
+  stock_quantity: number | string
+  attribute_values: ApiProductVariantAttributeValue[]
+}
+
+// Product (API shape)
+export interface ApiProduct {
+  id: string
+  shop_id: string
+  name: string
+  description: string
+  rating: number
+  price: number
+  sale_price: number
+  sold_amount: number | string
+  stock_quantity: number | string
+  image_url: string
+  created_at: string
+  updated_at: string
+  is_active: boolean
+  sub_category_id: string
+  is_onsale: boolean
+  shop_name?: string
+  sub_category_name?: string
+  attributes: ApiProductAttribute[]
+  variants: ApiProductVariant[]
+}
+
 export interface Shop {
   id: string
   name: string
