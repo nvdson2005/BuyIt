@@ -19,7 +19,10 @@ export interface Product {
   sold_amount: number
   stock_quantity: number
   shop_id: string
-  sub_category_id: number
+  sub_category_id: string
+  shop_name?: string
+  sub_category_name?: string
+  category_name?: string
 }
 
 export interface Shop {
@@ -40,15 +43,22 @@ export interface ProductVariant {
 }
 
 export interface Address {
-  id: number;
-  name: string;
-  phone: string;
-  address: string;
-  isDefault: boolean;
+  id: number
+  name: string
+  phone: string
+  address: string
+  isDefault: boolean
 }
 
 export interface AllProductsViewProps {
-    products: Product[];
-    onAddNewProduct: () => void;
+  products: Product[]
+  onAddNewProduct: () => void
 }
 
+export interface ProfileDetail {
+  username: string
+  name: string
+  phone: string
+  email: string
+  description: string
+}
