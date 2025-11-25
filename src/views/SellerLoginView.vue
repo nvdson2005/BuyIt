@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-<<<<<<< HEAD
 import { Eye, EyeOff } from "lucide-vue-next";
 import apiClient from '@/api/client'
 
@@ -14,19 +13,6 @@ const passwordError = ref(false);
 const loginMode = ref<"password" | "qr">("password");
 const qrCode = ref("");
 const errorMessage = ref('')
-
-=======
-import { Eye, EyeOff } from 'lucide-vue-next'
-
-const router = useRouter()
-const username = ref('')
-const password = ref('')
-const showPassword = ref(false)
-const usernameError = ref(false)
-const passwordError = ref(false)
-const loginMode = ref<'password' | 'qr'>('password')
-const qrCode = ref('')
->>>>>>> 122e513b5338673beefe596ae8aedec09145a229
 
 onMounted(async () => {
   if (localStorage.getItem('username') && (await cookieStore.get('connect.sid'))) {
@@ -46,7 +32,6 @@ watch(loginMode, (newMode) => {
   }
 })
 
-<<<<<<< HEAD
 async function handleLogin(){
   errorMessage.value = ''
   usernameError.value = false
@@ -64,12 +49,7 @@ async function handleLogin(){
     })
     localStorage.setItem('username', response.data.user.username)
     localStorage.setItem('role', response.data.user.role)
-=======
-const handleLogin = () => {
-  usernameError.value = !username.value
-  passwordError.value = !password.value
-  if (!usernameError.value && !passwordError.value) {
->>>>>>> 122e513b5338673beefe596ae8aedec09145a229
+    localStorage.setItem('id', response.data.user.id)
     router.push({ name: 'dashboard' })
     console.log('Login successful:', response)
   } catch (error: any) {

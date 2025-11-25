@@ -88,6 +88,7 @@ const handleLogout: () => Promise<void> = async () => {
   await cookieStore.delete('connect.sid')
   localStorage.removeItem('username')
   localStorage.removeItem('role')
+  localStorage.removeItem('id')
   router.push('/sellerlog')
 }
 

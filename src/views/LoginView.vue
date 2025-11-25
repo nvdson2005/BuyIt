@@ -14,7 +14,7 @@ function onSignupClick() {
 }
 
 async function onLoginClick(username: string, password: string) {
-  errorMessage.value = '' // reset lỗi mỗi lần login
+  errorMessage.value = ''
   try {
     const response = await apiClient.post('/login', {
       username,

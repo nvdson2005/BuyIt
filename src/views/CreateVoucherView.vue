@@ -1,25 +1,51 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import RadioGroup from "@/components/ui/RadioGroup.vue";
-import { HelpCircle } from "lucide-vue-next";
-
+import apiClient from "@/api/client";
+import { ChevronDown } from "lucide-vue-next";
 const emit = defineEmits(["cancel", "save"]);
 
 // States
 const voucherEvent = ref('')
 const voucherType = ref("shop");
-const discountType = ref("amount"); // Kiểu giảm: amount (giảm trên giá), percentage (giảm phần trăm)
+const description = ref('')
+const discountType = ref("fixed_amount"); // Kiểu giảm: amount (giảm trên giá), percentage (giảm phần trăm)
 const discountCapType = ref("limited");
-const displayType = ref("show-all");
 const amount = ref(0) // giảm bao nhiêu: 10%, 10000,..
-const maxAmount = ref(0) // giảm tối đa
+const maxAmount = ref(null) // giảm tối đa
 const minSpend = ref(0) // Đơn hàng tối thiểu
 const quantity = ref(0) // Số lượng voucher
-const userLimit = ref(0) // Số lượng tối đa 1 người có thể sử dụng
+const start = ref<Date>()
+const end = ref<Date>()
 
 
-function handleSave() {
+async function handleSave() {
+  if (!voucherType.value || !discountType.value || !amount.value || !quantity.value || !start.value || !end.value) {
+    alert('Vui lòng điền đầy đủ thông tin bắt buộc!')
+    return
+  }
+  const shop_id = localStorage.getItem('id')
+  try {
+    await apiClient.post('/voucher/insert_voucher', {
+      shop_id: shop_id,
+      description: description.value,
+      discount_amount: amount.value,
+      min_amount_to_apply: minSpend.value,
+      start_date: start.value,
+      expiry_date: end.value,
+      max_discount_amount: maxAmount.value,
+      usage_limit: quantity.value,
+      discount_type: discountType.value,
+      applicable_scope: voucherType.value,
+      program_name: voucherEvent.value
+    });
+
+    // alert("Thêm voucher thành công!");
+  } catch (error: any) {
+    console.error('Voucher insertion failed:', error);
+  }
   emit("save");
+
 }
 </script>
 
@@ -60,8 +86,21 @@ function handleSave() {
           </p>
         </div>
       </div>
+      <div class="grid grid-cols-[250px_1fr] gap-10 items-center">
+        <label class="flex items-center gap-2 text-sm leading-none font-medium flex items-center mb-2"
+            for="program-name">
+          Mô tả
+        </label>
+        <div>
+          <input
+            v-model="description"
+            class="w-full rounded-md bg-gray-100 px-3 py-2 text-sm
+              focus:outline-none focus:ring-[3px] focus:ring-gray-300"
+            placeholder="Mô tả ngắn gọn"/>
+        </div>
+      </div>
 
-      <div class="bg-orange-500 text-white p-4 rounded-lg">
+      <div class="bg-[var(--red)] text-white p-4 rounded-lg">
         <div class="font-semibold mb-2">Thiết lập Thời gian sử dụng mã</div>
 
         <div class="flex gap-4 items-center">
@@ -72,11 +111,13 @@ function handleSave() {
 
             <div class="flex items-center gap-2">
               <input
+                v-model="start"
                 type = "datetime-local"
                 class="w-full rounded-md bg-white text-gray-900 px-3 py-2 text-sm
                   focus:outline-none focus:ring-[3px] focus:ring-gray-300"/>
               <span class="text-white">-</span>
               <input
+                v-model="end"
                 type = "datetime-local"
                 class="w-full rounded-md bg-white text-gray-900 px-3 py-2 text-sm
                   focus:outline-none focus:ring-[3px] focus:ring-gray-300"/>
@@ -92,12 +133,12 @@ function handleSave() {
 
       <div class="grid grid-cols-[250px_1fr] items-start gap-10">
         <label class="flex items-center gap-2 text-sm leading-none font-medium flex items-center mb-2 pt-2">
-          Loại Giảm giá
+          Loại Giảm giá <span class="text-red-500">*</span>
         </label>
         <RadioGroup
           v-model="discountType"
           :options="[
-            { label: 'Giảm giá', value: 'amount' },
+            { label: 'Giảm giá', value: 'fixed_amount' },
             { label: 'Giảm phần trăm', value: 'percentage' }
           ]"
           direction="vertical"
@@ -106,7 +147,7 @@ function handleSave() {
 
       <div class="grid grid-cols-[250px_1fr] items-start gap-10">
         <label class="flex items-center gap-2 text-sm leading-none font-medium flex items-center mb-2 pt-2">
-          Mức giảm
+          Mức giảm <span class="text-red-500">*</span>
         </label>
 
         <div class="space-y-2">
@@ -182,61 +223,6 @@ function handleSave() {
           </p>
         </div>
       </div>
-
-    <div className="grid grid-cols-[250px_1fr] items-center gap-10">
-      <div className="flex items-center gap-2">
-          <label class="flex items-center gap-2 text-sm leading-none font-medium flex items-center mb-2"
-              for="user-litmit">Lượt sử dụng tối đa/Người mua</label>
-          <HelpCircle class="w-4 h-4 text-gray-400" />
-      </div>
-      <input
-            id = "user-limit"
-            v-model="userLimit"
-            type="number"
-            class="w-48 rounded-md bg-gray-100 px-3 py-2 text-sm
-              focus:outline-none focus:ring-[3px] focus:ring-gray-300"
-            placeholder="1"/>
-      </div>
-    </div>
-
-    <div className="bg-white p-6 rounded-lg shadow-sm space-y-6">
-        <h3 className="font-semibold text-lg">Hiển thị mã giảm giá và các sản phẩm áp dụng</h3>
-
-        <div className="grid grid-cols-[250px_1fr] items-start gap-10">
-          <label class="flex items-center gap-2 text-sm leading-none font-medium flex items-center mb-2 pt-2">
-            Thiết lập hiển thị
-          </label>
-            <div className="space-y-3">
-              <RadioGroup
-                v-model="displayType"
-                :options="[
-                  { label: 'Hiển thị nhiều nơi', value: 'show-all' },
-                  { label: 'Chỉ sẽ thông qua mã Voucher', value: 'voucher-code' }
-                ]"
-                direction="vertical"
-              />
-            </div>
-        </div>
-
-        <div className="grid grid-cols-[250px_1fr] items-start gap-10">
-            <label class="flex items-center gap-2 text-sm leading-none font-medium flex items-center mb-2 pt-2">
-              Sản phẩm được áp dụng
-            </label>
-            <div className="space-y-2">
-                <div className="flex gap-2">
-                  <button
-                    class="inline-flex items-center justify-center gap-2 px-3 py-2 whitespace-nowrap rounded-md
-                    text-sm font-medium transition-all
-                    border border-gray-300
-                    bg-white text-gray-700
-                    hover:bg-gray-100 hover:border-gray-400
-                    active:bg-gray-200
-                    mt-2">
-                Tất cả sản phẩm
-              </button>
-            </div>
-            </div>
-        </div>
     </div>
 
     <!-- Action Buttons -->

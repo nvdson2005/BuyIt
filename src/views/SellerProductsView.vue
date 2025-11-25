@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import {ref, watch, onMounted, computed } from "vue";
 import { ChevronDown } from "lucide-vue-next";
 import Checkbox from "@/components/ui/Checkbox.vue";
+import CustomImage from "@/components/ui/CustomImage.vue";
+import apiClient from "@/api/client";
 import {
   Table,
   TableBody,
@@ -10,41 +12,97 @@ import {
   TableHeader,
   TableRow,
 } from "@/utils/Table";
-import type { AllProductsViewProps } from "@/utils/interface";
-/*
-===============================================================================
-================= GIẢ LẬP: CẦN ĐỔI THÀNH DỮ LIỆU TỪ DATABASE ==================
-===============================================================================
- */
-// đẩy thông tin từ trang AddProductView sau khi đã bấm "Xác nhận"
-const props = defineProps<AllProductsViewProps>();
-
-// Tính toán số lượng sản phẩm đang hoạt động
-const activeProductsCount = computed(() => props.products.length);
-
-const { products, onAddNewProduct } = props;
-/*
-=====================================================
-================= KẾT THÚC GIẢ LẬP ==================
-=====================================================
- */
-
-// Khi có API: xác định lại products
-
-// Không cần thay đổi
-const checked_all = ref(false)
-// Tạo một biến tạm thời cho tab SellerProducts có selected cho checkbox
-const tabProducts = ref(products.map(p => ({
-  ...p,
-  selected: false
-})))
 
 
-watch(() => checked_all.value, (value) => {
-  tabProducts.value.forEach((p) => {
-   p.selected = value
-  })
+const shopId = localStorage.getItem('id')
+
+// Sản phẩm
+const products = ref([])
+const subcategories = ref([])
+const sub_category_id = ref(null)
+const tabProducts = ref([])
+const tab = ref('all')
+
+// Support
+const loading = ref(true)
+const errorMsg = ref("")
+const keyword = ref("")
+const showSubCategories = ref(false)
+const selectedSubcategory = ref('Tìm theo ngành hàng con')
+const active_products = computed(() => {
+  return products.value.filter(p => p.is_active === true)
 })
+
+const inactive_products = computed(() => {
+  return products.value.filter(p => p.is_active === false)
+})
+
+const soldout_products = computed(() => {
+  return products.value.filter(p => p.stock_quantity === 0)
+})
+
+
+watch(tab, (tabChange) => {
+  if(tabChange == 'all'){
+    tabProducts.value = products.value
+  }
+  else if(tabChange == 'active'){
+    tabProducts.value = active_products.value
+  }
+  else if(tabChange == 'soldout'){
+    tabProducts.value = soldout_products.value
+  }
+  else if(tabChange == 'inactive'){
+    tabProducts.value = inactive_products.value
+  }
+})
+
+onMounted(async () => {
+  try {
+    const response = await apiClient.get(`/products/get-by-shopid/${shopId}`)
+    const subcategory_res = await apiClient.get(`/category/subcategories/${shopId}`)
+    products.value = response.data.products
+    tabProducts.value = products.value
+    subcategories.value = subcategory_res.data.subcategories
+  } catch (err:any) {
+    errorMsg.value = err.message
+  } finally {
+    loading.value = false
+  }
+})
+
+async function filteredProducts() {
+  if(sub_category_id.value){
+    try {
+      const response = await apiClient.get(`/products/subcategory/${sub_category_id.value}`)
+      tabProducts.value = response.data.products
+
+    } catch (err:any) {
+      errorMsg.value = err.message
+    } finally {
+      loading.value = false
+    }
+  }
+  if (keyword.value.trim()) {
+    tabProducts.value = tabProducts.value.filter(p =>
+      p.name.toLowerCase().includes(keyword.value.toLowerCase())
+    )
+  }
+  selectedSubcategory.value = 'Tìm theo ngành hàng con'
+  sub_category_id.value = null
+  keyword.value = ''
+
+}
+
+function resetFilter(){
+  tab.value = 'all'
+  tabProducts.value = products.value
+}
+const selectSubcategory = async (subcategory) => {
+  selectedSubcategory.value = subcategory.name
+  sub_category_id.value = subcategory.sub_category_id
+  showSubCategories.value = false
+}
 </script>
 
 <template>
@@ -52,50 +110,85 @@ watch(() => checked_all.value, (value) => {
     <div class="flex items-center justify-between">
       <!-- Tabs -->
       <div class="flex gap-4 border-b">
-        <button class="py-3 px-4 border-b-2 border-red-500 text-red-500">
+        <button class="py-3 px-4 text-gray-600 cursor-pointer"
+          :class="[
+          tab === 'all'
+            ? 'border-b-2 border-red-500 text-red-500'
+            : 'text-gray-600 hover:text-red-500'
+          ]"
+        @click="tab = 'all'">
           Tất cả ({{ products.length }})
         </button>
-        <button class="py-3 px-4 text-gray-600">
-          Đang hoạt động ({{ activeProductsCount }})
+        <button class="py-3 px-4 text-gray-600 cursor-pointer"
+        :class="[
+          tab === 'active'
+            ? 'border-b-2 border-red-500 text-red-500'
+            : 'text-gray-600 hover:text-red-500'
+          ]"
+        @click="tab = 'active'">
+          Đang hoạt động ({{ active_products.length }})
         </button>
-        <button class="py-3 px-4 text-gray-600">Vi phạm (0)</button>
-        <button class="py-3 px-4 text-gray-600">Chờ duyệt bởi Shopee (0)</button>
-        <button class="py-3 px-4 text-gray-600">Chưa được đăng (0)</button>
+        <button class="py-3 px-4 text-gray-600 cursor-pointer"
+        :class="[
+          tab === 'soldout'
+            ? 'border-b-2 border-red-500 text-red-500'
+            : 'text-gray-600 hover:text-red-500'
+          ]"
+        @click="tab = 'soldout'">Hết hàng ({{ soldout_products.length }})</button>
+        <button class="py-3 px-4 text-gray-600 cursor-pointer"
+        :class="[
+          tab === 'inactive'
+            ? 'border-b-2 border-red-500 text-red-500'
+            : 'text-gray-600 hover:text-red-500'
+          ]"
+        @click="tab = 'inactive'">Ngừng bán ({{ inactive_products.length }})</button>
       </div>
 
       <div class="flex gap-2">
-        <button class="inline-flex items-center px-3 py-2 whitespace-nowrap rounded-md text-sm font-medium transition-all cursor-pointer
+        <!-- <button class="inline-flex items-center px-3 py-2 whitespace-nowrap rounded-md text-sm font-medium transition-all cursor-pointer
         border border-gray-200 w-full h-10 justify-between
         bg-background text-foreground text-gray-700 hover:bg-gray-200">
           Công cụ xử lý hàng loạt
-        </button>
-        <button @click="onAddNewProduct" class="inline-flex text-white items-center px-3 py-2 whitespace-nowrap rounded-md text-sm font-medium transition-all border border-gray-200 bg-[#ee4d2d] hover:bg-[#d73211] cursor-pointer">
+        </button> -->
+
+        <button @click="$emit('add-new-product')" class="inline-flex text-white items-center px-3 py-2 whitespace-nowrap rounded-md text-sm font-medium transition-all border border-gray-200 bg-[#ee4d2d] hover:bg-[#d73211] cursor-pointer">
           + Thêm 1 sản phẩm mới
         </button>
       </div>
     </div>
 
     <!-- Bộ lọc -->
-    <div class="bg-white p-4 rounded-lg shadow-sm space-y-4">
-      <div class="grid grid-cols-2 gap-4">
+    <div class="grid grid-cols-2 gap-4 bg-white p-4 rounded-lg shadow-sm space-y-4">
         <input
+          v-model="keyword"
             class="w-full rounded-md bg-gray-100 px-3 py-2 text-sm
               focus:outline-none focus:ring-[3px] focus:ring-gray-300"
-            placeholder="Tìm kiếm Tên sản phẩm, SKU sản phẩm, SKU phân loại, Mã sản phẩm"
+            placeholder="Tìm kiếm Tên sản phẩm"
           />
-        <div class="grid grid-cols-2 gap-4">
-          <button class="inline-flex items-center px-3 py-2 whitespace-nowrap rounded-md text-sm font-medium transition-all border border-gray-200 w-full h-10 justify-between bg-background text-foreground text-gray-700 hover:bg-gray-200 border-gray-300 cursor-pointer">
-            Tìm theo Ngành hàng
+          <div class="relative">
+          <button class="inline-flex items-center px-3 py-2 whitespace-nowrap rounded-md text-sm font-medium transition-all border border-gray-200 w-full h-10 justify-between bg-background text-foreground text-gray-700 hover:bg-gray-200 border-gray-300 cursor-pointer"
+                  @click="showSubCategories = !showSubCategories"
+                  >
+              <span> {{ selectedSubcategory}}</span>
             <ChevronDown :size="16" />
           </button>
-          <button class="inline-flex items-center px-3 py-2 whitespace-nowrap rounded-md text-sm font-medium transition-all border border-gray-200 w-full h-10 justify-between bg-background text-foreground text-gray-700 hover:bg-gray-200 border-gray-300 cursor-pointer">
+          <!-- Dropdown list -->
+          <ul v-if="showSubCategories"
+              class="absolute z-50 w-full border border-gray-200 rounded-md shadow bg-white mt-1">
+            <li v-for="item in subcategories" :key="item.sub_category_id"
+                @click="selectSubcategory(item)"
+                class="px-3 py-2 hover:bg-gray-100 cursor-pointer text-sm">
+              {{ item.name }}
+            </li>
+          </ul>
+          </div>
+          <!-- <button class="inline-flex items-center px-3 py-2 whitespace-nowrap rounded-md text-sm font-medium transition-all border border-gray-200 w-full h-10 justify-between bg-background text-foreground text-gray-700 hover:bg-gray-200 border-gray-300 cursor-pointer">
             Tìm theo Thương hiệu
             <ChevronDown :size="16" />
-          </Button>
-        </div>
-      </div>
+          </Button> -->
 
-      <div class="grid grid-cols-2 gap-4">
+
+      <!-- <div class="grid grid-cols-2 gap-4">
         <button class="inline-flex items-center px-3 py-2 whitespace-nowrap rounded-md text-sm font-medium transition-all border border-gray-200 w-full h-10 justify-between bg-background text-foreground text-gray-700 hover:bg-gray-200 border-gray-300 cursor-pointer">
           Tìm theo Chương Trình Shopee
           <ChevronDown :size="16" />
@@ -104,13 +197,15 @@ watch(() => checked_all.value, (value) => {
           Tìm theo Loại đăng bán sản phẩm
           <ChevronDown :size="16" />
         </button>
-      </div>
+      </div> -->
 
       <div class="flex justify-start gap-2">
-        <button class="inline-flex items-center px-3 py-2 whitespace-nowrap rounded-md text-white text-sm font-medium transition-all border border-gray-200 h-10 bg-[#ee4d2d] hover:bg-[#d73211] cursor-pointer">
+        <button class="inline-flex items-center px-3 py-2 whitespace-nowrap rounded-md text-white text-sm font-medium transition-all border border-gray-200 h-10 bg-[#ee4d2d] hover:bg-[#d73211] cursor-pointer"
+                @click="filteredProducts">
           Áp dụng
         </button>
-          <button class="inline-flex items-center px-3 py-2 whitespace-nowrap rounded-md text-sm font-medium transition-all border border-gray-200 h-10 justify-between bg-background text-foreground text-gray-700 hover:bg-gray-200 cursor-pointer">
+          <button class="inline-flex items-center px-3 py-2 whitespace-nowrap rounded-md text-sm font-medium transition-all border border-gray-200 h-10 justify-between bg-background text-foreground text-gray-700 hover:bg-gray-200 cursor-pointer"
+                  @click="resetFilter">
             Nhập Lại
           </button>
       </div>
@@ -119,7 +214,7 @@ watch(() => checked_all.value, (value) => {
     <!-- Bảng sản phẩm -->
     <div class="bg-white rounded-lg shadow-sm">
       <div class="p-4 flex justify-between items-center">
-        <p>{{ products.length }} Sản Phẩm</p>
+        <p>{{ tabProducts.length }} Sản Phẩm</p>
         <div class="flex items-center gap-2">
           <!-- Pagination placeholder -->
         </div>
@@ -128,35 +223,40 @@ watch(() => checked_all.value, (value) => {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead class="w-[50px]"><Checkbox v-model="checked_all"/></TableHead>
-            <TableHead>Tên sản phẩm</TableHead>
+            <TableHead class="w-[25px]"></TableHead>
+            <TableHead>Sản phẩm</TableHead>
             <TableHead>Doanh số</TableHead>
             <TableHead>Giá</TableHead>
             <TableHead>Kho hàng</TableHead>
-            <TableHead>Tồn kho "Gói Siêu Giao Nhanh"</TableHead>
+            <!-- <TableHead>Tồn kho "Gói Siêu Giao Nhanh"</TableHead> -->
             <TableHead>Thao tác</TableHead>
           </TableRow>
         </TableHeader>
 
         <TableBody>
           <TableRow
-          class = "hover:bg-gray-200"
+          class = "hover:bg-gray-100"
           v-for="product in tabProducts" :key="product.id">
-            <TableCell><Checkbox v-model="product.selected" /></TableCell>
+            <TableCell></TableCell>
             <TableCell>
-              <div class="font-medium">{{ product.name }}</div>
+              <div class="flex gap-3">
+                  <CustomImage
+                    :src="product.image_url"
+                    :alt="product.name"
+                    class="w-16 h-16 object-cover rounded"
+                  />
+                  <div>
+                    <p class="font-medium">{{ product.name }}</p>
+                    <p class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Ưu đãi độc quyền cho thành viên</p>
+                  </div>
+                </div>
               <!-- interface Product không có sku -->
               <!-- <div class="text-xs text-gray-500">{{ product.sku }}</div>  -->
-              <span
-                class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full"
-              >
-                Ưu đãi độc quyền cho thành viên
-              </span>
             </TableCell>
             <TableCell>{{ product.sold_amount }}</TableCell>
             <TableCell>{{ product.price }}</TableCell>
             <TableCell>{{ product.stock_quantity }}</TableCell>
-            <TableCell>-</TableCell>
+            <!-- <TableCell>-</TableCell> -->
             <TableCell>
               <div class="flex flex-col items-start">
                 <button class="inline-flex items-center gap-2 rounded-md text-sm text-red-600 transition-all focus-visible:ring-[3px] text-primary underline-offset-4 hover:underline p-0 h-auto cursor-pointer">

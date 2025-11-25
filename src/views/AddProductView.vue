@@ -1,23 +1,36 @@
 <script setup lang="ts">
-import { ref} from 'vue'
-import { Upload, Video, Info, PlusCircle, ChevronDown } from 'lucide-vue-next'
+import { ref, onMounted} from 'vue'
 import FormSection from '@/components/layout/FormSection.vue'
-import Checkbox from '@/components/ui/Checkbox.vue'
-import RadioGroup from '@/components/ui/RadioGroup.vue'
 import apiClient from '@/api/client'
-
-// Product trong utils được tạo từ trước
-import { Product } from '@/utils/interface'
-
+import { PlusCircle, ChevronDown } from 'lucide-vue-next'
+import UploadImage from '@/components/ui/UploadImage.vue'
 // Lấy dữ liệu từ form điền cho interface Product
 const productName = ref('')
 const description = ref('')
 const imageUrl = ref('')
 const price = ref<number | null>(null)
 const stockQuantity = ref<number | null>(null)
+const sub_category_id = ref(null)
+const category_id = ref(null)
+const variants = ref([
+  { name: '', image_url: '', price: 0, stock: 0 }
+])
 
-const checked = ref<boolean[]>([])
-const radios = ref('no')
+// Variables support for fetching data
+const categories = ref([])
+const subcategories = ref([])
+const newSubcategory = ref('')
+
+const loading = ref(true)
+const errorMsg = ref("")
+
+// Variables support for button and input
+const showCategories = ref(false)
+const showSubcategories = ref(false)
+const selectedCategory = ref('Chọn ngành hàng')
+const selectedSubcategory = ref('Chọn phân loại hàng')
+const addNewSubcategory = ref(false)
+
 const props = defineProps({
   onCancel: {
     type: Function,
@@ -38,41 +51,123 @@ const handleCancel = (event: MouseEvent) => {
 }
 
 
-function handleSave() {
-  if (!productName.value || price.value === null || stockQuantity.value === null) {
+// Fetch data for categories
+onMounted(async () => {
+  try {
+    const categories_res = await apiClient.get(`/category/fetch`)
+    categories.value = categories_res.data.categories
+    console.log('Fetched categories details:', categories.value)
+
+
+  } catch (err:any) {
+    errorMsg.value = err.message
+  } finally {
+    loading.value = false
+  }
+})
+const selectCategory = async (category) => {
+  selectedCategory.value = category.name
+  category_id.value = category.category_id
+  showCategories.value = false
+
+  fetch_subcategory(category)
+}
+
+async function fetch_subcategory(category){
+  try {
+    const sub_res = await apiClient.get(`/category/fetch_subcategory/${category.category_id}`)
+    subcategories.value = sub_res.data.subcategories
+    console.log("Subcategories:", subcategories.value)
+
+    selectedSubcategory.value = "Chọn phân loại hàng"
+  } catch (err: any) {
+    console.error("Error fetch sub:", err.message)
+  }
+}
+
+const selectSubcategories = (subcategory) => {
+  selectedSubcategory.value = subcategory.name
+  sub_category_id.value = subcategory.sub_category_id
+  showSubcategories.value = false
+  addNewSubcategory.value = false
+}
+
+async function handleAddSubcategory() {
+  if (!newSubcategory.value || !category_id.value) return;
+
+  try {
+    const response = await apiClient.post('/category/insert_subcategory', {
+      name: newSubcategory.value,
+      category_id: category_id.value
+    });
+
+    const addedSubcategory = response.data.subcategory;
+
+    // Thêm vào danh sách
+    subcategories.value.push(addedSubcategory);
+
+    // Cập nhật state hiển thị và id
+    selectedSubcategory.value = addedSubcategory.name;
+    sub_category_id.value = addedSubcategory.sub_category_id;
+
+    // Reset input + dropdown
+    newSubcategory.value = '';
+    addNewSubcategory.value = false;
+    showSubcategories.value = false;
+    console.log("Response from backend:", response.data);
+  } catch (error: any) {
+    console.error('Subcategory insertion failed:', error);
+  }
+}
+
+
+function addVariant() {
+  variants.value.push({ name: '', image_url: '', price: 0, stock: 0 })
+}
+
+function removeVariant(index: number) {
+  variants.value.splice(index, 1)
+}
+
+
+async function handleSave() {
+  if (!productName.value || price.value === null || stockQuantity.value === null || !sub_category_id.value) {
     alert('Vui lòng điền đầy đủ thông tin bắt buộc!')
     return
   }
+  const shop_id = localStorage.getItem('id')
+  try {
+    const response = await apiClient.post('/products/insert_product', {
+      shop_id: shop_id,
+      name: productName.value,
+      description: description.value,
+      price: price.value,
+      stock_quantity: stockQuantity.value,
+      image_url: imageUrl.value,
+      sub_category_id: sub_category_id.value
+    });
 
-  const newProduct: Product = {
-    id: `NEW_${Date.now()}`,
-    name: productName.value,
-    description: description.value,
-    image_url: imageUrl.value || '', // Cần xử lý backend phần line 95-101 để có ảnh
-    price: price.value,
-    sale_price: price.value,
-    rating: 0,
-    sold_amount: 0,
-    stock_quantity: stockQuantity.value,
-    shop_id: "abc", // Tạm thời
-    sub_category_id: 1, // Tạm thời
+    const prod_id = response.data.product.id;
+    productName.value = ''
+    description.value = ''
+    imageUrl.value = ''
+    price.value = <number | null>(null)
+    stockQuantity.value = <number | null>(null)
+    sub_category_id.value = null
+    category_id.value = null
+
+    const variant_res = await apiClient.post('/products/insert_variants', {
+      product_id: prod_id,
+      variants: variants.value
+    });
+
+    variants.value = [
+      { name: '', image_url: '', price: 0, stock: 0 }
+    ]
+    console.log("Variant Response:", variant_res.data);
+  } catch (error: any) {
+    console.error('Subcategory insertion failed:', error);
   }
-
-  // Gỉa lập: comment khi dùng api
-  props.onSave(newProduct)
-
-  // Nếu có backend:
-  // apiClient
-  // .get('/')
-  // fetch('/api/products', {
-  //   method: 'POST',
-  //   headers: { 'Content-Type': 'application/json' },
-  //   body: JSON.stringify(newProduct)
-  // })
-  //   .then(res => res.json())
-  //   .then(data => console.log('Saved to DB:', data))
-  //   .catch(err => console.error('Save failed', err))
-
 }
 </script>
 
@@ -82,70 +177,11 @@ function handleSave() {
     <!-- 1. Thông tin cơ bản -->
     <FormSection title="Thông tin cơ bản" :required="true">
       <div class="space-y-6">
-        <!-- Hình ảnh sản phẩm -->
-        <div>
-          <label class="flex items-center gap-2 text-sm leading-none font-medium flex items-center mb-2">
-            Hình ảnh sản phẩm
-            <Info :size="14" class="text-gray-400" />
-          </label>
 
-          <div class="grid grid-cols-3 gap-4">
-            <div class="col-span-2">
-              <p class="text-sm text-gray-600 mb-2">
-                Hình ảnh tỷ lệ 1:1 và 3:4 (tối đa 9 ảnh)
-              </p>
-              <div class="border-2 border-gray-300 border-dashed rounded-lg p-6 text-center">
-                <Upload class="mx-auto text-gray-400" :size="32" />
-                <button
-                  class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md
-                  text-sm font-medium transition-all cursor-pointer
-                  text-primary underline-offset-4 hover:underline mt-2"
-                >
-                  Thêm hình ảnh
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <p class="text-sm text-gray-600 mb-2">Ảnh bìa (tỷ lệ 1:1)</p>
-              <div
-                class="border-2 border-gray-300 border-dashed rounded-lg p-6 text-center h-full flex flex-col justify-center"
-              >
-                <Upload class="mx-auto text-gray-400" :size="32" />
-                <button
-                  class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md
-                  text-sm font-medium transition-all cursor-pointer
-                  text-primary underline-offset-4 hover:underline mt-2"
-                >
-                  Thêm ảnh bìa
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Video sản phẩm -->
-        <div>
-          <label class="text-sm font-medium">Video sản phẩm</label>
-          <div class="border-2 border-gray-300 border-dashed rounded-lg p-6 text-center">
-            <Video class="mx-auto text-gray-400" :size="32" />
-            <button
-              class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md
-              text-sm font-medium transition-all cursor-pointer
-              text-primary underline-offset-4 hover:underline mt-2"
-            >
-              Thêm Video
-            </button>
-            <p class="text-xs text-gray-500 mt-2">
-              Độ dài: 10s-60s, Định dạng: MP4, Kích thước: Tối đa 30Mb.
-            </p>
-          </div>
-        </div>
 
         <!-- Tên sản phẩm -->
         <div>
-          <label class="text-sm font-medium"
-           for="product-name">
+          <label class="text-sm font-medium">
             Tên sản phẩm <span class="text-red-500">*</span>
           </label>
           <input
@@ -157,22 +193,119 @@ function handleSave() {
           />
         </div>
 
-        <!-- Ngành hàng -->
+        <!-- Hình ảnh sản phẩm -->
         <div>
-          <label class="text-sm font-medium"
-          for="category">
-            Ngành hàng <span class="text-red-500">*</span>
+
+          <label class="text-sm font-medium">
+            Hình ảnh sản phẩm
           </label>
-          <button
-              class="inline-flex items-center justify-center gap-2 px-3 py-2 whitespace-nowrap rounded-md
-              text-sm font-medium transition-all cursor-pointer
-              border bg-background text-gray-400
-              hover:text-gray-700 hover:bg-gray-100 w-full h-10 justify-start"
-          >
-            <span>Chọn ngành hàng</span> <ChevronDown :size="16" />
-          </button>
+          <UploadImage v-model="imageUrl"></UploadImage>
+        </div>
+        <!-- Gía hiển thị -->
+         <div>
+          <label class="text-sm font-medium">
+            Giá hiển thị <span class="text-red-500">*</span>
+          </label>
+          <input
+            type="number"
+            v-model="price"
+            class="w-full rounded-md bg-gray-100 px-3 py-2 text-sm
+              focus:outline-none focus:ring-[3px] focus:ring-gray-300"
+            placeholder="Nhập giá hiển thị của sản phẩm"
+          />
         </div>
 
+        <div>
+          <label class="text-sm font-medium">
+            Kho hàng <span class="text-red-500">*</span>
+          </label>
+          <input
+            type="number"
+            v-model="stockQuantity"
+            class="w-full rounded-md bg-gray-100 px-3 py-2 text-sm
+              focus:outline-none focus:ring-[3px] focus:ring-gray-300"
+            placeholder="Nhập số lượng sản phẩm có"
+          />
+        </div>
+        <!-- Ngành hàng -->
+        <div class="relative">
+          <label class="text-sm font-medium"
+                for="category">
+            Ngành hàng <span class="text-red-500">*</span>
+          </label>
+
+          <button
+            @click="showCategories = !showCategories"
+            class="inline-flex items-center justify-between gap-2 px-3 py-2 whitespace-nowrap rounded-md
+                    text-sm font-medium transition-all cursor-pointer
+                    border border-gray-200 bg-background
+                    hover:text-gray-400 hover:bg-gray-100 w-full h-10"
+          >
+            <span>{{ selectedCategory }}</span>
+            <ChevronDown :size="16" />
+          </button>
+
+          <!-- Dropdown list -->
+          <ul v-if="showCategories"
+              class="absolute z-50 w-full border border-gray-200 rounded-md shadow bg-white mt-1">
+            <li v-for="item in categories" :key="item.category_id"
+                @click="selectCategory(item)"
+                class="px-3 py-2 hover:bg-gray-100 cursor-pointer text-sm">
+              {{ item.name }}
+            </li>
+          </ul>
+        </div>
+        <div class="relative">
+          <label class="text-sm font-medium"
+                for="category">
+            Ngành hàng con <span class="text-red-500">*</span>
+          </label>
+
+          <button
+            @click="showSubcategories = !showSubcategories"
+            class="inline-flex items-center justify-between gap-2 px-3 py-2 whitespace-nowrap rounded-md
+                    text-sm font-medium transition-all cursor-pointer
+                    border border-gray-200 bg-background
+                    hover:text-gray-400 hover:bg-gray-100 w-full h-10"
+          >
+            <span>{{ selectedSubcategory }}</span>
+            <ChevronDown :size="16" />
+          </button>
+
+          <!-- Dropdown list -->
+          <ul v-if="showSubcategories"
+              class="absolute z-50 w-full border border-gray-200 rounded-md shadow bg-white mt-1">
+            <li v-for="item in subcategories" :key="item.sub_category_id"
+                @click="selectSubcategories(item)"
+                class="px-3 py-2 hover:bg-gray-100 cursor-pointer text-sm">
+              {{ item.name }}
+            </li>
+            <button @click="addNewSubcategory= !addNewSubcategory" class="inline-flex gap-2 px-3 py-2 w-full px-3 py-2 hover:bg-gray-100 cursor-pointer text-sm">
+              <PlusCircle :size="16" /> Thêm nhóm phân loại
+            </button>
+            <div v-if="addNewSubcategory">
+              <input
+              v-model="newSubcategory"
+              class="w-50 rounded-md bg-gray-100 mr-4 px-3 py-2 ml-4 mb-4 text-sm
+                focus:outline-none focus:ring-[3px] focus:ring-gray-300"
+              placeholder="Nhóm phân loại hàng mới"
+            />
+              <button
+              class="
+              inline-flex items-center justify-center gap-2 px-3 py-2 whitespace-nowrap rounded-md
+                      text-white font-medium transition-all cursor-pointer
+                      border border-gray-300
+                      bg-[#ee4d2d] text-gray-700
+                      hover:bg-[#d73211] hover:border-gray-400
+                      active:bg-gray-200
+                      focus:outline-none focus:ring-2 focus:ring-gray-300
+                      "
+              @click="handleAddSubcategory"
+          >Thêm
+            </button>
+          </div>
+          </ul>
+        </div>
         <!-- Mô tả -->
         <div>
           <label class="text-sm font-medium"
@@ -187,55 +320,6 @@ function handleSave() {
             placeholder="Nhập mô tả chi tiết về sản phẩm..."
             rows="8"
           ></textarea>
-
-          <div class="mt-2 text-right">
-            <button
-              class="inline-flex items-center justify-center gap-2 whitespace-nowrap w-40 h-10 rounded-md
-              text-sm font-medium transition-all cursor-pointer
-              border bg-background text-gray-700 hover:bg-gray-100"
-            >
-              Tải lên hình ảnh (0/12)
-            </button>
-          </div>
-        </div>
-      </div>
-    </FormSection>
-
-    <!-- 2. Thông tin chi tiết -->
-    <FormSection title="Thông tin chi tiết">
-      <div class="grid grid-cols-2 gap-6">
-        <div>
-          <label class="text-sm font-medium">Thương hiệu</label>
-          <button class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md
-              text-sm font-medium transition-all cursor-pointer
-              border border-gray-200 w-full h-8 justify-between
-              bg-background text-foreground
-              text-gray-700
-              hover:bg-gray-200 border-gray-300 ">
-            <span>Vui lòng chọn</span> <ChevronDown :size="16" />
-          </button>
-        </div>
-        <div>
-          <label class="text-sm font-medium">Chất liệu</label>
-          <button class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md
-              text-sm font-medium transition-all cursor-pointer
-              border border-gray-200 w-full h-8 justify-between
-              bg-background text-foreground
-              text-gray-700
-              hover:bg-gray-200 border-gray-300 ">
-            <span>Vui lòng chọn</span> <ChevronDown :size="16" />
-          </button>
-        </div>
-        <div>
-          <label class="text-sm font-medium">Xuất xứ</label>
-          <button class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md
-              text-sm font-medium transition-all cursor-pointer
-              border border-gray-200 w-full h-8 justify-between
-              bg-background text-foreground
-              text-gray-700
-              hover:bg-gray-200 border-gray-300 ">
-            <span>Vui lòng chọn</span> <ChevronDown :size="16" />
-          </button>
         </div>
       </div>
     </FormSection>
@@ -243,154 +327,66 @@ function handleSave() {
     <!-- 3. Thông tin bán hàng -->
     <FormSection title="Thông tin bán hàng">
       <div class="space-y-6">
+
         <div>
           <label class="text-sm font-medium">Phân loại hàng</label>
-          <button class="inline-flex items-center justify-center gap-2 px-3 py-2 whitespace-nowrap rounded-md
-              text-sm font-medium transition-all cursor-pointer
-              border border-gray-200 w-full h-10 justify-start mt-2
-              bg-background text-foreground
-              text-gray-700
-              hover:bg-gray-200 border-gray-300 ">
+          <button
+            @click="addVariant"
+            class="inline-flex items-center justify-center gap-2 px-3 py-2 whitespace-nowrap rounded-md
+                  text-sm font-medium transition-all cursor-pointer
+                  border border-gray-200 w-full h-10 justify-start mt-2
+                  bg-background text-foreground hover:bg-gray-200 ">
             <PlusCircle :size="16" class="mr-2" /> Thêm nhóm phân loại
           </button>
         </div>
-        <div>
-          <label class="text-sm font-medium" for="price"
-            >Giá <span class="text-red-500">*</span></label
-          >
-          <input
-            id="price"
-            v-model="price"
-            type = "number"
-            class="w-full rounded-md bg-gray-100 px-3 py-2 text-sm
-              focus:outline-none focus:ring-[3px] focus:ring-gray-300"
-            placeholder="Nhập giá"
-          />
-        </div>
-        <div>
-          <label class="text-sm font-medium" for="stock"
-            >Kho hàng <span class="text-red-500">*</span></label
-          >
-          <input
-            id="stock"
-            v-model="stockQuantity"
-            type="number"
-            class="w-full rounded-md bg-gray-100 px-3 py-2 text-sm
-              focus:outline-none focus:ring-[3px] focus:ring-gray-300"
-            placeholder="Nhập số lượng"
-          />
-        </div>
-        <div>
-          <label class="text-sm font-medium">Mua nhiều giảm giá</label>
-          <button class="inline-flex items-center justify-center px-3 py-2 whitespace-nowrap rounded-md
-              text-sm font-medium transition-all cursor-pointer
-              border border-gray-200 w-full h-10 justify-start mt-2
-              bg-background text-foreground
-              text-gray-700
-              hover:bg-gray-200 border-gray-300 ">
-            <PlusCircle :size="16" class="mr-2" /> Thêm khoảng giá
-          </button>
-        </div>
-      </div>
-    </FormSection>
 
-    <!-- 4. Vận chuyển -->
-    <FormSection title="Vận chuyển">
-      <div class="space-y-4">
-        <div>
-          <label class="text-sm font-medium" for="weight"
-            >Cân nặng (sau khi đóng gói)
-            <span class="text-red-500">*</span></label
-          >
-          <input
-            id="weight"
-            type="number"
-            class="w-full rounded-md bg-gray-100 px-3 py-2 text-sm
-              focus:outline-none focus:ring-[3px] focus:ring-gray-300"
-            placeholder="gram" />
-        </div>
-        <div>
-          <label class="text-sm font-medium">Kích thước đóng gói (Tùy chọn)</label>
-          <div class="flex gap-4 mt-2">
+        <!-- Render các form biến thể -->
+        <div v-for="(variant, index) in variants" :key="index" class="border border-gray-200 rounded-md p-4 space-y-4">
+
+          <div>
+            <label class="text-sm font-medium">Nhóm phân loại</label>
             <input
-            type = "number"
-            class="w-full rounded-md bg-gray-100 px-3 py-2 text-sm
-              focus:outline-none focus:ring-[3px] focus:ring-gray-300"
-            placeholder="Dài (cm)"
-            />
-            <input
-              type = "number"
-              class="w-full rounded-md bg-gray-100 px-3 py-2 text-sm
+              v-model="variant.name"
+              class="w-full rounded-md bg-gray-100 px-3 py-2 mb-2 text-sm
                 focus:outline-none focus:ring-[3px] focus:ring-gray-300"
-              placeholder="Rộng (cm)"
-            />
-            <input
-              type = "number"
-              class="w-full rounded-md bg-gray-100 px-3 py-2 text-sm
-                focus:outline-none focus:ring-[3px] focus:ring-gray-300"
-              placeholder="Cao (cm)"
+              placeholder="VD: Màu đỏ, Size M"
             />
           </div>
-        </div>
-        <div>
-          <label class="text-sm font-medium">Phí vận chuyển <span class="text-red-500">*</span></label>
-          <div class="mt-2 border border-gray-200 rounded-lg p-4 space-y-2">
-            <div class="flex items-center justify-between">
-              <Checkbox v-model="checked[0]">
-                Hoả tốc
-              </Checkbox>
+          <div>
+            <label class="text-sm font-medium">Hình ảnh</label>
+            <UploadImage v-model="variant.image_url"></UploadImage>
+          </div>
 
-            </div>
-            <div class="flex items-center justify-between">
-              <Checkbox v-model="checked[1]">
-                Nhanh
-              </Checkbox>
-            </div>
-            <div class="flex items-center justify-between">
-              <Checkbox v-model="checked[2]">
-                Tiết kiệm
-              </Checkbox>
-            </div>
+          <div>
+            <label class="text-sm font-medium">Giá</label>
+            <input
+              v-model="variant.price"
+              type="number"
+              class="w-full rounded-md bg-gray-100 px-3 py-2 mb-2 text-sm
+                focus:outline-none focus:ring-[3px] focus:ring-gray-300"
+              placeholder="Nhập giá"
+            />
+          </div>
+
+          <div>
+            <label class="text-sm font-medium">Kho hàng</label>
+            <input
+              v-model="variant.stock"
+              type="number"
+              class="w-full rounded-md bg-gray-100 px-3 py-2 mb-2 text-sm
+                focus:outline-none focus:ring-[3px] focus:ring-gray-300"
+              placeholder="Nhập số lượng"
+            />
+          </div>
+          <div class="flex justify-end">
+            <button
+              class="text-red-500 text-sm underline cursor-pointer"
+              @click="removeVariant(index)">
+              Xóa
+            </button>
           </div>
         </div>
-      </div>
-    </FormSection>
 
-
-    <!-- 5. Thông tin khác -->
-    <FormSection title="Thông tin khác">
-      <div class="space-y-4">
-        <div class="flex items-center gap-8">
-          <label class="text-sm font-medium">Hàng Đặt Trước</label>
-            <RadioGroup
-              v-model="radios"
-              :options="[
-                { label: 'Không', value: 'no' },
-                { label: 'Có', value: 'yes' }
-              ]"
-              direction="horizontal"
-            />
-        </div>
-        <div>
-          <label class="text-sm font-medium">Tình trạng</label>
-          <button class="inline-flex items-center justify-center gap-2 px-3 py-2 whitespace-nowrap rounded-md
-              text-sm font-medium transition-all cursor-pointer
-              border border-gray-200 w-full h-10 justify-start mt-2
-              bg-background text-foreground
-              text-gray-700
-              hover:bg-gray-200 border-gray-300 ">
-            <span>Mới</span> <ChevronDown :size="16" />
-          </button>
-        </div>
-        <div>
-          <label class="text-sm font-medium" for="sku">SKU sản phẩm</label>
-          <input
-            id = "sku"
-            class="w-full rounded-md bg-gray-100 px-3 py-2 text-sm
-              focus:outline-none focus:ring-[3px] focus:ring-gray-300"
-            placeholder="Nhập SKU"
-          />
-        </div>
       </div>
     </FormSection>
 
