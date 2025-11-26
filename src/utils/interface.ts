@@ -82,6 +82,19 @@ export interface ApiProduct {
   variants: ApiProductVariant[]
 }
 
+export interface Review {
+  id: string
+  product_id: string
+  product_variant_id?: string
+  buyer_id: string
+  rating: number
+  comment: string
+  created_at: string
+  variant_name?: string
+  buyer_name?: string
+  buyer_avatar_url?: string
+}
+
 export interface Shop {
   id: string
   name: string
