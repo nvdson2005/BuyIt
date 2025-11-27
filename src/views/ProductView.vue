@@ -11,15 +11,15 @@ import {
   type ApiProductAttribute,
   type Review,
 } from '@/utils/interface'
-import { onMounted, ref, computed, onUpdated, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { onMounted, ref, computed, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import LoadingScreen from '@/components/layout/LoadingScreen.vue'
 import ProductCard from '@/components/ui/ProductCard.vue'
 
 const product = ref<ApiProduct | null>(null)
 const shop = ref<Shop | null>(null)
 const route = useRoute()
-const router = useRouter()
+// const router = useRouter()
 const isLoading = ref(true)
 const quantity = ref(1)
 const recommendedProducts = ref<Product[]>([])
@@ -116,9 +116,9 @@ function OnAddToCart() {
   })
 }
 
-const onNavigateToCheckout = () => {
-  router.push({ name: 'checkout' })
-}
+// const onNavigateToCheckout = () => {
+//   router.push({ name: 'checkout' })
+// }
 
 const onNavigateToShop = () => {
   console.log('Navigating to shop page...')
