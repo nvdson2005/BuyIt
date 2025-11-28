@@ -100,11 +100,19 @@ export interface ProductVariant {
 }
 
 export interface Address {
-  id: number
-  name: string
-  phone: string
-  address: string
-  isDefault: boolean
+  address_id: string
+  user_id: string
+  full_name: string
+  street: string
+  ward: string
+  district: string
+  city: string
+  state: string
+  zipcode: string
+  phone_number: string
+  created_at: Date
+  updated_at: Date
+  is_default: boolean
 }
 
 export interface AllProductsViewProps {

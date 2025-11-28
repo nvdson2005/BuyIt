@@ -4,15 +4,22 @@ import NavBar from '@/components/layout/NavBar.vue'
 import PageFooter from '@/components/layout/PageFooter.vue'
 import apiClient from '@/api/client'
 import CustomImage from '@/components/ui/CustomImage.vue'
+import Checkbox from '@/components/ui/Checkbox.vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
 
 const onNavigateToCheckout = () => {
-  router.push({ name: 'checkout' })
+  if(selectedItems.value.length){
+    router.push({ name: 'checkout', query:{from: 'cart', ids: selectedItems.value.map(item => item.item_id).join(',')} })
+  }
+  else{
+    alert('Cần chọn ít nhất 1 sản phẩm!')
+  }
 }
 
 interface CartItem {
+  item_id: string
   quantity: number
   prod_id: string
   prod_var_id: string
@@ -21,7 +28,7 @@ interface CartItem {
     variant_id: string
     name: string
     price: number
-    stock_quantity: number | string
+    stock_quantity: number
     image_url: string
     created_at: string
     updated_at: string
@@ -33,8 +40,8 @@ interface CartItem {
     description: string
     rating: number
     price: number
-    sold_amount: number | string
-    stock_quantity: number | string
+    sold_amount: number
+    stock_quantity: number
     image_url: string
     created_at: string
     updated_at: string
@@ -46,7 +53,13 @@ interface CartItem {
 }
 
 const cartItems = ref<CartItem[]>([])
+const selectedItems = computed(() => {
+  return cartItems.value.filter(i => i.checked === true)
+})
 
+const soldoutItems = computed(() => {
+  return cartItems.value.filter(i => i.productVariant.stock_quantity === 0)
+})
 onMounted(async () => {
   document.title = 'BuyIt - Your Cart'
   try {
@@ -54,6 +67,7 @@ onMounted(async () => {
     if (Array.isArray(response.data.items)) {
       cartItems.value = response.data.items.map((item: any) => ({
         ...item,
+        item_id: item.id,
         quantity: Number(item.quantity),
         checked: false,
         productVariant: {
@@ -78,41 +92,19 @@ onMounted(async () => {
     console.error('Error fetching cart items:', error)
   }
 })
-// const cartItems = ref<CartItem[]>([
-//   {
-//     id: 1,
-//     title: 'Laptop Dell Inspiron 15 3520 i5-1235U RAM 8GB SSD 256GB 15.6" FHD',
-//     image:
-//       'https://product.hstatic.net/200000710483/product/611nhsehs5l._ac_sx679__cbea54784c0e4bf78b8fdf17398f4394_1024x1024.jpg',
-//     price: 12990000,
-//     oldPrice: 17990000,
-//     quantity: 2,
-//     checked: false,
-//   },
-//   {
-//     id: 2,
-//     title: 'Laptop HP Pavilion 15-eg2xxx i7-1255U RAM 16GB SSD 512GB 15.6" FHD',
-//     image: '/assets/sample-laptop-2.jpg',
-//     price: 18500000,
-//     oldPrice: 24900000,
-//     quantity: 1,
-//     checked: false,
-//   },
-//   {
-//     id: 3,
-//     title: 'Laptop Gaming ASUS ROG Strix G15 RTX 4060 Ryzen 7 7735HS 16GB 512GB',
-//     image: '/assets/sample-laptop-3.jpg',
-//     price: 28900000,
-//     oldPrice: 36900000,
-//     quantity: 1,
-//     checked: false,
-//   },
-// ])
 
 const allChecked = computed({
-  get: () => cartItems.value.length > 0 && cartItems.value.every((item) => item.checked),
+  get: () =>
+  cartItems.value.some((item) => item.productVariant.stock_quantity > 0) && // phải có ít nhất 1 item quantity > 0
+  cartItems.value
+    .filter((item) => item.productVariant.stock_quantity > 0) // chỉ xét những item quantity > 0
+    .every((item) => item.checked),
   set: (val: boolean) => {
-    cartItems.value.forEach((item) => (item.checked = val))
+    cartItems.value.forEach((item) => {
+      if(item.productVariant.stock_quantity > 0){
+        item.checked = val
+      }
+    })
   },
 })
 
@@ -128,17 +120,44 @@ function formatPrice(v: number) {
   return v.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })
 }
 
-function increase(item: CartItem) {
+async function increase(item: CartItem) {
   item.quantity++
+  try {
+    const res = await apiClient.put(`/buyer/cart/item/${item.item_id}/quantity`, {quantity: item.quantity})
+  } catch (err:any) {
+    alert(err.message)
+  }
+
 }
-function decrease(item: CartItem) {
-  if (item.quantity > 1) item.quantity--
+async function decrease(item: CartItem) {
+  if (item.quantity > 1) {
+    item.quantity--
+    try {
+      const res = await apiClient.put(`/buyer/cart/item/${item.item_id}/quantity`, {quantity: item.quantity})
+    } catch (err:any) {
+      alert(err.message)
+    }
+  }
+  else{
+    removeItem(item.item_id)
+  }
 }
-function removeItem(id: string) {
-  cartItems.value = cartItems.value.filter((i) => i.prod_var_id !== id)
+async function removeItem(id: string) {
+  cartItems.value = cartItems.value.filter((i) => i.item_id !== id)
+  try {
+    const cart_res = await apiClient.delete(`/buyer/cart/remove-item/${id}`)
+
+  } catch (err:any) {
+    alert(err.message)
+  }
 }
+
 function removeSelected() {
   cartItems.value = cartItems.value.filter((i) => !i.checked)
+}
+
+function navigateToProduct(product_id){
+  router.push({name:'product', params:{product_id}})
 }
 </script>
 
@@ -153,7 +172,7 @@ function removeSelected() {
         class="w-full grid grid-cols-[40px_2fr_1fr_1fr_1fr_60px] gap-4 bg-white rounded-lg px-6 py-3 font-semibold text-slate-500 text-base"
       >
         <div>
-          <input type="checkbox" v-model="allChecked" />
+          <Checkbox v-model="allChecked"></Checkbox>
         </div>
         <div>Product</div>
         <div>Unit Price</div>
@@ -164,23 +183,25 @@ function removeSelected() {
 
       <!-- Cart items -->
       <div v-for="item in cartItems" :key="item.prod_var_id" class="w-full">
-        <div
+        <div v-if="item.productVariant.stock_quantity > 0"
           class="w-full grid grid-cols-[40px_2fr_1fr_1fr_1fr_60px] gap-4 bg-white my-3 rounded-lg px-6 py-4 items-center shadow-sm"
         >
           <div>
-            <input type="checkbox" v-model="item.checked" />
+            <Checkbox v-model="item.checked" ></Checkbox>
           </div>
           <div class="flex items-center gap-4">
             <!-- Variant image -->
             <CustomImage
               :src="item.productVariant.image_url || item.product.image_url"
-              alt=""
+              alt="Sản phẩm"
               class="w-20 h-20 object-cover rounded-md"
             />
             <div>
-              <div class="font-medium text-slate-800 text-base">{{ item.product.name }}</div>
+              <button class="font-medium text-slate-800 text-base cursor-pointer"
+                      @click="navigateToProduct(item.prod_id)">
+                {{ item.product.name }}
+              </button>
               <div class="text-xs text-slate-500">{{ item.productVariant.name }}</div>
-              <div class="text-xs text-slate-400">{{ item.product.description }}</div>
             </div>
           </div>
           <div>
@@ -213,7 +234,7 @@ function removeSelected() {
             {{ formatPrice(item.productVariant.price * item.quantity) }}
           </div>
           <div>
-            <button @click="removeItem(item.prod_var_id)" class="text-slate-400 hover:text-red-500 cursor-pointer">
+            <button @click="removeItem(item.item_id)" class="text-slate-400 hover:text-red-500 cursor-pointer">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 class="w-6 h-6"
@@ -238,7 +259,7 @@ function removeSelected() {
         class="w-full bg-white rounded-b-lg px-6 py-4 flex items-center justify-between mt-2 mb-6 shadow-sm"
       >
         <div class="flex items-center gap-4">
-          <input type="checkbox" v-model="allChecked" />
+          <Checkbox v-model="allChecked"></Checkbox>
           <span>Select all ({{ cartItems.length }})</span>
           <button @click="removeSelected" class="text-rose-500 hover:underline cursor-pointer">Delete</button>
         </div>
@@ -253,9 +274,56 @@ function removeSelected() {
           </button>
         </div>
       </div>
+
+      <h2 v-if="soldoutItems.length" class="font-semibold text-2xl">Các sản phẩm đã hết hàng</h2>
+
+      <div
+      v-for="item in soldoutItems" :key="item.item_id"
+        class="w-full bg-gray-100 rounded px-6 py-4 flex items-center justify-between mt-2 mb-6 shadow-sm"
+      >
+        <div  class="flex items-center gap-4 ">
+
+            <!-- Variant image -->
+            <CustomImage
+              :src="item.productVariant.image_url || item.product.image_url"
+              alt="Sản phẩm"
+              class="w-20 h-20 object-cover gray-scale rounded-md"
+            />
+            <div>
+              <button class="font-medium text-slate-800 text-base cursor-pointer"
+                      @click="navigateToProduct(item.prod_id)">
+                {{ item.product.name }}
+              </button>
+              <div class="text-xs text-slate-500">{{ item.productVariant.name }}</div>
+            </div>
+          </div>
+          <div class="mr-10">
+            <button @click="removeItem(item.item_id)" class="text-slate-400 hover:text-red-500 cursor-pointer">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="w-6 h-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
+      </div>
     </div>
     <PageFooter />
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.grayscale {
+  filter: grayscale(100%);
+  opacity: 0.6;
+}
+</style>
