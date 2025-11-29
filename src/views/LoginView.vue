@@ -24,7 +24,7 @@ async function onLoginClick(username: string, password: string) {
     })
     localStorage.setItem('username', username)
     localStorage.setItem('role', response.data.user.role)
-
+    localStorage.setItem('id', response.data.user.id)
     router.push({ name: 'home' })
 
     console.log('Login successful:', response)

@@ -9,23 +9,64 @@ import {
   type ApiProduct,
   type ApiProductVariant,
   type ApiProductAttribute,
+  type Review,
 } from '@/utils/interface'
-import { onMounted, ref, computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { onMounted, ref, computed, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import LoadingScreen from '@/components/layout/LoadingScreen.vue'
 import ProductCard from '@/components/ui/ProductCard.vue'
 
 const product = ref<ApiProduct | null>(null)
 const shop = ref<Shop | null>(null)
 const route = useRoute()
-const router = useRouter()
+// const router = useRouter()
 const isLoading = ref(true)
 const quantity = ref(1)
 const recommendedProducts = ref<Product[]>([])
 const productVariants = ref<ApiProductVariant[]>([])
 const productAttributes = ref<ApiProductAttribute[]>([])
 const chosenVariant = ref<ApiProductVariant | null>(null)
+const reviews = ref<Review[]>([])
 
+const fetchAllDatas = async () => {
+  try {
+    const response = await apiClient.get<ProductInfoResponse>(`/products/info/${route.params.id}`)
+    product.value = response.data.product || null
+    // console.log('Fetched product details:', response.data.product)
+    productAttributes.value = response.data.product.attributes || []
+    // console.log('Product attributes:', productAttributes.value)
+
+    if (product.value) {
+      // Fetch shop details
+      const shopResponse = await apiClient.get(`/shop/get-detail/${product.value.shop_id}`)
+      // console.log('Fetched shop details:', shopResponse.data.shop)
+      shop.value = shopResponse.data.shop
+
+      // Set variants from the product response
+      productVariants.value = product.value.variants || []
+      // console.log('Product variants:', productVariants.value)
+    }
+
+    // Fetch recommended products
+    const recommendedResponse = await apiClient.get(`/products/explore-today`)
+    recommendedProducts.value = recommendedResponse.data.products
+    // console.log('Fetched recommended products:', recommendedProducts.value)
+
+    const otherProductsResponse = await apiClient.get(
+      `/products/random/${product.value?.sub_category_id}?excludeProductId=${product.value?.id}`,
+    )
+    recommendedProducts.value = otherProductsResponse.data?.products
+
+    // Fetch reviews
+    const reviewsResponse = await apiClient.get(`/products/${product.value?.id}/reviews`)
+    reviews.value = reviewsResponse.data.reviews || []
+    // console.log('Fetched product reviews:', reviews.value)
+  } catch (error) {
+    console.error('Error fetching product data:', error)
+  } finally {
+    isLoading.value = false
+  }
+}
 // Computed property for sale percentage
 const sale = computed(() => {
   if (!product.value) return 0
@@ -53,35 +94,15 @@ const currentPrice = computed(() => {
 })
 
 onMounted(async () => {
-  try {
-    const response = await apiClient.get<ProductInfoResponse>(`/products/info/${route.params.id}`)
-    product.value = response.data.product || null
-    console.log('Fetched product details:', response.data.product)
-    productAttributes.value = response.data.product.attributes || []
-    console.log('Product attributes:', productAttributes.value)
-
-    if (product.value) {
-      // Fetch shop details
-      const shopResponse = await apiClient.get(`/shop/get-detail/${product.value.shop_id}`)
-      console.log('Fetched shop details:', shopResponse.data.shop)
-      shop.value = shopResponse.data.shop
-
-      // Set variants from the product response
-      productVariants.value = product.value.variants || []
-      console.log('Product variants:', productVariants.value)
-    }
-
-    // Fetch recommended products
-    const recommendedResponse = await apiClient.get(`/products/explore-today`)
-    recommendedProducts.value = recommendedResponse.data.products
-    console.log('Fetched recommended products:', recommendedProducts.value)
-  } catch (error) {
-    console.error('Error fetching product data:', error)
-  } finally {
-    isLoading.value = false
-  }
+  await fetchAllDatas()
 })
-
+watch(
+  () => route.params.id,
+  async () => {
+    isLoading.value = true
+    await fetchAllDatas()
+  },
+)
 function OnAddToCart() {
   if (!chosenVariant.value) {
     console.error('No variant selected.')
@@ -95,9 +116,9 @@ function OnAddToCart() {
   })
 }
 
-const onNavigateToCheckout = () => {
-  router.push({ name: 'checkout' })
-}
+// const onNavigateToCheckout = () => {
+//   router.push({ name: 'checkout' })
+// }
 
 const onNavigateToShop = () => {
   console.log('Navigating to shop page...')
@@ -139,10 +160,9 @@ const onNavigateToShop = () => {
         <div class="text-xl font-semibold text-slate-800 leading-snug">
           {{ product?.name }}
         </div>
-        <div class="flex items-center gap-4 text-sm mt-2">
+        <div class="flex items-center gap-2 text-sm mt-2">
           <span class="text-orange-500 font-semibold">{{ product?.rating }}</span>
           <span class="text-yellow-400">★</span>
-          <span class="text-blue-500 underline cursor-pointer">348 Reviews</span>
           <span>|</span>
           <span>{{ product?.sold_amount }} sold</span>
         </div>
@@ -173,11 +193,29 @@ const onNavigateToShop = () => {
         </div>
         <div class="flex items-center gap-4 mt-2">
           <span class="text-slate-600">Quantity</span>
-          <button class="w-8 h-8 border border-gray-400 rounded text-lg" @click="quantity--">
+          <button
+            class="w-8 h-8 border border-gray-400 rounded text-lg"
+            @click="quantity > 1 ? quantity-- : null"
+          >
             -
           </button>
-          <span> 1 </span>
-          <button class="w-8 h-8 border border-gray-400 rounded text-lg" @click="quantity++">
+          <input
+            type="number"
+            class="w-12 h-8 border border-gray-400 rounded text-center"
+            v-model="quantity"
+            :min="1"
+            :max="currentStockQuantity"
+            @focusout="
+              () => {
+                if (quantity < 1) quantity = 1
+                if (quantity > currentStockQuantity) quantity = currentStockQuantity
+              }
+            "
+          />
+          <button
+            class="w-8 h-8 border border-gray-400 rounded text-lg"
+            @click="() => (quantity < currentStockQuantity ? quantity++ : null)"
+          >
             +
           </button>
           <span class="text-slate-400 ml-2">{{ currentStockQuantity }} Available</span>
@@ -247,12 +285,12 @@ const onNavigateToShop = () => {
             </svg>
             Add to Cart
           </button>
-          <button
+          <!-- <button
             class="flex-1 bg-orange-500 text-white px-6 py-3 rounded font-semibold hover:bg-orange-600"
             @click="onNavigateToCheckout"
           >
             Buy Now
-          </button>
+          </button> -->
         </div>
       </div>
     </div>
@@ -361,6 +399,12 @@ const onNavigateToShop = () => {
         <div class="font-semibold text-slate-700 mb-4">Other products</div>
         <div class="grid grid-cols-5 gap-4">
           <div
+            v-if="recommendedProducts.length === 0"
+            class="col-span-5 text-center text-slate-500"
+          >
+            No other products available.
+          </div>
+          <div
             v-for="product in recommendedProducts"
             :key="product.id"
             class="bg-white rounded-xl border border-gray-400 p-3 shadow-sm hover:shadow-md transition"
@@ -372,7 +416,7 @@ const onNavigateToShop = () => {
               :price="product.sale_price"
               :originalPrice="product.price"
               :rating="product.rating"
-              :soldAmount="product.sold_amount"
+              :soldAmount="Number(product.sold_amount)"
               :imageUrl="product.image_url"
               :isSale="product.sale_price < product.price"
               :discountPercentage="
@@ -388,12 +432,6 @@ const onNavigateToShop = () => {
       <!-- Product Details -->
       <div class="bg-white rounded-xl shadow p-6">
         <div class="font-semibold text-slate-700 mb-4">PRODUCT DETAILS</div>
-        <!-- <div class="mb-4">
-          <div class="font-medium text-slate-600 mb-2">Specifications</div>
-          <pre class="bg-gray-50 rounded p-4 text-sm text-slate-700 overflow-x-auto">
-            Introduction Goes Here
-          </pre>
-        </div> -->
         <div class="font-medium text-slate-600 mb-2">Product Description</div>
         <div class="text-slate-700 text-sm leading-relaxed mb-2">{{ product?.description }}</div>
       </div>
@@ -401,82 +439,42 @@ const onNavigateToShop = () => {
       <div class="bg-white rounded-xl shadow p-6">
         <div class="font-semibold text-slate-700 mb-4">PRODUCT REVIEWS</div>
         <div class="flex gap-8 mb-6">
-          <div class="flex flex-col items-center justify-center w-40">
-            <div class="text-3xl font-bold text-rose-500">{{ product?.rating }} out of 5</div>
-            <div class="flex items-center gap-1 text-yellow-400 text-lg mt-1">
-              <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+          <div class="flex flex-col items-center justify-center w-full">
+            <div class="text-3xl font-bold text-rose-500">
+              {{ product?.rating }} out of 5 <span class="text-yellow-500">★</span>
             </div>
-            <div class="text-xs text-slate-500 mt-1">342 reviews</div>
-          </div>
-          <div class="flex-1 flex flex-col gap-1 justify-center">
-            <div
-              v-for="(percent, idx) in [70, 20, 10, 10, 10]"
-              :key="idx"
-              class="flex items-center gap-2"
-            >
-              <span class="text-xs text-slate-600 w-4"
-                >{{ 5 - idx }} <span class="text-yellow-400">★</span></span
-              >
-              <div class="flex-1 h-2 bg-rose-100 rounded">
-                <div class="h-2 bg-rose-400 rounded" :style="{ width: percent + '%' }"></div>
-              </div>
-              <span class="text-xs text-slate-600 w-8 text-right">{{ percent }}%</span>
-            </div>
+            <div class="flex items-center gap-1 text-yellow-400 text-lg mt-1"></div>
+            <div class="text-xs text-slate-500 mt-1">{{ reviews.length }} reviews</div>
           </div>
         </div>
         <!-- Review List -->
-        <div class="flex flex-col gap-6">
-          <div class="flex gap-4 items-start">
+        <div v-if="reviews.length === 0">
+          <div class="text-center text-slate-500">No reviews available for this product.</div>
+        </div>
+        <div v-for="review in reviews" :key="review.id" class="flex flex-col gap-8">
+          <div class="flex gap-4 items-start my-4">
             <img
               src="https://randomuser.me/api/portraits/men/32.jpg"
               class="w-10 h-10 rounded-full"
             />
             <div class="flex-1">
-              <div class="font-semibold text-slate-800">Nguyễn Văn A</div>
-              <div class="flex items-center gap-1 text-yellow-400 text-sm mb-1">
-                <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+              <div class="font-semibold text-slate-800 flex items-center gap-6 mb-1">
+                {{ review.buyer_name ?? review.buyer_id }}
+                <div class="flex items-center gap-1 text-yellow-400 text-sm">
+                  {{ review.rating }}<span>★</span>
+                </div>
               </div>
-              <div class="text-xs text-slate-500 mb-1">15/03/2025 | Type: 8GB</div>
+              <div class="text-xs text-slate-500 mb-1">
+                <span
+                  >{{ new Date(review.created_at).toLocaleDateString() }} | Type:
+                  {{ review.variant_name ?? review.product_variant_id }}</span
+                >
+              </div>
               <div class="text-slate-700 mb-2">
-                Sản phẩm rất tốt, đóng gói cẩn thận. Giao hàng nhanh. Shop phục vụ nhiệt tình.
+                {{ review.comment }}
               </div>
               <div class="flex gap-2">
                 <img class="w-16 h-16 object-cover rounded" />
-                <img class="w-16 h-16 object-cover rounded" />
-              </div>
-            </div>
-          </div>
-          <div class="flex gap-4 items-start">
-            <img
-              src="https://randomuser.me/api/portraits/women/44.jpg"
-              class="w-10 h-10 rounded-full"
-            />
-            <div class="flex-1">
-              <div class="font-semibold text-slate-800">Trần Thị B</div>
-              <div class="flex items-center gap-1 text-yellow-400 text-sm mb-1">
-                <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
-              </div>
-              <div class="text-xs text-slate-500 mb-1">12/03/2025 | Type: 8GB GDDR6</div>
-              <div class="text-slate-700 mb-2">
-                Chơi game mượt mà 60fps. Rất hài lòng với sản phẩm.
-              </div>
-            </div>
-          </div>
-          <div class="flex gap-4 items-start">
-            <img
-              src="https://randomuser.me/api/portraits/men/45.jpg"
-              class="w-10 h-10 rounded-full"
-            />
-            <div class="flex-1">
-              <div class="font-semibold text-slate-800">Lê Văn C</div>
-              <div class="flex items-center gap-1 text-yellow-400 text-sm mb-1">
-                <span>★</span><span>★</span><span>★</span><span>★</span>
-              </div>
-              <div class="text-xs text-slate-500 mb-1">10/03/2025 | Type: 8GB GDDR6</div>
-              <div class="text-slate-700 mb-2">
-                Sản phẩm OK, hiệu năng tốt trong tầm giá. Có chút nóng nhưng vẫn chấp nhận được.
-              </div>
-              <div class="flex gap-2">
                 <img class="w-16 h-16 object-cover rounded" />
               </div>
             </div>

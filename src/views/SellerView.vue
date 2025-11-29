@@ -98,11 +98,14 @@ onMounted(async () => {
   const cookie = await cookieStore.get('connect.sid')
   const role = localStorage.getItem('role')
   // console.log('Cookie:', cookie)
-  if (!cookie || role !== 'shop') {
+  if (!cookie) {
     router.push('/sellerlog')
     return
   }
-  if (cookie) {
+  else if(role === 'buyer'){
+    router.push('/')
+  }
+  else{
     username.value = localStorage.getItem('username') || ''
     if (username.value) {
       setTimeout(() => {

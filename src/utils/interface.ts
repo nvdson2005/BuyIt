@@ -1,11 +1,13 @@
 export interface CartItem {
-  id: number
-  title: string
-  image: string
-  price: number
-  oldPrice?: number
+  id: string
   quantity: number
-  checked: boolean
+  prod_id: string
+  prod_var_id: string
+  variant_name: string
+  price: number
+  image_url: string
+  product_name: string
+  stock_quantity: number
 }
 
 export interface Product {
@@ -82,6 +84,19 @@ export interface ApiProduct {
   variants: ApiProductVariant[]
 }
 
+export interface Review {
+  id: string
+  product_id: string
+  product_variant_id?: string
+  buyer_id: string
+  rating: number
+  comment: string
+  created_at: string
+  variant_name?: string
+  buyer_name?: string
+  buyer_avatar_url?: string
+}
+
 export interface Shop {
   id: string
   name: string
@@ -115,9 +130,18 @@ export interface Address {
   is_default: boolean
 }
 
-export interface AllProductsViewProps {
-  products: Product[]
-  onAddNewProduct: () => void
+export interface Payment {
+  method_name: 'Cash' | 'Online Banking'
+  method_id: string
+  option_id: string
+}
+
+export interface PaymentMethod {
+  name: 'Cash' | 'Online Banking'
+  method_id: string
+  option_id: string
+  account_number: string
+  is_default: boolean
 }
 
 export interface ProfileDetail {
