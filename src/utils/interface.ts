@@ -1,3 +1,5 @@
+import type { InputNumberMethods } from "primevue"
+
 export interface CartItem {
   id: string
   quantity: number
@@ -151,3 +153,96 @@ export interface ProfileDetail {
   email: string
   description: string
 }
+
+export interface SellerProduct {
+  id: string
+  name: string
+  description: string
+  rating: number
+  price: number
+  sold_amount: number
+  stock_quantity: number
+  image_url: string
+  is_active: boolean
+  sub_category_id: string
+  sale_price: number
+  is_onsale: boolean
+  variants: ProductVariant[]
+}
+
+export interface SellerProductShow {
+  id: string
+  name: string
+  description: string
+  rating: number
+  price: number
+  sold_amount: number
+  stock_quantity: number
+  image_url: string
+  is_active: boolean
+  sub_category_id: string
+  sale_price: number
+  is_onsale: boolean
+}
+
+
+export interface Category {
+  category_id: string
+  name: string
+
+}
+
+export interface Voucher {
+  voucher_id: string
+  shop_id: string | null
+  code: string
+  description: string
+  discount_amount: number
+  min_amount_to_apply: number
+  max_discount_amount: number
+  usage_limit: number
+  discount_type: 'percentage' | 'fixed_amount'
+  applicable_scope: 'shop' | 'platform'
+  program_name: string
+  start_date: Date
+  expiry_date: Date
+  is_active: boolean
+}
+
+export interface Subcategory {
+  id: string
+  name: string
+  category_id: string
+
+}
+export interface SellerOrderItem {
+  order_id: string
+  product_id: string
+  variant_id: string
+  product_name: string
+  variant_name: string
+  image_url: string
+  order_item_id: string
+  quantity: number
+  total_amount: number
+  order_status: string
+  order_date: Date
+  carrier_id: string
+  carrier_name: string
+  shipment_id: string
+  ship_status: string
+  actual_deliver_date: Date | null
+
+}
+
+export interface SellerOrder{
+  order_id: string
+  order_status: string
+  order_date: Date
+  actual_deliver_date: Date | null
+  ship_status: string
+  carrier_name: string
+  order_items: SellerOrderItem[]
+  selected: boolean
+}
+

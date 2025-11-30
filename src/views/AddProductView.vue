@@ -4,21 +4,36 @@ import FormSection from '@/components/layout/FormSection.vue'
 import apiClient from '@/api/client'
 import { PlusCircle, ChevronDown } from 'lucide-vue-next'
 import UploadImage from '@/components/ui/UploadImage.vue'
+import { type SellerProduct, type Category, type Subcategory } from '@/utils/interface'
 // Lấy dữ liệu từ form điền cho interface Product
-const productName = ref('')
-const description = ref('')
-const imageUrl = ref('')
-const price = ref<number | null>(null)
-const stockQuantity = ref<number | null>(null)
-const sub_category_id = ref(null)
-const category_id = ref(null)
-const variants = ref([
-  { name: '', image_url: '', price: 0, stock: 0 }
-])
+const newProduct = ref<SellerProduct>({
+  id: '',
+  name: '',
+  description: '',
+  rating: 5,
+  price: 0,
+  sold_amount: 0,
+  stock_quantity: 0,
+  image_url: '',
+  is_active: true,
+  sub_category_id: '',
+  sale_price: 0,
+  is_onsale: false,
+  variants:
+  [{
+    variant_id: '',
+    product_id: '',
+    name: '',
+    price: 0,
+    stock_quantity: 0,
+    image_url: ''
+  }]
+})
+const category_id = ref('')
 
 // Variables support for fetching data
-const categories = ref([])
-const subcategories = ref([])
+const categories = ref<Category[]>([])
+const subcategories = ref<Subcategory[]>([])
 const newSubcategory = ref('')
 
 
@@ -26,27 +41,11 @@ const newSubcategory = ref('')
 const showCategories = ref(false)
 const showSubcategories = ref(false)
 const selectedCategory = ref('Chọn ngành hàng')
-const selectedSubcategory = ref('Chọn phân loại hàng')
+const selectedSubcategory = ref('Chọn ngành hàng con')
 const addNewSubcategory = ref(false)
 
-const props = defineProps({
-  onCancel: {
-    type: Function,
-    default: () => console.log('Cancel clicked')
-  },
-  onSave: {
-    type: Function,
-    default: (newProduct: any) => console.log('Saved', newProduct)
-  },
-})
-const emit = defineEmits<{
-  click: [event: MouseEvent]
-}>()
 
-const handleCancel = (event: MouseEvent) => {
-  emit('click', event)
-  props.onCancel()
-}
+const emit = defineEmits(['cancel'])
 
 
 // Fetch data for categories
@@ -57,11 +56,12 @@ onMounted(async () => {
     console.log('Fetched categories details:', categories.value)
 
 
-  } catch (err:any) {
-    alert(err.message)
+  } catch (err) {
+    console.error("Get category failed: ", err)
   }
 })
-const selectCategory = async (category) => {
+
+const selectCategory = async (category: Category) => {
   selectedCategory.value = category.name
   category_id.value = category.category_id
   showCategories.value = false
@@ -69,21 +69,21 @@ const selectCategory = async (category) => {
   fetch_subcategory(category)
 }
 
-async function fetch_subcategory(category){
+async function fetch_subcategory(category: Category){
   try {
     const sub_res = await apiClient.get(`/category/fetch_subcategory/${category.category_id}`)
     subcategories.value = sub_res.data.subcategories
     console.log("Subcategories:", subcategories.value)
 
     selectedSubcategory.value = "Chọn phân loại hàng"
-  } catch (err: any) {
-    console.error("Error fetch sub:", err.message)
+  } catch (err) {
+    console.error("Error fetch sub:", err)
   }
 }
 
-const selectSubcategories = (subcategory) => {
+const selectSubcategories = (subcategory: Subcategory) => {
   selectedSubcategory.value = subcategory.name
-  sub_category_id.value = subcategory.sub_category_id
+  newProduct.value.sub_category_id = subcategory.id
   showSubcategories.value = false
   addNewSubcategory.value = false
 }
@@ -104,30 +104,37 @@ async function handleAddSubcategory() {
 
     // Cập nhật state hiển thị và id
     selectedSubcategory.value = addedSubcategory.name;
-    sub_category_id.value = addedSubcategory.sub_category_id;
+    newProduct.value.sub_category_id = addedSubcategory.sub_category_id;
 
     // Reset input + dropdown
     newSubcategory.value = '';
     addNewSubcategory.value = false;
     showSubcategories.value = false;
     console.log("Response from backend:", response.data);
-  } catch (error: any) {
+  } catch (error) {
     console.error('Subcategory insertion failed:', error);
   }
 }
 
 
 function addVariant() {
-  variants.value.push({ name: '', image_url: '', price: 0, stock: 0 })
+  newProduct.value.variants.push({
+    variant_id: '',
+    product_id: '',
+    name: '',
+    price: 0,
+    stock_quantity: 0,
+    image_url: ''
+  })
 }
 
 function removeVariant(index: number) {
-  variants.value.splice(index, 1)
+  newProduct.value.variants.splice(index, 1)
 }
 
 
 async function handleSave() {
-  if (!productName.value || price.value === null || stockQuantity.value === null || !sub_category_id.value) {
+  if (!newProduct.value.name || !newProduct.value.price || !newProduct.value.stock_quantity|| !newProduct.value.sub_category_id) {
     alert('Vui lòng điền đầy đủ thông tin bắt buộc!')
     return
   }
@@ -135,33 +142,50 @@ async function handleSave() {
   try {
     const response = await apiClient.post('/products/insert_product', {
       shop_id: shop_id,
-      name: productName.value,
-      description: description.value,
-      price: price.value,
-      stock_quantity: stockQuantity.value,
-      image_url: imageUrl.value,
-      sub_category_id: sub_category_id.value
+      name: newProduct.value.name,
+      description: newProduct.value.description,
+      price: newProduct.value.price,
+      stock_quantity: newProduct.value.stock_quantity,
+      image_url: newProduct.value.image_url,
+      sub_category_id: newProduct.value.sub_category_id
     });
 
     const prod_id = response.data.product.id;
-    productName.value = ''
-    description.value = ''
-    imageUrl.value = ''
-    price.value = <number | null>(null)
-    stockQuantity.value = <number | null>(null)
-    sub_category_id.value = null
-    category_id.value = null
 
-    const variant_res = await apiClient.post('/products/insert_variants', {
+    alert(newProduct.value.variants)
+    await apiClient.post('/products/insert_variants', {
       product_id: prod_id,
-      variants: variants.value
+      variants: newProduct.value.variants
     });
+    newProduct.value = {
+      id: '',
+      name: '',
+      description: '',
+      rating: 5,
+      price: 0,
+      sold_amount: 0,
+      stock_quantity: 0,
+      image_url: '',
+      is_active: true,
+      sub_category_id: '',
+      sale_price: 0,
+      is_onsale: false,
+      variants:
+      [{
+        variant_id: '',
+        product_id: '',
+        name: '',
+        price: 0,
+        stock_quantity: 0,
+        image_url: ''
+      }]
+    }
 
-    variants.value = [
-      { name: '', image_url: '', price: 0, stock: 0 }
-    ]
-    console.log("Variant Response:", variant_res.data);
-  } catch (error: any) {
+    category_id.value = ''
+    selectedCategory.value = 'Chọn ngành hàng'
+    selectedSubcategory.value = 'Chọn ngành hàng con'
+    emit('cancel')
+  } catch (error) {
     console.error('Subcategory insertion failed:', error);
   }
 }
@@ -182,7 +206,7 @@ async function handleSave() {
           </label>
           <input
             id="product-name"
-            v-model="productName"
+            v-model="newProduct.name"
             class="w-full rounded-md bg-gray-100 px-3 py-2 text-sm
               focus:outline-none focus:ring-[3px] focus:ring-gray-300"
             placeholder="Nhập tên sản phẩm (Thương hiệu + Loại + Thông số)"
@@ -195,7 +219,7 @@ async function handleSave() {
           <label class="text-sm font-medium">
             Hình ảnh sản phẩm
           </label>
-          <UploadImage v-model="imageUrl"></UploadImage>
+          <UploadImage v-model="newProduct.image_url"></UploadImage>
         </div>
         <!-- Gía hiển thị -->
          <div>
@@ -204,7 +228,7 @@ async function handleSave() {
           </label>
           <input
             type="number"
-            v-model="price"
+            v-model="newProduct.price"
             class="w-full rounded-md bg-gray-100 px-3 py-2 text-sm
               focus:outline-none focus:ring-[3px] focus:ring-gray-300"
             placeholder="Nhập giá hiển thị của sản phẩm"
@@ -217,7 +241,7 @@ async function handleSave() {
           </label>
           <input
             type="number"
-            v-model="stockQuantity"
+            v-model="newProduct.stock_quantity"
             class="w-full rounded-md bg-gray-100 px-3 py-2 text-sm
               focus:outline-none focus:ring-[3px] focus:ring-gray-300"
             placeholder="Nhập số lượng sản phẩm có"
@@ -271,7 +295,7 @@ async function handleSave() {
           <!-- Dropdown list -->
           <ul v-if="showSubcategories"
               class="absolute z-50 w-full border border-gray-200 rounded-md shadow bg-white mt-1">
-            <li v-for="item in subcategories" :key="item.sub_category_id"
+            <li v-for="item in subcategories" :key="item.id"
                 @click="selectSubcategories(item)"
                 class="px-3 py-2 hover:bg-gray-100 cursor-pointer text-sm">
               {{ item.name }}
@@ -310,7 +334,7 @@ async function handleSave() {
           </label>
           <textarea
             id="description"
-            v-model="description"
+            v-model="newProduct.description"
             class="w-full h-30 rounded-md bg-gray-100 px-3 py-2 text-sm
               focus:outline-none focus:ring-[3px] focus:ring-gray-300"
             placeholder="Nhập mô tả chi tiết về sản phẩm..."
@@ -337,7 +361,7 @@ async function handleSave() {
         </div>
 
         <!-- Render các form biến thể -->
-        <div v-for="(variant, index) in variants" :key="index" class="border border-gray-200 rounded-md p-4 space-y-4">
+        <div v-for="(variant, index) in newProduct.variants" :key="index" class="border border-gray-200 rounded-md p-4 space-y-4">
 
           <div>
             <label class="text-sm font-medium">Nhóm phân loại</label>
@@ -367,7 +391,7 @@ async function handleSave() {
           <div>
             <label class="text-sm font-medium">Kho hàng</label>
             <input
-              v-model="variant.stock"
+              v-model="variant.stock_quantity"
               type="number"
               class="w-full rounded-md bg-gray-100 px-3 py-2 mb-2 text-sm
                 focus:outline-none focus:ring-[3px] focus:ring-gray-300"
@@ -399,7 +423,7 @@ async function handleSave() {
                 active:bg-gray-200
                 focus:outline-none focus:ring-2 focus:ring-gray-300
                 mt-2"
-          @click="handleCancel">
+          @click="$emit('cancel')">
           Hủy
         </button>
       <button

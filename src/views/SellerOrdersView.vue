@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted, computed } from 'vue'
 import {ChevronDown} from 'lucide-vue-next'
 import Checkbox from '@/components/ui/Checkbox.vue'
 import CustomImage from '@/components/ui/CustomImage.vue'
-
+import { type SellerOrder, type SellerOrderItem } from '@/utils/interface'
+import apiClient from '@/api/client'
 
 import {
   Table,
@@ -18,72 +19,22 @@ import {
 
 const checked_all = ref(false)
 const isOpen = ref(true)
+const shopId = localStorage.getItem('id')
+const orders = ref<SellerOrder[]>([])
+const orderItems = ref<SellerOrderItem[]>([])
+
+// for filter
+const start_date = ref<Date|null>(null)
+const end_date = ref<Date|null>(null)
+const carriers = computed(() => {
+  return [...new Set(orders.value.map(o => o.carrier_name))];
+});
+const showCarrier = ref(false)
+const selectedCarrier = ref('Chọn đơn vị vận chuyển')
 
 const toggleAccordion = () => {
   isOpen.value = !isOpen.value
 }
-// Mock dữ liệu
-const mockOrders = [
-  {
-    id: 'ORDER001',
-    productName: 'Tai nghe Bluetooth Pro',
-    productImage:
-      'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080',
-    quantity: 1,
-    price: '₫1,250,000',
-    status: 'Chờ xác nhận',
-    statusColor: 'text-orange-500',
-    carrier: 'Chưa xác định',
-    createdTime: '24/11/2023 09:30',
-    deliveryDate: '-',
-    selected: false
-  },
-  {
-    id: 'ORDER002',
-    productName: 'Đồng hồ thông minh Gen 5',
-    productImage:
-      'https://images.unsplash.com/photo-1523275335684-37898b6baf30?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080',
-    quantity: 1,
-    price: '₫7,300,000',
-    status: 'Đã giao cho ĐVVC',
-    statusColor: 'text-green-600',
-    carrier: 'VNPost Tiết kiệm',
-    createdTime: '23/11/2023 17:20',
-    deliveryDate: '28/11/2023 23:00',
-    selected: false
-
-  },
-  {
-    id: 'ORDER003',
-    productName: 'Bàn phím cơ không dây',
-    productImage:
-      'https://images.unsplash.com/photo-1618384887924-c9b5f5833238?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080',
-    quantity: 1,
-    price: '₫2,100,000',
-    status: 'Đang giao',
-    statusColor: 'text-blue-500',
-    carrier: 'Giao Hàng Nhanh',
-    createdTime: '23/11/2023 11:45',
-    deliveryDate: '26/11/2023 23:00',
-    selected: false
-
-  },
-  {
-    id: 'ORDER004',
-    productName: 'Chuột công thái học Ergonomic',
-    productImage:
-      'https://images.unsplash.com/photo-1615663245615-5654a7c06124?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080',
-    quantity: 1,
-    price: '₫950,000',
-    status: 'Đã hủy',
-    statusColor: 'text-red-500',
-    carrier: 'VNPost Tiết kiệm',
-    createdTime: '22/11/2023 10:03',
-    deliveryDate: '27/11/2023 23:00',
-    selected: false
-
-  }
-]
 
 const tabs = [
   'Tất cả',
@@ -97,14 +48,28 @@ const tabs = [
 ]
 
 const activeTab = ref('Tất cả')
-const filteredOrders = ref(mockOrders)
+const filteredOrders = ref<SellerOrder[]>([])
+const statusColor = ref('text-orange-500')
 
 watch(activeTab, () => {
   if (activeTab.value === 'Tất cả') {
-    filteredOrders.value = mockOrders
-  } else {
-    filteredOrders.value = mockOrders.filter(
-      (o) => o.status === activeTab.value
+    filteredOrders.value = orders.value
+  } else if(activeTab.value === 'Chờ xác nhận'){
+    filteredOrders.value = orders.value.filter(
+      (o) => o.order_status === 'Pending'
+    )
+    statusColor.value = "text-orange-500"
+  }
+  else if(activeTab.value === 'Chuẩn bị hàng'){
+    filteredOrders.value = orders.value.filter(
+      (o) => o.order_status === 'Paid'
+    )
+    statusColor.value = "text-orange-500"
+
+  }
+  else if(activeTab.value === 'Đang giao'){
+    filteredOrders.value = orders.value.filter(
+      (o) => o.order_status === 'Shipped'
     )
   }
 })
@@ -114,6 +79,98 @@ watch(() => checked_all.value, (value) => {
     o.selected = value
   })
 })
+
+onMounted(async () => {
+  try {
+    const res = await apiClient.get(`/shop/orders/${shopId}`)
+    orderItems.value = res.data.orderItems.map((item: SellerOrderItem) => ({
+      order_id: item.order_id,
+      product_id: item.product_id,
+      variant_id: item.variant_id,
+      product_name: item.product_name,
+      variant_name: item.variant_name,
+      image_url: item.image_url,
+      order_item_id: item.order_item_id,
+      quantity: item.quantity,
+      total_amount: item.total_amount,
+      order_status: item.order_status,
+      order_date: item.order_date,
+      carrier_id: item.carrier_id,
+      carrier_name: item.carrier_name,
+      shipment_id: item.shipment_id,
+      ship_status: item.ship_status,
+      actual_deliver_date: item.actual_deliver_date
+    }))
+    const groupedOrders: Record<string, SellerOrder> = {}
+
+    orderItems.value.forEach(item => {
+      if (!groupedOrders[item.order_id]) {
+        groupedOrders[item.order_id] = {
+          order_id: item.order_id,
+          order_status: item.order_status,
+          order_date: item.order_date,
+          actual_deliver_date: item.actual_deliver_date,
+          ship_status: item.ship_status,
+          carrier_name: item.carrier_name,
+          order_items: [],
+          selected: false
+        }
+      }
+      groupedOrders[item.order_id].order_items.push(item)
+    })
+
+    orders.value = Object.values(groupedOrders)
+    filteredOrders.value = orders.value
+
+  } catch (err) {
+    console.error("Get category failed: ", err)
+  }
+})
+
+const formatted = (t: Date | null) => {
+  if(t === null){
+    return '___'
+  }
+  const date = new Date(t);
+  const str = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Ho_Chi_Minh",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false
+  }).format(date);
+    return str;
+};
+
+function filter(){
+  if(start_date.value && end_date.value){
+
+    const start = new Date(start_date.value)
+    const end = new Date(end_date.value)
+
+    filteredOrders.value = filteredOrders.value.filter(o => new Date(o.order_date) >= start && new Date(o.order_date) <= end)
+  }
+  if(carriers.value.includes(selectedCarrier.value)){
+    filteredOrders.value = filteredOrders.value.filter(o => o.carrier_name === selectedCarrier.value)
+  }
+
+}
+
+function resetFilter(){
+  filteredOrders.value = orders.value
+  activeTab.value = 'Tất cả'
+  start_date.value = null
+  end_date.value = null
+  selectedCarrier.value = 'Chọn đơn vị vận chuyển'
+}
+
+function selectCarrier(carrier:string){
+  selectedCarrier.value = carrier
+  showCarrier.value = false
+}
 
 </script>
 
@@ -197,67 +254,66 @@ watch(() => checked_all.value, (value) => {
       class="transition-all duration-300 overflow-hidden"
       :class="isOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'"
     >
-      <div class="bg-white p-4 shadow-sm space-y-3">
-        <!-- Nội dung filter của bạn -->
-        <div class="grid grid-cols-4 gap-4">
-          <input
-            class="w-full rounded-md bg-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-[3px] focus:ring-gray-300"
-            placeholder="ID Đơn hàng"
-          />
-          <input
-            class="w-full rounded-md bg-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-[3px] focus:ring-gray-300"
-            placeholder="Tên sản phẩm"
-          />
-          <input
-            type="date"
-            class="w-full rounded-md bg-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-[3px] focus:ring-gray-300 cursor-pointer"
-            placeholder="Ngày tạo đơn"
-          />
+      <div class="bg-white p-4 shadow-sm space-y-3 ">
+        <!-- Bộ lọc ngày -->
+         <div class="grid grid-cols-2 gap-6">
+        <div class="flex items-center gap-6">
+          <label class="text-sm font-semibold whitespace-nowrap">Ngày tạo đơn</label>
+
           <div class="flex items-center gap-2">
             <input
               type="date"
-              class="w-32 rounded-md bg-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-[3px] focus:ring-gray-300 cursor-pointer"
+              v-model="start_date"
+              class="w-32 h-10 rounded-md bg-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-[3px] focus:ring-gray-300 cursor-pointer"
               placeholder="Từ ngày"
             />
             <span>-</span>
             <input
               type="date"
-              class="w-32 rounded-md bg-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-[3px] focus:ring-gray-300 cursor-pointer"
+              v-model="end_date"
+
+              class="w-32 h10 rounded-md bg-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-[3px] focus:ring-gray-300 cursor-pointer"
               placeholder="Đến ngày"
             />
           </div>
         </div>
 
-        <div class="grid grid-cols-4 gap-4">
-          <button class="inline-flex items-center px-3 py-2 whitespace-nowrap rounded-md text-sm font-medium transition-all border border-gray-200 w-full h-8 justify-between bg-background text-foreground text-gray-700 hover:bg-gray-200 border-gray-300 cursor-pointer">
-            Tên Shop <ChevronDown :size="16" />
+        <!-- Đơn vị vận chuyển -->
+        <div class="flex items-center gap-6">
+          <label class="text-sm font-semibold whitespace-nowrap">Đơn vị vận chuyển</label>
+          <div class="relative">
+          <button
+            class="inline-flex items-center px-3 py-2 rounded-md border border-gray-300
+            text-sm font-medium cursor-pointer transition-all w-full h-10 justify-between
+            bg-white text-gray-700 hover:bg-gray-200"
+            @click="showCarrier = !showCarrier"
+          >
+            {{ selectedCarrier }}
+            <ChevronDown :size="16" />
           </button>
-          <button class="inline-flex items-center  px-3 py-2 whitespace-nowrap rounded-md
-                text-sm font-medium transition-all cursor-pointer
-                border border-gray-200 w-full h-8 justify-between
-                bg-background text-foreground
-                text-gray-700
-                hover:bg-gray-200 border-gray-300 ">
-            Đơn vị vận chuyển <ChevronDown :size="16"
-          /></button>
-          <button class="inline-flex items-center px-3 py-2 whitespace-nowrap rounded-md
-                text-sm font-medium transition-all cursor-pointer
-                border border-gray-200 w-full h-8 justify-between
-                bg-background text-foreground
-                text-gray-700
-                hover:bg-gray-200 border-gray-300 ">
-            Phương thức thanh toán <ChevronDown :size="16"
-          /></button>
-          <button class="inline-flex items-center px-3 py-2 whitespace-nowrap rounded-md
-                text-sm font-medium transition-all cursor-pointer
-                border border-gray-200 w-full h-8 justify-between
-                bg-background text-foreground
-                text-gray-700
-                hover:bg-gray-200 border-gray-300 ">
-            Chưa/Đã in <ChevronDown :size="16"
-          /></button>
+          <ul v-if="showCarrier"
+              class="absolute z-50 w-full border border-gray-200 rounded-md shadow bg-white mt-1 max-h-10 overflow-y-auto">
+            <li v-for="carrier in carriers" :key="carrier"
+                @click="selectCarrier(carrier)"
+                class="px-3 py-2 hover:bg-gray-100 cursor-pointer text-sm">
+              {{ carrier }}
+            </li>
+          </ul>
+          </div>
         </div>
+        </div>
+        <div class="flex justify-end gap-2">
+        <button class="inline-flex items-center px-3 py-2 whitespace-nowrap rounded-md text-white text-sm font-medium transition-all border border-gray-200 h-10 bg-[#ee4d2d] hover:bg-[#d73211] cursor-pointer"
+                @click="filter">
+          Áp dụng
+        </button>
+          <button class="inline-flex items-center px-3 py-2 whitespace-nowrap rounded-md text-sm font-medium transition-all border border-gray-200 h-10 justify-between bg-background text-foreground text-gray-700 hover:bg-gray-200 cursor-pointer"
+                  @click="resetFilter">
+            Nhập Lại
+          </button>
       </div>
+      </div>
+
     </div>
   </div>
 
@@ -280,30 +336,31 @@ watch(() => checked_all.value, (value) => {
           <template v-if="filteredOrders.length > 0">
             <TableRow
               v-for="order in filteredOrders"
-              :key="order.id"
+              :key="order.order_id"
               class="align-top"
             >
               <TableCell><Checkbox v-model="order.selected"></Checkbox></TableCell>
               <TableCell>
-                <div class="flex gap-3">
+                <div v-for="item in order.order_items" :key="item.order_item_id" class="flex gap-3 mb-2">
                   <CustomImage
-                    :src="order.productImage"
-                    :alt="order.productName"
+                    :src="item.image_url"
+                    :alt="item.product_name"
                     class="w-16 h-16 object-cover rounded"
                   />
                   <div>
-                    <p class="font-medium">{{ order.productName }}</p>
-                    <p class="text-sm text-gray-500">x{{ order.quantity }}</p>
+                    <p class="font-medium">{{ item.product_name }}</p>
+                    <p class="text-sm text-gray-500">{{ item.variant_name }}</p>
+                    <p class="text-sm text-gray-500">x{{ item.quantity }}</p>
                   </div>
                 </div>
               </TableCell>
-              <TableCell>{{ order.price }}</TableCell>
+              <TableCell>0</TableCell>
               <TableCell>
-                <span :class="order.statusColor">{{ order.status }}</span>
+                <span :class="statusColor">{{ order.ship_status }}</span>
               </TableCell>
-              <TableCell>{{ order.carrier }}</TableCell>
-              <TableCell>{{ order.createdTime }}</TableCell>
-              <TableCell>{{ order.deliveryDate }}</TableCell>
+              <TableCell>{{ order.carrier_name }}</TableCell>
+              <TableCell>{{ formatted(order.order_date) }}</TableCell>
+              <TableCell>{{ formatted(order.actual_deliver_date) }}</TableCell>
               <TableCell>
                 <button class="inline-flex items-center gap-2 rounded-md text-sm font-medium transition-all focus-visible:ring-[3px] text-primary underline-offset-4 hover:underline text-blue-600"
                   >Xem chi tiết</button

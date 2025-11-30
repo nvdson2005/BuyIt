@@ -1,47 +1,53 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref } from "vue";
 import RadioGroup from "@/components/ui/RadioGroup.vue";
 import apiClient from "@/api/client";
-import { ChevronDown } from "lucide-vue-next";
+import { type Voucher } from "@/utils/interface";
 const emit = defineEmits(["cancel", "save"]);
 
+const voucher = ref<Voucher>({
+  voucher_id: '',
+  shop_id: localStorage.getItem('id'),
+  code: '',
+  description: '',
+  discount_amount: 0,
+  min_amount_to_apply: 0,
+  max_discount_amount: 0,
+  usage_limit: 0,
+  discount_type: 'fixed_amount',
+  applicable_scope: 'shop',
+  program_name: '',
+  start_date: new Date,
+  expiry_date: new Date,
+  is_active: true
+})
+
 // States
-const voucherEvent = ref('')
-const voucherType = ref("shop");
-const description = ref('')
-const discountType = ref("fixed_amount"); // Kiểu giảm: amount (giảm trên giá), percentage (giảm phần trăm)
 const discountCapType = ref("limited");
-const amount = ref(0) // giảm bao nhiêu: 10%, 10000,..
-const maxAmount = ref(null) // giảm tối đa
-const minSpend = ref(0) // Đơn hàng tối thiểu
-const quantity = ref(0) // Số lượng voucher
-const start = ref<Date>()
-const end = ref<Date>()
 
 
 async function handleSave() {
-  if (!voucherType.value || !discountType.value || !amount.value || !quantity.value || !start.value || !end.value) {
+  if (!voucher.value.applicable_scope || !voucher.value.discount_amount || !voucher.value.usage_limit) {
     alert('Vui lòng điền đầy đủ thông tin bắt buộc!')
     return
   }
-  const shop_id = localStorage.getItem('id')
   try {
     await apiClient.post('/voucher/insert_voucher', {
-      shop_id: shop_id,
-      description: description.value,
-      discount_amount: amount.value,
-      min_amount_to_apply: minSpend.value,
-      start_date: start.value,
-      expiry_date: end.value,
-      max_discount_amount: maxAmount.value,
-      usage_limit: quantity.value,
-      discount_type: discountType.value,
-      applicable_scope: voucherType.value,
-      program_name: voucherEvent.value
+      shop_id: voucher.value.shop_id,
+      description: voucher.value.description,
+      discount_amount: voucher.value.discount_amount,
+      min_amount_to_apply: voucher.value.min_amount_to_apply,
+      start_date: voucher.value.start_date,
+      expiry_date: voucher.value.expiry_date,
+      max_discount_amount: voucher.value.max_discount_amount,
+      usage_limit: voucher.value.usage_limit,
+      discount_type: voucher.value.discount_type,
+      applicable_scope: voucher.value.applicable_scope,
+      program_name: voucher.value.program_name
     });
 
     // alert("Thêm voucher thành công!");
-  } catch (error: any) {
+  } catch (error) {
     console.error('Voucher insertion failed:', error);
   }
   emit("save");
@@ -61,7 +67,7 @@ async function handleSave() {
         <label class="flex items-center gap-2 text-sm leading-none font-medium flex items-center mb-2 pt-2">Loại mã</Label>
 
         <RadioGroup
-              v-model="voucherType"
+              v-model="voucher.applicable_scope"
               :options="[
                 { label: 'Voucher toàn shop', value: 'shop' }
               ]"
@@ -77,7 +83,7 @@ async function handleSave() {
         <div>
           <input
             id = "program-name"
-            v-model="voucherEvent"
+            v-model="voucher.program_name"
             class="w-full rounded-md bg-gray-100 px-3 py-2 text-sm
               focus:outline-none focus:ring-[3px] focus:ring-gray-300"
             placeholder="Siêu Sale 15.02"/>
@@ -93,7 +99,7 @@ async function handleSave() {
         </label>
         <div>
           <input
-            v-model="description"
+            v-model="voucher.description"
             class="w-full rounded-md bg-gray-100 px-3 py-2 text-sm
               focus:outline-none focus:ring-[3px] focus:ring-gray-300"
             placeholder="Mô tả ngắn gọn"/>
@@ -111,13 +117,13 @@ async function handleSave() {
 
             <div class="flex items-center gap-2">
               <input
-                v-model="start"
+                v-model="voucher.start_date"
                 type = "datetime-local"
                 class="w-full rounded-md bg-white text-gray-900 px-3 py-2 text-sm
                   focus:outline-none focus:ring-[3px] focus:ring-gray-300"/>
               <span class="text-white">-</span>
               <input
-                v-model="end"
+                v-model="voucher.expiry_date"
                 type = "datetime-local"
                 class="w-full rounded-md bg-white text-gray-900 px-3 py-2 text-sm
                   focus:outline-none focus:ring-[3px] focus:ring-gray-300"/>
@@ -136,7 +142,7 @@ async function handleSave() {
           Loại Giảm giá <span class="text-red-500">*</span>
         </label>
         <RadioGroup
-          v-model="discountType"
+          v-model="voucher.discount_type"
           :options="[
             { label: 'Giảm giá', value: 'fixed_amount' },
             { label: 'Giảm phần trăm', value: 'percentage' }
@@ -153,7 +159,7 @@ async function handleSave() {
         <div class="space-y-2">
           <div class="flex items-center gap-2">
             <input
-            v-model="amount"
+            v-model="voucher.discount_amount"
             type="number"
             class="w-32 rounded-md bg-gray-100 px-3 py-2 text-sm
               focus:outline-none focus:ring-[3px] focus:ring-gray-300"
@@ -179,7 +185,7 @@ async function handleSave() {
           <div v-if="discountCapType === 'limited'" class="flex gap-2">
             <span>₫</span>
             <input
-            v-model="maxAmount"
+            v-model="voucher.max_discount_amount"
             type="number"
             class="w-32 rounded-md bg-gray-100 px-3 py-2 text-sm
               focus:outline-none focus:ring-[3px] focus:ring-gray-300"
@@ -197,7 +203,7 @@ async function handleSave() {
           <span>₫</span>
           <input
             id = "min-order-value"
-            v-model="minSpend"
+            v-model="voucher.min_amount_to_apply"
             type="number"
             class="w-48 rounded-md bg-gray-100 px-3 py-2 text-sm
               focus:outline-none focus:ring-[3px] focus:ring-gray-300"
@@ -213,7 +219,7 @@ async function handleSave() {
         <div>
           <input
             id = "total-usage"
-            v-model="quantity"
+            v-model="voucher.usage_limit"
             type="number"
             class="w-48 rounded-md bg-gray-100 px-3 py-2 text-sm
               focus:outline-none focus:ring-[3px] focus:ring-gray-300"

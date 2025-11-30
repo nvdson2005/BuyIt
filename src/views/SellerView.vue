@@ -19,19 +19,6 @@ const isLoading = ref(true)
 const username = ref('')
 const isLoggedIn = ref(true)
 
-const initialProducts = [
-  {
-    id: '3703936560',
-    name: 'Dong Nai Water Supply Construction And Services',
-    sku: 'SKU sản phẩm: 3703936560',
-    price: '₫100.000',
-    stock: '10k',
-    sales: 1
-  }
-]
-
-const products = ref(initialProducts)
-
 const sidebarNav = {
   'Quản Lý Đơn Hàng': ['Tất cả', 'Bàn Giao Đơn Hàng'],
   'Quản Lý Sản Phẩm': ['Tất Cả Sản Phẩm', 'Thêm Sản Phẩm'],
@@ -43,8 +30,7 @@ const sidebarNav = {
   'Chăm sóc khách hàng': ['Quản lý Đánh Giá']
 }
 
-function handleAddProduct(newProduct: any) {
-  products.value = [newProduct, ...products.value]
+function handleAddProduct() {
   activeView.value = 'all-products'
 }
 
@@ -182,7 +168,6 @@ async function RetrieveUsername() {
       <main class="flex-1 p-6 overflow-y-auto">
         <component
           :is="currentView"
-          :products="products"
           @add-new-product="() => (activeView = 'add-product')"
           @cancel="() => (activeView = 'all-products')"
           @save="handleAddProduct"

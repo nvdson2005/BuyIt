@@ -3,6 +3,7 @@ import {ref, watch, onMounted, computed } from "vue";
 import { ChevronDown } from "lucide-vue-next";
 // import Checkbox from "@/components/ui/Checkbox.vue";
 import CustomImage from "@/components/ui/CustomImage.vue";
+import { type SellerProductShow, type Subcategory } from "@/utils/interface";
 import apiClient from "@/api/client";
 import {
   Table,
@@ -17,10 +18,10 @@ import {
 const shopId = localStorage.getItem('id')
 
 // Sản phẩm
-const products = ref([])
-const subcategories = ref([])
-const sub_category_id = ref(null)
-const tabProducts = ref([])
+const products = ref<SellerProductShow[]>([])
+const subcategories = ref<Subcategory[]>([])
+const sub_category_id = ref('')
+const tabProducts = ref<SellerProductShow[]>([])
 const tab = ref('all')
 
 // Support
@@ -59,11 +60,24 @@ onMounted(async () => {
   try {
     const response = await apiClient.get(`/products/get-by-shopid/${shopId}`)
     const subcategory_res = await apiClient.get(`/category/subcategories/${shopId}`)
-    products.value = response.data.products
+    products.value = response.data.products.map((p: SellerProductShow) => ({
+      id: p.id,
+      name: p.name,
+      description: p.description,
+      rating: p.rating,
+      price: p.price,
+      sold_amount: p.sold_amount,
+      stock_quantity: p.stock_quantity,
+      image_url: p.image_url,
+      is_active: p.is_active,
+      sub_category_id: p.sub_category_id,
+      sale_price: p.sale_price,
+      is_onsale: p.is_onsale
+    }))
     tabProducts.value = products.value
     subcategories.value = subcategory_res.data.subcategories
-  } catch (err:any) {
-    alert(err.message)
+  } catch (err) {
+    console.error('Getting data failed: ', err)
   }
 })
 
@@ -73,8 +87,9 @@ async function filteredProducts() {
       const response = await apiClient.get(`/products/subcategory/${sub_category_id.value}`)
       tabProducts.value = response.data.products
 
-    } catch (err:any) {
-      alert(err.message)
+    } catch (err) {
+      console.error('Getting subcategory failed: ', err)
+
     }
   }
   if (keyword.value.trim()) {
@@ -83,7 +98,7 @@ async function filteredProducts() {
     )
   }
   selectedSubcategory.value = 'Tìm theo ngành hàng con'
-  sub_category_id.value = null
+  sub_category_id.value = ''
   keyword.value = ''
 
 }
@@ -92,9 +107,9 @@ function resetFilter(){
   tab.value = 'all'
   tabProducts.value = products.value
 }
-const selectSubcategory = async (subcategory) => {
+const selectSubcategory = async (subcategory: Subcategory) => {
   selectedSubcategory.value = subcategory.name
-  sub_category_id.value = subcategory.sub_category_id
+  sub_category_id.value = subcategory.id
   showSubCategories.value = false
 }
 </script>
@@ -169,7 +184,7 @@ const selectSubcategory = async (subcategory) => {
           <!-- Dropdown list -->
           <ul v-if="showSubCategories"
               class="absolute z-50 w-full border border-gray-200 rounded-md shadow bg-white mt-1">
-            <li v-for="item in subcategories" :key="item.sub_category_id"
+            <li v-for="item in subcategories" :key="item.id"
                 @click="selectSubcategory(item)"
                 class="px-3 py-2 hover:bg-gray-100 cursor-pointer text-sm">
               {{ item.name }}
