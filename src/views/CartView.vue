@@ -8,15 +8,17 @@ import Checkbox from '@/components/ui/Checkbox.vue'
 import { useRouter } from 'vue-router'
 import type { AxiosResponse } from 'axios'
 import { navigateToProduct } from '@/utils/navigateFunctions'
-
+import { notify } from '@/utils/notify'
 const router = useRouter()
 
 const onNavigateToCheckout = () => {
-  if(selectedItems.value.length){
-    router.push({ name: 'checkout', query:{from: 'cart', ids: selectedItems.value.map(item => item.id).join(',')} })
-  }
-  else{
-    alert('Cần chọn ít nhất 1 sản phẩm!')
+  if (selectedItems.value.length) {
+    router.push({
+      name: 'checkout',
+      query: { from: 'cart', ids: selectedItems.value.map((item) => item.id).join(',') },
+    })
+  } else {
+    notify('You need to select at least one product!', 'error')
   }
 }
 
@@ -30,6 +32,7 @@ interface ApiCartItem {
   image_url: string
   product_name: string
   stock_quantity: number
+  is_out_of_stock: boolean
 }
 interface CartItem {
   id: string
@@ -41,6 +44,7 @@ interface CartItem {
     price: number
     image_url: string
     stock_quantity: number
+    is_out_of_stock: boolean
   }
   product: {
     id: string
@@ -53,11 +57,11 @@ interface CartItem {
 const cartItems = ref<CartItem[]>([])
 
 const selectedItems = computed(() => {
-  return cartItems.value.filter(i => i.checked === true)
+  return cartItems.value.filter((i) => i.checked === true && !i.productVariant.is_out_of_stock)
 })
 
 const soldoutItems = computed(() => {
-  return cartItems.value.filter(i => i.productVariant.stock_quantity === 0)
+  return cartItems.value.filter((i) => i.productVariant.is_out_of_stock)
 })
 onMounted(async () => {
   document.title = 'BuyIt - Your Cart'
@@ -75,6 +79,7 @@ onMounted(async () => {
           price: Number(item.price),
           image_url: item.image_url,
           stock_quantity: Number(item.stock_quantity),
+          is_out_of_stock: item.is_out_of_stock,
         },
         product: {
           id: item.prod_id,
@@ -107,25 +112,26 @@ onUnmounted(async () => {
 })
 
 const allChecked = computed({
-  get: () =>
-  cartItems.value.some((item) => item.productVariant.stock_quantity > 0) && // phải có ít nhất 1 item quantity > 0
-  cartItems.value
-    .filter((item) => item.productVariant.stock_quantity > 0) // chỉ xét những item quantity > 0
-    .every((item) => item.checked),
+  get: () => {
+    const inStockItems = cartItems.value.filter((item) => !item.productVariant.is_out_of_stock)
+    return inStockItems.length > 0 && inStockItems.every((item) => item.checked)
+  },
   set: (val: boolean) => {
     cartItems.value.forEach((item) => {
-      if(item.productVariant.stock_quantity > 0){
+      if (!item.productVariant.is_out_of_stock) {
         item.checked = val
       }
     })
   },
 })
 
-const selectedCount = computed(() => cartItems.value.filter((i) => i.checked).length)
+const selectedCount = computed(
+  () => cartItems.value.filter((i) => i.checked && !i.productVariant.is_out_of_stock).length,
+)
 
 const totalPrice = computed(() =>
   cartItems.value
-    .filter((i) => i.checked)
+    .filter((i) => i.checked && !i.productVariant.is_out_of_stock)
     .reduce((sum, i) => sum + i.productVariant.price * i.quantity, 0),
 )
 
@@ -134,31 +140,34 @@ function formatPrice(v: number) {
 }
 
 function increase(item: CartItem) {
-  if (item.quantity < item.productVariant.stock_quantity) {
+  if (!item.productVariant.is_out_of_stock && item.quantity < item.productVariant.stock_quantity) {
     item.quantity++
     updateQuantity(item.id, item.quantity)
+  } else if (item.productVariant.is_out_of_stock) {
+    notify('This item is out of stock', 'error')
+  } else {
+    notify(`Only ${item.productVariant.stock_quantity} items available`, 'warning')
   }
 }
 function decrease(item: CartItem) {
-  if (item.quantity > 1){
+  if (item.quantity > 1) {
     item.quantity--
     updateQuantity(item.id, item.quantity)
-  }
-  else{
+  } else {
     removeItem(item.id)
   }
 }
 
-async function updateQuantity(id: string, quantity: number){
-  try{
-    const res = await apiClient.put(`/buyer/cart/item/${id}/quantity`, {quantity: quantity})
+async function updateQuantity(id: string, quantity: number) {
+  try {
+    const res = await apiClient.put(`/buyer/cart/item/${id}/quantity`, { quantity: quantity })
 
     if (res.status !== 200) {
-      console.error('Failed to update item\'quantity from cart on server:', res)
+      console.error("Failed to update item'quantity from cart on server:", res)
       return
     }
   } catch (error) {
-    console.error('Error update item\'s quantity from cart:', error)
+    console.error("Error update item's quantity from cart:", error)
   }
 }
 async function removeItem(id: string) {
@@ -199,7 +208,7 @@ function isAnySelected(): boolean {
         class="w-full grid grid-cols-[40px_2fr_1fr_1fr_1fr_60px] gap-4 bg-white rounded-lg px-6 py-3 font-semibold text-slate-500 text-base"
       >
         <div>
-          <Checkbox v-model="allChecked"/>
+          <Checkbox v-model="allChecked" />
         </div>
         <div>Product</div>
         <div>Unit Price</div>
@@ -210,11 +219,12 @@ function isAnySelected(): boolean {
 
       <!-- Cart items -->
       <div v-for="item in cartItems" :key="item.prod_var_id" class="w-full">
-        <div v-if="item.productVariant.stock_quantity > 0"
+        <div
+          v-if="!item.productVariant.is_out_of_stock"
           class="w-full grid grid-cols-[40px_2fr_1fr_1fr_1fr_60px] gap-4 bg-white my-3 rounded-lg px-6 py-4 items-center shadow-sm"
         >
           <div>
-            <Checkbox v-model="item.checked" />
+            <Checkbox v-model="item.checked" :disabled="item.productVariant.is_out_of_stock" />
           </div>
           <div
             class="flex items-center gap-4 cursor-pointer"
@@ -245,7 +255,17 @@ function isAnySelected(): boolean {
             </button>
             <span class="w-8 text-center">{{ item.quantity }}</span>
             <button
-              class="w-8 h-8 rounded border border-gray-400 text-lg flex items-center justify-center cursor-pointer"
+              class="w-8 h-8 rounded border border-gray-400 text-lg flex items-center justify-center"
+              :class="[
+                item.productVariant.is_out_of_stock ||
+                item.quantity >= item.productVariant.stock_quantity
+                  ? 'opacity-50 cursor-not-allowed'
+                  : 'cursor-pointer hover:bg-gray-50',
+              ]"
+              :disabled="
+                item.productVariant.is_out_of_stock ||
+                item.quantity >= item.productVariant.stock_quantity
+              "
               @click="increase(item)"
             >
               +
@@ -284,7 +304,11 @@ function isAnySelected(): boolean {
       >
         <div class="flex items-center gap-4">
           <Checkbox v-model="allChecked" />
-          <span>Select all ({{ cartItems.length }})</span>
+          <span
+            >Select all ({{
+              cartItems.filter((i) => !i.productVariant.is_out_of_stock).length
+            }})</span
+          >
           <button @click="removeSelected" class="text-rose-500 hover:underline cursor-pointer">
             Delete
           </button>
@@ -301,46 +325,51 @@ function isAnySelected(): boolean {
           </button>
         </div>
       </div>
-      <h2 v-if="soldoutItems.length" class="font-semibold text-2xl">Các sản phẩm đã hết hàng</h2>
+      <h2 v-if="soldoutItems.length" class="font-semibold text-2xl">Sold out items</h2>
 
       <div
-      v-for="item in soldoutItems" :key="item.id"
+        v-for="item in soldoutItems"
+        :key="item.id"
         class="w-full bg-gray-100 rounded px-6 py-4 flex items-center justify-between mt-2 mb-6 shadow-sm"
       >
-        <div  class="flex items-center gap-4 ">
-
-            <!-- Variant image -->
-            <CustomImage
-              :src="item.productVariant.image_url || item.product.image_url"
-              alt="Sản phẩm"
-              class="w-20 h-20 object-cover gray-scale rounded-md"
-            />
-            <div>
-              <button class="font-medium text-slate-800 text-base cursor-pointer"
-                      @click="navigateToProduct(item.prod_id)">
-                {{ item.product.name }}
-              </button>
-              <div class="text-xs text-slate-500">{{ item.productVariant.name }}</div>
-            </div>
-          </div>
-          <div class="mr-10">
-            <button @click="removeItem(item.id)" class="text-slate-400 hover:text-red-500 cursor-pointer">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="w-6 h-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
+        <div class="flex items-center gap-4">
+          <!-- Variant image -->
+          <CustomImage
+            :src="item.productVariant.image_url || item.product.image_url"
+            alt="Sản phẩm"
+            class="w-20 h-20 object-cover gray-scale rounded-md"
+          />
+          <div>
+            <button
+              class="font-medium text-slate-800 text-base cursor-pointer"
+              @click="navigateToProduct(item.prod_id)"
+            >
+              {{ item.product.name }}
             </button>
+            <div class="text-xs text-slate-500">{{ item.productVariant.name }}</div>
           </div>
+        </div>
+        <div class="mr-10">
+          <button
+            @click="removeItem(item.id)"
+            class="text-slate-400 hover:text-red-500 cursor-pointer"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="w-6 h-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
       </div>
     </div>
     <PageFooter />

@@ -3,6 +3,7 @@ import { ref, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Eye, EyeOff } from 'lucide-vue-next'
 import apiClient from '@/api/client'
+import { AxiosError } from 'axios'
 
 const router = useRouter()
 const username = ref('')
@@ -52,9 +53,14 @@ async function handleLogin() {
     localStorage.setItem('id', response.data.user.id)
     router.push({ name: 'dashboard' })
     console.log('Login successful:', response)
-  } catch (error: any) {
-    errorMessage.value = 'Login failed: ' + error?.response?.data?.message
-    console.error('Login failed:', error)
+  } catch (error: unknown) {
+    if (error instanceof AxiosError) {
+      errorMessage.value = 'Login failed: ' + error.response?.data?.message
+      console.error('Login failed:', error.response?.data?.message)
+    } else {
+      errorMessage.value = 'Login failed: ' + (error as Error).message
+      console.error('Login failed:', (error as Error).message)
+    }
   }
 }
 

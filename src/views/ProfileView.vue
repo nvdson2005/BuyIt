@@ -16,6 +16,8 @@ type SidebarOption =
 import { type ProfileDetail } from '@/utils/interface' // Not used
 import apiClient from '@/api/client'
 import { AxiosError, type AxiosResponse } from 'axios'
+import { notify, notifyAsync } from '@/utils/notify'
+import { ToastifyContainer } from 'vue3-toastify'
 
 // ROUTER
 const router = useRouter()
@@ -28,15 +30,19 @@ const handlePasswordChange = async (e: Event) => {
   e.preventDefault()
   if (newPassword.value !== retypePassword.value) {
     passwordError.value = 'New passwords do not match.'
+    notify('New passwords do not match.', 'error')
     return
   }
   try {
-    const response: AxiosResponse = await apiClient.put('/change-password', {
-      oldPassword: password.value,
-      newPassword: newPassword.value,
-    })
+    const response: AxiosResponse = await notifyAsync(
+      apiClient.put('/change-password', {
+        oldPassword: password.value,
+        newPassword: newPassword.value,
+      }),
+    )
     console.log('Password changed successfully:', response)
     passwordError.value = ''
+    notify('Password changed successfully!', 'success')
     // Reset the password fields
     password.value = ''
     newPassword.value = ''
@@ -47,13 +53,18 @@ const handlePasswordChange = async (e: Event) => {
       if (error.response) {
         passwordError.value =
           'Failed to change password: ' + (error.response.data.message || 'Unknown error')
+        notify(passwordError.value, 'error')
       } else if (error.request) {
         passwordError.value = 'Failed to change password: No response from server'
+        notify(passwordError.value, 'error')
       } else {
         passwordError.value = 'Failed to change password: ' + error.message
+        notify(passwordError.value, 'error')
       }
-    } else if (error instanceof Error)
+    } else if (error instanceof Error) {
       passwordError.value = 'Failed to change password: ' + error.message
+      notify(passwordError.value, 'error')
+    }
   }
 }
 
@@ -96,23 +107,63 @@ const changeMode = (isEditing: boolean) => {
 }
 const handleSubmit = async (e: Event) => {
   e.preventDefault()
-  const response = await apiClient.put('/user/profile', {
-    username: editedProfile.value?.username,
-    name: editedProfile.value?.name,
-    email: editedProfile.value?.email,
-    phone_number: editedProfile.value?.phone,
-    description: editedProfile.value?.description,
-  })
-  if (response.status === 200) {
-    console.log('Profile updated successfully')
-    profile.value = { ...editedProfile.value! }
-    isEditingProfile.value = false
-  } else {
-    console.error('Failed to update profile')
+  try {
+    const response = await notifyAsync(
+      apiClient.put('/user/profile', {
+        username: editedProfile.value?.username,
+        name: editedProfile.value?.name,
+        email: editedProfile.value?.email,
+        phone_number: editedProfile.value?.phone,
+        description: editedProfile.value?.description,
+      }),
+    )
+    if (response.status === 200) {
+      console.log('Profile updated successfully')
+      profile.value = { ...editedProfile.value! }
+      isEditingProfile.value = false
+      notify('Profile updated successfully!', 'success')
+    } else {
+      console.error('Failed to update profile')
+      notify('Failed to update profile', 'error')
+    }
+  } catch (error) {
+    console.error('Error updating profile:', error)
+    if (error instanceof AxiosError) {
+      if (error.response) {
+        notify(
+          'Failed to update profile: ' + (error.response.data.message || 'Unknown error'),
+          'error',
+        )
+      } else if (error.request) {
+        notify('Failed to update profile: No response from server', 'error')
+      } else {
+        notify('Failed to update profile: ' + error.message, 'error')
+      }
+    } else if (error instanceof Error) {
+      notify('Failed to update profile: ' + error.message, 'error')
+    }
   }
 }
 
 // ---------------- For Address Section -------------------
+const deleteAddress = async (addressId: string) => {
+  try {
+    const response: AxiosResponse = await notifyAsync(
+      apiClient.delete(`/user/address/${addressId}`),
+    )
+    if (response.status === 200) {
+      notify('Address deleted successfully!', 'success')
+      fetchAddresses()
+    }
+  } catch (error) {
+    console.error('Error deleting address:', error)
+    if (error instanceof AxiosError) {
+      notify('Failed to delete address: ' + error.message, 'error')
+    } else if (error instanceof Error) {
+      notify('Failed to delete address: ' + error.message, 'error')
+    }
+  }
+}
 import { Pin, Pencil, Trash } from 'lucide-vue-next'
 interface Address {
   address_id: string
@@ -184,14 +235,14 @@ const submitAddressForm = async () => {
   if (isEditingAddress.value && editingAddressId.value !== null) {
     // Edit mode
     try {
-      const response: AxiosResponse = await apiClient.put(
-        `/user/address/${editingAddressId.value}`,
-        {
+      const response: AxiosResponse = await notifyAsync(
+        apiClient.put(`/user/address/${editingAddressId.value}`, {
           ...addressForm.value,
-        },
+        }),
       )
       if (response.status === 200) {
         fetchAddresses()
+        notify('Address updated successfully!', 'success')
         // const idx = addressList.value.findIndex((a) => a.address_id === editingAddressId.value)
         // if (idx !== -1) {
         //   addressList.value[idx] = {
@@ -203,22 +254,53 @@ const submitAddressForm = async () => {
       }
     } catch (error) {
       console.error('Error editing address:', error)
+      if (error instanceof AxiosError) {
+        if (error.response) {
+          notify(
+            'Failed to update address: ' + (error.response.data.message || 'Unknown error'),
+            'error',
+          )
+        } else if (error.request) {
+          notify('Failed to update address: No response from server', 'error')
+        } else {
+          notify('Failed to update address: ' + error.message, 'error')
+        }
+      } else if (error instanceof Error) {
+        notify('Failed to update address: ' + error.message, 'error')
+      }
     }
   } else {
     // Add mode
     try {
-      const response: AxiosResponse = await apiClient.post('/user/address', {
-        ...addressForm.value,
-      })
+      const response: AxiosResponse = await notifyAsync(
+        apiClient.post('/user/address', {
+          ...addressForm.value,
+        }),
+      )
       if (response.status === 201) {
         addressList.value.push({
           address_id: response.data.id,
           ...addressForm.value,
           is_default: false,
         })
+        notify('Address added successfully!', 'success')
       }
     } catch (error) {
       console.error('Error adding new address:', error)
+      if (error instanceof AxiosError) {
+        if (error.response) {
+          notify(
+            'Failed to add address: ' + (error.response.data.message || 'Unknown error'),
+            'error',
+          )
+        } else if (error.request) {
+          notify('Failed to add address: No response from server', 'error')
+        } else {
+          notify('Failed to add address: ' + error.message, 'error')
+        }
+      } else if (error instanceof Error) {
+        notify('Failed to add address: ' + error.message, 'error')
+      }
     }
   }
   showAddressModal.value = false
@@ -237,15 +319,32 @@ const submitAddressForm = async () => {
 
 const setDefaultAddress = async (addressId: string) => {
   try {
-    const response: AxiosResponse = await apiClient.put(`/user/set-default-address/${addressId}`)
+    const response: AxiosResponse = await notifyAsync(
+      apiClient.put(`/user/set-default-address/${addressId}`),
+    )
     if (response.status === 200) {
       addressList.value = addressList.value.map((address) => ({
         ...address,
         is_default: address.address_id === addressId ? true : false,
       }))
+      notify('Default address updated successfully!', 'success')
     }
   } catch (error) {
     console.error('Error setting default address:', error)
+    if (error instanceof AxiosError) {
+      if (error.response) {
+        notify(
+          'Failed to set default address: ' + (error.response.data.message || 'Unknown error'),
+          'error',
+        )
+      } else if (error.request) {
+        notify('Failed to set default address: No response from server', 'error')
+      } else {
+        notify('Failed to set default address: ' + error.message, 'error')
+      }
+    } else if (error instanceof Error) {
+      notify('Failed to set default address: ' + error.message, 'error')
+    }
   }
 }
 
@@ -283,32 +382,66 @@ const addNewPayment = async () => {
     const optionId = availablePaymentMethods.value.find(
       (option) => option.name === newPayment.value.type,
     )?.option_id
-    const response: AxiosResponse = await apiClient.post('/buyer/payment', {
-      optionId,
-      accountNumber: newPayment.value.account_number,
-      expiryDate: newPayment.value.expiry_date,
-      isDefault: false,
-    })
+    const response: AxiosResponse = await notifyAsync(
+      apiClient.post('/buyer/payment', {
+        optionId,
+        accountNumber: newPayment.value.account_number,
+        expiryDate: newPayment.value.expiry_date,
+        isDefault: false,
+      }),
+    )
     if (response.status === 201) {
       console.log('Added new payment method:', response)
+      notify('Payment method added successfully!', 'success')
       // Optionally refresh the payment methods list
       fetchPayments()
       showPaymentModal.value = false
     }
   } catch (error) {
     console.error('Error adding new payment method:', error)
+    if (error instanceof AxiosError) {
+      if (error.response) {
+        notify(
+          'Failed to add payment method: ' + (error.response.data.message || 'Unknown error'),
+          'error',
+        )
+      } else if (error.request) {
+        notify('Failed to add payment method: No response from server', 'error')
+      } else {
+        notify('Failed to add payment method: ' + error.message, 'error')
+      }
+    } else if (error instanceof Error) {
+      notify('Failed to add payment method: ' + error.message, 'error')
+    }
   }
 }
 const deletePayment = async (method_id: string) => {
   try {
-    const response: AxiosResponse = await apiClient.delete(`/buyer/payment/${method_id}`)
+    const response: AxiosResponse = await notifyAsync(
+      apiClient.delete(`/buyer/payment/${method_id}`),
+    )
     if (response.status === 200) {
       console.log('Deleted payment method:', response)
+      notify('Payment method deleted successfully!', 'success')
       // Refresh the payment methods list
       fetchPayments()
     }
   } catch (error) {
     console.error('Error deleting payment method:', error)
+    if (error instanceof AxiosError) {
+      if (error.response) {
+        notify(
+          'Failed to delete payment method: ' + (error.response.data.message || 'Unknown error'),
+          'error',
+        )
+      } else if (error.request) {
+        notify('Failed to delete payment method: No response from server', 'error')
+      } else {
+        notify('Failed to delete payment method: ' + error.message, 'error')
+      }
+    } else if (error instanceof Error) {
+      notify('Failed to delete payment method: ' + error.message, 'error')
+    }
   }
 }
 const fetchPayments = async () => {
@@ -407,6 +540,7 @@ watch(chosenSidebarOption, (newOption) => {
 })
 </script>
 <template>
+  <ToastifyContainer />
   <NavBar />
   <div class="min-h-screen bg-(--light-pink) flex justify-center py-10">
     <div class="flex gap-8 w-full max-w-4/5">
@@ -691,6 +825,7 @@ watch(chosenSidebarOption, (newOption) => {
                 </button>
                 <button
                   class="w-full border px-4 py-1 rounded font-medium text-slate-700 hover:bg-gray-50"
+                  @click="deleteAddress(address.address_id)"
                 >
                   <Trash class="inline mr-1 w-4 h-4" /> Delete
                 </button>
@@ -945,7 +1080,7 @@ watch(chosenSidebarOption, (newOption) => {
         <!-- Vouchers Section -->
         <div v-else-if="chosenSidebarOption === 'VOUCHERS'">
           <h2 class="text-xl font-semibold text-slate-800 mb-4">Vouchers</h2>
-          <div class="text-slate-500">[Vouchers placeholder]</div>
+          <div class="text-slate-500">You don't have any vouchers yet.</div>
         </div>
       </section>
     </div>

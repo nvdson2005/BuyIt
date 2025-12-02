@@ -15,6 +15,8 @@ import { onMounted, ref, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import LoadingScreen from '@/components/layout/LoadingScreen.vue'
 import ProductCard from '@/components/ui/ProductCard.vue'
+import { notify } from '@/utils/notify'
+import { AxiosError } from 'axios'
 
 const product = ref<ApiProduct | null>(null)
 const shop = ref<Shop | null>(null)
@@ -103,17 +105,28 @@ watch(
     await fetchAllDatas()
   },
 )
-function OnAddToCart() {
+async function OnAddToCart() {
   if (!chosenVariant.value) {
     console.error('No variant selected.')
     return
   }
-  apiClient.post('/buyer/cart/add-item', {
-    productVariantId: chosenVariant.value?.variant_id,
-    productId: product.value?.id,
-    quantity: quantity.value,
-    price: chosenVariant.value.price,
-  })
+  try {
+    await apiClient.post('/buyer/cart/add-item', {
+      productVariantId: chosenVariant.value?.variant_id,
+      productId: product.value?.id,
+      quantity: quantity.value,
+      price: chosenVariant.value.price,
+    })
+    notify('Product added to cart successfully!', 'success')
+  } catch (error: unknown) {
+    if (error instanceof AxiosError) {
+      notify(`${error.response?.data?.message}`, 'error')
+      console.error('Error adding to cart:', error.response?.data?.message)
+    } else {
+      notify(`${(error as Error).message}`, 'error')
+      console.error('Error adding to cart:', error)
+    }
+  }
 }
 
 // const onNavigateToCheckout = () => {
