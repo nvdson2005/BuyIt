@@ -22,25 +22,27 @@ onMounted(async () => {
 })
 </script>
 <template>
-  <div class="w-full h-full bg-white rounded-xl shadow-md overflow-auto shadow-gray-300">
-    <h2 class="text-slate-800 text-xl p-4">EXPLORE TODAY</h2>
-    <div class="w-full mt-4 grid grid-cols-5 gap-4 p-4">
-      <ProductCard
-        v-for="product in todayProducts"
-        :key="product.id"
-        :id="product.id"
-        :name="product.name"
-        :imageUrl="product.image"
-        :price="product.sale_price"
-        :originalPrice="product.price"
-        :rating="product.rating"
-        :soldAmount="product.sold_amount"
-        :isSale="product.sale_price < product.price"
-        :discountPercentage="
-          Math.round(((product.price - product.sale_price) / product.price) * 100)
-        "
-        :description="product.description"
-      />
+  <div class="w-full h-full bg-white rounded-xl shadow-md shadow-gray-300 relative flex flex-col">
+    <h2 class="text-slate-800 text-xl p-4 shrink-0">EXPLORE TODAY</h2>
+    <div class="w-full h-full overflow-x-auto overflow-y-auto flex-col items-center justify-center">
+      <div class="w-full grid grid-cols-5 p-4 min-w-max justify-between">
+        <div v-for="product in todayProducts" :key="product.id" class="w-70">
+          <ProductCard
+            :id="product.id"
+            :name="product.name"
+            :imageUrl="product.image_url"
+            :price="product.sale_price"
+            :originalPrice="product.price"
+            :rating="product.rating"
+            :soldAmount="product.sold_amount"
+            :isSale="product.sale_price < product.price"
+            :discountPercentage="
+              Math.round(((product.price - product.sale_price) / product.price) * 100)
+            "
+            :description="product.description"
+          />
+        </div>
+      </div>
     </div>
   </div>
 </template>

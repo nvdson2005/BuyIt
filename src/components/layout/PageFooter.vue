@@ -1,27 +1,40 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { useRouter } from 'vue-router'
+const router = useRouter()
+
+function navigateToCustomerService() {
+  router.push('/customer-service')
+}
+
+function navigateToAbout() {
+  router.push('/about')
+}
+</script>
 <template>
-  <div
-    class="w-full bg-[var(--pure-light)] border-t-slate-200 border flex flex-col items-center py-10"
-  >
+  <div class="w-full bg-(--pure-light) border-t-slate-200 border flex flex-col items-center py-10">
     <div class="w-[80%] grid grid-cols-4 gap-4">
       <div>
         <div class="text-black mb-4 text-lg">Customer Service</div>
         <div class="text-slate-600 text-sm leading-8 flex flex-col items-baseline">
-          <button class="basic-hyperlink">Help Center</button>
-          <button class="basic-hyperlink">How to Buy</button>
-          <button class="basic-hyperlink">Shipping & Delivery</button>
-          <button class="basic-hyperlink">Return & Refunds</button>
-          <button class="basic-hyperlink">Contact Us</button>
+          <button class="basic-hyperlink" @click="navigateToCustomerService">Help Center</button>
+          <button class="basic-hyperlink" @click="navigateToCustomerService">How to Buy</button>
+          <button class="basic-hyperlink" @click="navigateToCustomerService">
+            Shipping & Delivery
+          </button>
+          <button class="basic-hyperlink" @click="navigateToCustomerService">
+            Return & Refunds
+          </button>
+          <button class="basic-hyperlink" @click="navigateToCustomerService">Contact Us</button>
         </div>
       </div>
       <div>
         <div class="text-black mb-4 text-lg">About Us</div>
         <div class="text-slate-600 text-sm leading-8 flex flex-col items-baseline">
-          <button class="basic-hyperlink">About Company</button>
-          <button class="basic-hyperlink">Careers</button>
-          <button class="basic-hyperlink">Press & News</button>
-          <button class="basic-hyperlink">Store Locations</button>
-          <button class="basic-hyperlink">Affiliate Program</button>
+          <button class="basic-hyperlink" @click="navigateToAbout">About Company</button>
+          <button class="basic-hyperlink" @click="navigateToAbout">Careers</button>
+          <button class="basic-hyperlink" @click="navigateToAbout">Press & News</button>
+          <button class="basic-hyperlink" @click="navigateToAbout">Store Locations</button>
+          <button class="basic-hyperlink" @click="navigateToAbout">Affiliate Program</button>
         </div>
       </div>
       <div>
@@ -37,15 +50,15 @@
       <div>
         <div class="text-black mb-4 text-lg">Follow Us</div>
         <div class="text-slate-600 text-sm leading-8 flex flex-col items-baseline">
-          <button class="basic-hyperlink">Facebook</button>
-          <button class="basic-hyperlink">Twitter</button>
-          <button class="basic-hyperlink">Instagram</button>
-          <button class="basic-hyperlink">LinkedIn</button>
-          <button class="basic-hyperlink">YouTube</button>
+          <a href="https://www.facebook.com" class="basic-hyperlink" target="_blank">Facebook</a>
+          <a href="https://x.com" class="basic-hyperlink" target="_blank">Twitter</a>
+          <a href="https://www.instagram.com" class="basic-hyperlink" target="_blank">Instagram</a>
+          <a href="https://www.linkedin.com" class="basic-hyperlink" target="_blank">LinkedIn</a>
+          <a href="https://www.youtube.com" class="basic-hyperlink" target="_blank">YouTube</a>
         </div>
       </div>
     </div>
-    <div class="text-slate-500 text-sm mt-10">&copy; 2024 BuyIt. All rights reserved.</div>
+    <div class="text-slate-500 text-sm mt-10">&copy; 2025 BuyIt. All rights reserved.</div>
   </div>
 </template>
 <style scoped></style>

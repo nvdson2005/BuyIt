@@ -1,18 +1,20 @@
 <script setup lang="ts">
 import IconContentButton from '../ui/IconContentButton.vue'
 import {
-  Shirt,
   Smartphone,
-  BookOpen,
-  Apple,
+  Shirt,
   ShoppingBag,
   Home,
-  Baby,
-  UtensilsCrossed,
   Sparkles,
-  Gift,
   Dumbbell,
-  Bike,
+  Baby,
+  Heart,
+  Book,
+  Car,
+  PawPrint,
+  UtensilsCrossed,
+  Watch,
+  Apple,
 } from 'lucide-vue-next'
 import { type FunctionalComponent } from 'vue'
 import { useRouter } from 'vue-router'
@@ -24,38 +26,46 @@ const categories: Array<{
   backgroundColor: string
 }> = [
   {
-    icon: Shirt,
-    label: 'Men\'s Fashion',
-    iconColor: 'text-blue-600',
-    backgroundColor: 'bg-blue-50',
-  },
-  {
-    icon: ShoppingBag,
-    label: 'Women\'s Fashion',
-    iconColor: 'text-rose-600',
-    backgroundColor: 'bg-rose-50',
-  },
-  {
     icon: Smartphone,
     label: 'Electronics',
     iconColor: 'text-purple-600',
     backgroundColor: 'bg-purple-50',
   },
-  { icon: BookOpen,
-    label: 'Books & Media',
-    iconColor: 'text-blue-800',
-    backgroundColor: 'bg-blue-50' },
+  {
+    icon: Shirt,
+    label: "Men's Fashion",
+    iconColor: 'text-blue-600',
+    backgroundColor: 'bg-blue-50',
+  },
+  {
+    icon: ShoppingBag,
+    label: "Women's Fashion",
+    iconColor: 'text-rose-600',
+    backgroundColor: 'bg-rose-50',
+  },
   {
     icon: Home,
-    label: 'House & Life',
+    label: 'Home & Living',
     iconColor: 'text-teal-600',
     backgroundColor: 'bg-teal-50',
   },
   {
-    icon: Apple,
-    label: 'Food & Groceries',
-    iconColor: 'text-teal-600',
-    backgroundColor: 'bg-teal-50',
+    icon: UtensilsCrossed,
+    label: 'Kitchen & Dining',
+    iconColor: 'text-orange-600',
+    backgroundColor: 'bg-orange-50',
+  },
+  {
+    icon: Sparkles,
+    label: 'Beauty & Personal Care',
+    iconColor: 'text-fuchsia-600',
+    backgroundColor: 'bg-fuchsia-50',
+  },
+  {
+    icon: Dumbbell,
+    label: 'Sports & Outdoors',
+    iconColor: 'text-green-600',
+    backgroundColor: 'bg-green-50',
   },
   {
     icon: Baby,
@@ -64,32 +74,47 @@ const categories: Array<{
     backgroundColor: 'bg-yellow-50',
   },
   {
-    icon: UtensilsCrossed,
-    label: 'Kitchen & Dining',
+    icon: Heart,
+    label: 'Health & Wellness',
     iconColor: 'text-red-600',
     backgroundColor: 'bg-red-50',
   },
   {
-    icon: Sparkles,
-    label: 'Beauty & Personal Care',
-    iconColor: 'text-fuchsia-600',
-    backgroundColor: 'bg-fuchsia-50',
+    icon: Book,
+    label: 'Books & Media',
+    iconColor: 'text-indigo-600',
+    backgroundColor: 'bg-indigo-50',
   },
-
   {
-    icon: Gift,
-    label: 'Gift',
+    icon: Car,
+    label: 'Automotive',
+    iconColor: 'text-slate-600',
+    backgroundColor: 'bg-slate-50',
+  },
+  {
+    icon: PawPrint,
+    label: 'Pet Supplies',
+    iconColor: 'text-amber-600',
+    backgroundColor: 'bg-amber-50',
+  },
+  {
+    icon: Watch,
+    label: 'Jewelry & Watches',
+    iconColor: 'text-cyan-600',
+    backgroundColor: 'bg-cyan-50',
+  },
+  {
+    icon: Apple,
+    label: 'Food & Groceries',
     iconColor: 'text-emerald-600',
     backgroundColor: 'bg-emerald-50',
   },
-  { icon: Dumbbell, label: 'Sport', iconColor: 'text-sky-600', backgroundColor: 'bg-sky-50' },
-  { icon: Bike, label: 'Automotive', iconColor: 'text-slate-600', backgroundColor: 'bg-slate-50' },
 ]
 </script>
 <template>
   <div class="w-full h-full bg-white rounded-xl shadow-md overflow-y-auto shadow-gray-300">
-    <h2 class="text-slate-800 text-xl px-4 pt-4">CATEGORY</h2>
-    <div class="w-full grid grid-cols-6 gap-4 p-4">
+    <h2 class="text-slate-800 text-xl px-4 pt-4">CATEGORIES</h2>
+    <div class="w-full grid grid-cols-4 sm:grid-cols-5 md:grid-cols-7 gap-4 p-4">
       <IconContentButton
         v-for="category in categories"
         :key="category.label"

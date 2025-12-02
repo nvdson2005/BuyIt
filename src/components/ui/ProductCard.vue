@@ -30,7 +30,7 @@ const isHovered = ref(false)
   <div
     @mouseenter="isHovered = true"
     @mouseleave="isHovered = false"
-    class="bg-white shadow-lg rounded-lg relative overflow-hidden cursor-pointer hover:shadow-xl transition-shadow duration-200"
+    class="bg-white w-full shadow-lg rounded-lg relative overflow-hidden cursor-pointer hover:shadow-xl transition-shadow duration-200"
     @click="NavigateToDetails()"
   >
     <div

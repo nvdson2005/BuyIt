@@ -17,6 +17,8 @@ import SellerVoucherView from '@/views/SellerVoucherView.vue'
 import MarketingView from '@/views/MarketingView.vue'
 import ShopProgram from '@/views/ShopProgram.vue'
 import SearchResultView from '@/views/SearchResultView.vue'
+import CustomerServiceView from '@/views/CustomerServiceView.vue'
+import AboutView from '@/views/AboutView.vue'
 const router = createRouter({
   history: createWebHistory(),
   routes: [
@@ -109,6 +111,16 @@ const router = createRouter({
       path: '/search',
       name: 'search',
       component: SearchResultView,
+    },
+    {
+      path: '/customer-service',
+      name: 'customer-service',
+      component: CustomerServiceView,
+    },
+    {
+      path: '/about',
+      name: 'about',
+      component: AboutView,
     },
   ],
 })

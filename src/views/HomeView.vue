@@ -17,16 +17,13 @@ onMounted(async () => {
   const cookie = await cookieStore.get('connect.sid')
   const role = localStorage.getItem('role')
 
-  if (!cookie ) {
+  if (!cookie) {
     router.push('/login')
     return
-  }
-
-  else if(role === 'shop'){
+  } else if (role === 'shop') {
     router.push('/dashboard')
     return
-  }
-  else {
+  } else {
     username.value = localStorage.getItem('username') || ''
     if (username.value) {
       setTimeout(() => {
@@ -60,16 +57,16 @@ async function RetrieveUsername() {
     <div class="w-full">
       <NavBar />
     </div>
-    <div class="w-[80%] h-64 my-6">
+    <div class="w-[80%] h-72 my-6">
       <SlideNotification />
     </div>
-    <div class="w-[80%] h-32 my-4">
+    <!-- <div class="w-[80%] h-32 my-4">
       <MainPageHighlightPanel />
-    </div>
+    </div> -->
     <div class="w-[80%] h-64 my-8">
       <MainPageCategoryPanel />
     </div>
-    <div class="w-[80%] h-98 my-8">
+    <div class="w-[80%] h-144 my-8">
       <MainPageFlashSalePanel />
     </div>
     <div class="w-full">
