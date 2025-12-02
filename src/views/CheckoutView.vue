@@ -179,7 +179,7 @@ onMounted(async () => {
       <div class="container mx-auto px-4 py-4 flex items-center gap-4">
         <h1 class="text-2xl cursor-pointer" @click="onNavigateToHome">BuyIt</h1>
         <div class="border-l border-white/30 h-6 mx-2" />
-        <span class="text-xl">Thanh Toán</span>
+        <span class="text-xl">Checkout</span>
       </div>
     </div>
 
@@ -189,10 +189,10 @@ onMounted(async () => {
         <div class="flex items-center justify-between mb-4">
           <div class="flex items-center gap-2">
             <MapPin class="w-5 h-5 text-[#ee4d2d]" />
-            <h2 class="text-[#ee4d2d]">Địa Chỉ Nhận Hàng</h2>
+            <h2 class="text-[#ee4d2d]">Delivery Address</h2>
           </div>
           <button @click="showAddressDialog = true" class="text-blue-600 cursor-pointer hover:text-blue-900">
-            Thay Đổi
+            Change
           </button>
         </div>
 
@@ -206,7 +206,7 @@ onMounted(async () => {
                 v-if="currentAddress.is_default"
                 class="px-2 py-0.5 bg-red-100 text-[#ee4d2d] text-xs rounded border border-[#ee4d2d]"
               >
-                Mặc định
+                Default
               </span>
             </div>
             <p class="text-gray-600">{{ currentAddress.street }}, {{ currentAddress.ward }}, {{ currentAddress.district }}, {{ currentAddress.city }}</p>
@@ -218,7 +218,7 @@ onMounted(async () => {
           @click="showAddressDialog = true"
           class="text-blue-600 hover:text-blue-700"
         >
-          + Thêm địa chỉ nhận hàng
+          + Add new address
         </button>
       </div>
 
@@ -226,10 +226,10 @@ onMounted(async () => {
       <div class="bg-white rounded-lg shadow-sm mb-4">
         <div class="p-4 border-b border-gray-300">
           <div class="flex font-semibold items-center gap-4">
-            <span class="flex-1">Sản phẩm</span>
-            <span class="w-32 text-center">Đơn giá</span>
-            <span class="w-32 text-center">Số lượng</span>
-            <span class="w-32 text-center">Thành tiền</span>
+            <span class="flex-1">Product</span>
+            <span class="w-32 text-center">Unit Price</span>
+            <span class="w-32 text-center">Amount</span>
+            <span class="w-32 text-center">Item Subtotal</span>
           </div>
         </div>
 
@@ -261,7 +261,7 @@ onMounted(async () => {
 
       <!-- SHIPPING METHOD -->
       <div class="bg-white rounded-lg shadow-sm p-6 mb-4">
-        <h3 class="mb-4 font-semibold">Phương thức vận chuyển</h3>
+        <h3 class="mb-4 font-semibold">Shipping method</h3>
 
         <div
           class="flex items-center justify-between py-3 border-b border-gray-300 cursor-pointer"
@@ -269,7 +269,7 @@ onMounted(async () => {
         >
           <div class="flex items-center gap-3">
             <input type="radio" value="express" v-model="shippingMethod" />
-            <span>Nhanh - Giao hàng nhanh</span>
+            <span>Express - Giao hàng nhanh</span>
           </div>
           <span class="text-gray-600">₫17.000</span>
         </div>
@@ -277,7 +277,7 @@ onMounted(async () => {
         <div class="flex items-center justify-between py-3 cursor-pointer" @click="shippingMethod = 'standard'">
           <div class="flex items-center gap-3">
             <input type="radio" value="standard" v-model="shippingMethod" />
-            <span>Tiêu chuẩn - Giao hàng tiết kiệm</span>
+            <span>Standard - Giao hàng tiết kiệm</span>
           </div>
           <span class="text-gray-600">Miễn phí</span>
         </div>
@@ -285,22 +285,22 @@ onMounted(async () => {
 
       <!-- PAYMENT METHOD -->
       <div class="bg-white rounded-lg shadow-sm p-6 mb-4">
-        <h3 class="mb-4 font-semibold">Phương thức thanh toán</h3>
+        <h3 class="mb-4 font-semibold">Payment Method</h3>
 
         <label class="flex items-center gap-3 py-3 cursor-pointer border-b border-gray-300">
           <input type="radio" value="Cash" v-model="payment.method_name" />
-          <span>Thanh toán khi nhận hàng (COD)</span>
+          <span>Cash On Delivery (COD)</span>
         </label>
 
         <label class="flex items-center gap-3 py-3 cursor-pointer">
           <input type="radio" value="Online Banking" v-model="payment.method_name" />
-          <span>Chuyển khoản ngân hàng</span>
+          <span>Credit/Debit Card</span>
         </label>
 
         <div v-if="payment.method_name === 'Online Banking'">
           <div v-for="method in card_methods" :key="method.method_id" class="flex items-center gap-3 px-3 py-1 cursor-pointer">
             <input type="radio" :value="method.method_id" v-model="payment.method_id" />
-            <span>Mã số thẻ: {{ method.account_number }}</span>
+            <span>Card number: {{ method.account_number }}</span>
           </div>
         </div>
       </div>
@@ -309,26 +309,26 @@ onMounted(async () => {
       <div class="bg-white rounded-lg shadow-sm p-6">
         <div class="space-y-3 mb-6">
           <div class="flex justify-between text-gray-600">
-            <span>Tổng tiền hàng</span>
+            <span>Merchandise Subtotal</span>
             <span>₫{{ subtotal.toLocaleString('vi-VN') }}</span>
           </div>
           <div class="flex justify-between text-gray-600">
-            <span>Phí vận chuyển</span>
+            <span>Shipping Subtotal</span>
             <span>₫{{ shippingFee.toLocaleString('vi-VN') }}</span>
           </div>
           <div class="border-t border-gray-300 pt-3 flex justify-between items-center">
-            <span>Tổng thanh toán</span>
+            <span>Total Payment</span>
             <div class="text-right">
               <div class="text-2xl text-[#ee4d2d]">₫{{ total.toLocaleString('vi-VN') }}</div>
-              <div class="text-xs text-gray-500">(Đã bao gồm VAT)</div>
+              <div class="text-xs text-gray-500">(VAT included)</div>
             </div>
           </div>
         </div>
 
         <div>
           <p class="text-sm text-gray-500 mb-4">
-            Nhấn "Đặt hàng" đồng nghĩa với việc bạn đồng ý tuân theo
-            <a href="#" class="text-blue-600 hover:underline">Điều khoản BuyIt</a>
+            By clicking "Place Order," you are agreeing to BuyIt's
+            <a href="#" class="text-blue-600 hover:underline"> Terms and Conditions.</a>
           </p>
 
           <div class="text-right">
@@ -336,7 +336,7 @@ onMounted(async () => {
               @click="handlePlaceOrder"
               class="bg-[#ee4d2d] hover:bg-[#d73211] text-white px-12 h-12 rounded cursor-pointer"
             >
-              Đặt Hàng
+              Place Order
             </button>
           </div>
         </div>
@@ -346,7 +346,7 @@ onMounted(async () => {
     <!-- ADDRESS DIALOG -->
     <div v-if="showAddressDialog" class="fixed inset-0 bg-black/40 flex items-center justify-center p-4">
       <div class="bg-white rounded-lg max-w-md w-full p-6">
-        <h2 class="text-lg font-semibold mb-4">Địa Chỉ Của Tôi</h2>
+        <h2 class="text-lg font-semibold mb-4">My Address</h2>
 
         <template v-if="!showNewAddressForm">
           <div class="space-y-4 mb-4">
@@ -364,7 +364,7 @@ onMounted(async () => {
                 <span
                   v-if="addr.is_default"
                   class="px-2 py-0.5 bg-red-100 text-[#ee4d2d] text-xs rounded border border-[#ee4d2d]"
-                >Mặc định</span>
+                >Default</span>
               </div>
               <p class="text-sm text-gray-600">{{ addr.street }}, {{ addr.ward }}, {{ addr.district }}, {{ addr.city }}</p>
             </div>
@@ -375,13 +375,13 @@ onMounted(async () => {
             @click="showNewAddressForm = true"
           >
             <Plus class="w-5 h-5" />
-            Thêm Địa Chỉ Mới
+            Add New Address
           </button>
 
           <div class="flex gap-3">
-            <button class="flex-1 text-sm border border-gray-300 py-2 rounded hover:bg-gray-100 cursor-pointer" @click="showAddressDialog = false">Hủy</button>
+            <button class="flex-1 text-sm border border-gray-300 py-2 rounded hover:bg-gray-100 cursor-pointer" @click="showAddressDialog = false">Cancel</button>
             <button class="flex-1 bg-[#ee4d2d] text-sm text-white py-2 rounded hover:bg-[#d73211] cursor-pointer" @click="handleConfirmAddress">
-              Xác Nhận
+              Confirm
             </button>
           </div>
         </template>
@@ -391,7 +391,7 @@ onMounted(async () => {
           <div class="space-y-4">
             <div>
               <label class="text-sm font-medium">
-                Tên người nhận <span class="text-red-500">*</span>
+                Full Name <span class="text-red-500">*</span>
               </label>
               <input
                 v-model="newAddress.full_name"
@@ -402,7 +402,7 @@ onMounted(async () => {
 
             <div>
               <label class="text-sm font-medium">
-                Số điện thoại <span class="text-red-500">*</span>
+                Phone Number <span class="text-red-500">*</span>
               </label>
               <input
                 v-model="newAddress.phone_number"
@@ -411,11 +411,11 @@ onMounted(async () => {
               />
             </div>
 
-            <h3 class="text-lg font-semibold mb-2">Địa Chỉ</h3>
+            <h3 class="text-lg font-semibold mb-2">Address</h3>
 
             <div>
               <label class="text-sm font-medium">
-                Số nhà và đường <span class="text-red-500">*</span>
+                Street Name <span class="text-red-500">*</span>
               </label>
               <input
                 v-model="newAddress.street"
@@ -427,7 +427,7 @@ onMounted(async () => {
             <div class="flex gap-4">
               <div class="flex-1">
                 <label class="text-sm font-medium">
-                  Phường <span class="text-red-500">*</span>
+                  Ward <span class="text-red-500">*</span>
                 </label>
                 <input
                   v-model="newAddress.ward"
@@ -438,7 +438,7 @@ onMounted(async () => {
 
               <div class="flex-1">
                 <label class="text-sm font-medium">
-                  Quận <span class="text-red-500">*</span>
+                  District <span class="text-red-500">*</span>
                 </label>
                 <input
                   v-model="newAddress.district"
@@ -450,7 +450,7 @@ onMounted(async () => {
 
             <div>
               <label class="text-sm font-medium">
-                Thành phố <span class="text-red-500">*</span>
+                City <span class="text-red-500">*</span>
               </label>
               <input
                 v-model="newAddress.city"
@@ -461,8 +461,8 @@ onMounted(async () => {
           </div>
 
           <div class="flex gap-3 mt-6">
-            <button class="flex-1 border border-gray-300 py-2 rounded hover:bg-gray-100 cursor-pointer" @click="showNewAddressForm = false">Hủy</button>
-            <button class="flex-1 bg-[#ee4d2d] text-white py-2 rounded hover:bg-[#d73211] cursor-pointer" @click="handleAddNewAddress">Thêm</button>
+            <button class="flex-1 border border-gray-300 py-2 rounded hover:bg-gray-100 cursor-pointer" @click="showNewAddressForm = false">Cancel</button>
+            <button class="flex-1 bg-[#ee4d2d] text-white py-2 rounded hover:bg-[#d73211] cursor-pointer" @click="handleAddNewAddress">Submit</button>
           </div>
         </template>
       </div>

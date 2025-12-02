@@ -16,7 +16,7 @@ const performSearch = async () => {
 }
 </script>
 <template>
-  <button class="rounded-xl w-full h-full bg-[var(--orange)] cursor-pointer" @click="performSearch">
+  <button class="rounded-xl w-full h-full bg-red-500 cursor-pointer" @click="performSearch">
     <Search class="inline-block mr-1" />
   </button>
 </template>

@@ -55,7 +55,7 @@ onMounted(() => {
       <div class="right-section">
         <p>Notifications</p>
         <p class="divider">|</p>
-        <p>Tiếng Việt</p>
+        <p>English</p>
         <div v-if="!loginStatus">
           <p class="divider">|</p>
           <p @click="navigateToSignup">Sign Up</p>
@@ -116,7 +116,7 @@ onMounted(() => {
             style="width: 100%; height: 40px; border-radius: 5px; padding: 0 10px; font-size: 14px"
             v-model="searchQuery"
           />
-          <div class="w-20 h-10">
+          <div class="w-20 h-10 ml-2">
             <SearchButton v-model="searchQuery"></SearchButton>
           </div>
         </div>

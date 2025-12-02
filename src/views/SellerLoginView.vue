@@ -52,8 +52,7 @@ async function handleLogin(){
     localStorage.setItem('id', response.data.user.id)
     router.push({ name: 'dashboard' })
     console.log('Login successful:', response)
-  } catch (error: any) {
-    errorMessage.value = 'Login failed: ' + error?.response?.data?.message
+  } catch (error) {
     console.error('Login failed:', error)
   }
 }
@@ -91,13 +90,13 @@ function onSignupClick() {
             <span class="font-semibold">BuyIt</span>
           </button>
           <div class="border-l h-6"></div>
-          <span class="text-xl">Kênh Người Bán</span>
+          <span class="text-xl">BuyIt Seller Centre</span>
         </div>
         <div class="ml-auto flex items-center gap-6">
           <a href="#" class="text-sm text-red-600 hover:underline" @click="onNavigateToLogin"
-            >Quay lại đăng nhập khách hàng?</a
+            >Back to customer login page?</a
           >
-          <a href="#" class="text-sm text-red-600 hover:underline">Bạn cần giúp đỡ?</a>
+          <a href="#" class="text-sm text-red-600 hover:underline">Need help?</a>
         </div>
       </div>
     </header>
@@ -108,9 +107,9 @@ function onSignupClick() {
         <div class="grid grid-cols-1 md:grid-cols-2 gap-16 items-center max-w-6xl mx-auto">
           <!-- Left -->
           <div class="text-center md:text-left">
-            <h1 class="text-3xl text-red-600 mb-4">Bán hàng chuyên nghiệp</h1>
+            <h1 class="text-3xl text-red-600 mb-4">Be a Power Seller</h1>
             <p class="text-gray-600 mb-8">
-              Quản lý shop của bạn một cách hiệu quả hơn trên BuyIt - Kênh Người bán
+              Manage your shop efficiently on BuyIt with our BuyIt Seller Centre
             </p>
             <img
               src="https://deo.shopeemobile.com/shopee/shopee-buyeruserfetoc-live-sg/assets/9019759f347a781f.png"
@@ -134,7 +133,7 @@ function onSignupClick() {
                   "
                   @click="loginMode = 'password'"
                 >
-                  Đăng Nhập
+                  Log In
                 </button>
                 <button
                   type="button"
@@ -146,7 +145,7 @@ function onSignupClick() {
                   "
                   @click="loginMode = 'qr'"
                 >
-                  Đăng Nhập Bằng QR
+                  Log in with QR
                 </button>
               </div>
             </div>
@@ -156,9 +155,9 @@ function onSignupClick() {
               <div class="bg-white border-4 border-gray-200 rounded-lg p-4 mb-4">
                 <img v-if="qrCode" :src="qrCode" alt="QR Code" class="w-64 h-64" />
               </div>
-              <h3 class="text-lg mb-2">Quét Mã QR Để Đăng Nhập</h3>
+              <h3 class="text-lg mb-2">Log in with QR</h3>
               <p class="text-sm text-gray-600 text-center max-w-sm">
-                Sử dụng ứng dụng BuyIt để quét mã QR
+                Scan QR code with BuyIt App
               </p>
             </div>
 
@@ -174,7 +173,7 @@ function onSignupClick() {
                   :class="{ 'border-red-500': usernameError }"
                 />
                 <p v-if="usernameError" class="text-red-500 text-sm mt-1">
-                  Vui lòng nhập thông tin này
+                  Please enter your username
                 </p>
               </div>
 
@@ -197,18 +196,18 @@ function onSignupClick() {
                   </button>
                 </div>
                 <p v-if="passwordError" class="text-red-500 text-sm mt-1">
-                  Vui lòng nhập thông tin này
+                  Please enter your password
                 </p>
               </div>
               <button
                 type="submit"
-                class="inline-flex items-center justify-center gap-2 px-3 py-2 whitespace-nowrap rounded-md text-sm font-medium transition-all w-full bg-[#ee4d2d] hover:bg-[#d73211] text-white h-11 mt-2"
+                class="inline-flex items-center justify-center gap-2 px-3 py-2 whitespace-nowrap rounded-md text-sm font-medium transition-all w-full bg-[#ee4d2d] hover:bg-[#d73211] text-white h-11 mt-2 cursor-pointer"
               >
-                ĐĂNG NHẬP
+                LOG IN
               </button>
 
               <div class="text-center text-sm">
-                <a href="#" class="text-blue-600 hover:underline">Quên mật khẩu</a>
+                <a href="#" class="text-blue-600 hover:underline">Forgot Password</a>
               </div>
 
               <!-- Divider -->
@@ -217,7 +216,7 @@ function onSignupClick() {
                   <div class="w-full border-t"></div>
                 </div>
                 <div class="relative flex justify-center text-sm">
-                  <span class="bg-white px-2 text-gray-500">HOẶC</span>
+                  <span class="bg-white px-2 text-gray-500">OR</span>
                 </div>
               </div>
 
@@ -263,8 +262,9 @@ function onSignupClick() {
               </div>
 
               <div class="text-center text-sm text-gray-600 mt-4">
-                Bạn mới biết đến BuyIt?
-                <a href="#" class="text-red-600 hover:underline" @click="onSignupClick">Đăng ký</a>
+                New to BuyIt?
+
+                <a href="#" class="text-red-600 hover:underline" @click="onSignupClick">Sign Up</a>
               </div>
             </form>
           </div>

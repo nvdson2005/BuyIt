@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {ref, watch, onMounted, computed } from "vue";
-import { ChevronDown } from "lucide-vue-next";
+import { ChevronDown, ArrowUpRight } from "lucide-vue-next";
 // import Checkbox from "@/components/ui/Checkbox.vue";
 import CustomImage from "@/components/ui/CustomImage.vue";
 import { type SellerProductShow, type Subcategory } from "@/utils/interface";
@@ -112,6 +112,16 @@ const selectSubcategory = async (subcategory: Subcategory) => {
   sub_category_id.value = subcategory.id
   showSubCategories.value = false
 }
+
+async function updateActive(product_id: string){
+  try {
+      await apiClient.patch(`/shop/product-isactive/${product_id}`)
+
+    } catch (err) {
+      console.error('Getting subcategory failed: ', err)
+
+    }
+}
 </script>
 
 <template>
@@ -126,7 +136,7 @@ const selectSubcategory = async (subcategory: Subcategory) => {
             : 'text-gray-600 hover:text-red-500'
           ]"
         @click="tab = 'all'">
-          Tất cả ({{ products.length }})
+          All ({{ products.length }})
         </button>
         <button class="py-3 px-4 text-gray-600 cursor-pointer"
         :class="[
@@ -135,7 +145,7 @@ const selectSubcategory = async (subcategory: Subcategory) => {
             : 'text-gray-600 hover:text-red-500'
           ]"
         @click="tab = 'active'">
-          Đang hoạt động ({{ active_products.length }})
+          Active ({{ active_products.length }})
         </button>
         <button class="py-3 px-4 text-gray-600 cursor-pointer"
         :class="[
@@ -143,14 +153,14 @@ const selectSubcategory = async (subcategory: Subcategory) => {
             ? 'border-b-2 border-red-500 text-red-500'
             : 'text-gray-600 hover:text-red-500'
           ]"
-        @click="tab = 'soldout'">Hết hàng ({{ soldout_products.length }})</button>
+        @click="tab = 'soldout'">Sold Out ({{ soldout_products.length }})</button>
         <button class="py-3 px-4 text-gray-600 cursor-pointer"
         :class="[
           tab === 'inactive'
             ? 'border-b-2 border-red-500 text-red-500'
             : 'text-gray-600 hover:text-red-500'
           ]"
-        @click="tab = 'inactive'">Ngừng bán ({{ inactive_products.length }})</button>
+        @click="tab = 'inactive'">Inactive ({{ inactive_products.length }})</button>
       </div>
 
       <div class="flex gap-2">
@@ -161,7 +171,7 @@ const selectSubcategory = async (subcategory: Subcategory) => {
         </button> -->
 
         <button @click="$emit('add-new-product')" class="inline-flex text-white items-center px-3 py-2 whitespace-nowrap rounded-md text-sm font-medium transition-all border border-gray-200 bg-[#ee4d2d] hover:bg-[#d73211] cursor-pointer">
-          + Thêm 1 sản phẩm mới
+          + Add New Product
         </button>
       </div>
     </div>
@@ -211,11 +221,11 @@ const selectSubcategory = async (subcategory: Subcategory) => {
       <div class="flex justify-start gap-2">
         <button class="inline-flex items-center px-3 py-2 whitespace-nowrap rounded-md text-white text-sm font-medium transition-all border border-gray-200 h-10 bg-[#ee4d2d] hover:bg-[#d73211] cursor-pointer"
                 @click="filteredProducts">
-          Áp dụng
+          Filter
         </button>
           <button class="inline-flex items-center px-3 py-2 whitespace-nowrap rounded-md text-sm font-medium transition-all border border-gray-200 h-10 justify-between bg-background text-foreground text-gray-700 hover:bg-gray-200 cursor-pointer"
                   @click="resetFilter">
-            Nhập Lại
+            Reset
           </button>
       </div>
     </div>
@@ -223,7 +233,7 @@ const selectSubcategory = async (subcategory: Subcategory) => {
     <!-- Bảng sản phẩm -->
     <div class="bg-white rounded-lg shadow-sm">
       <div class="p-4 flex justify-between items-center">
-        <p>{{ tabProducts.length }} Sản Phẩm</p>
+        <p>{{ tabProducts.length }} Products</p>
         <div class="flex items-center gap-2">
           <!-- Pagination placeholder -->
         </div>
@@ -233,12 +243,12 @@ const selectSubcategory = async (subcategory: Subcategory) => {
         <TableHeader>
           <TableRow>
             <TableHead class="w-[25px]"></TableHead>
-            <TableHead>Sản phẩm</TableHead>
-            <TableHead>Doanh số</TableHead>
-            <TableHead>Giá</TableHead>
-            <TableHead>Kho hàng</TableHead>
+            <TableHead>Product</TableHead>
+            <TableHead>Revenue</TableHead>
+            <TableHead>Price</TableHead>
+            <TableHead>Stock</TableHead>
             <!-- <TableHead>Tồn kho "Gói Siêu Giao Nhanh"</TableHead> -->
-            <TableHead>Thao tác</TableHead>
+            <TableHead>Operation</TableHead>
           </TableRow>
         </TableHeader>
 
@@ -256,7 +266,6 @@ const selectSubcategory = async (subcategory: Subcategory) => {
                   />
                   <div>
                     <p class="font-medium">{{ product.name }}</p>
-                    <p class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Ưu đãi độc quyền cho thành viên</p>
                   </div>
                 </div>
               <!-- interface Product không có sku -->
@@ -268,15 +277,13 @@ const selectSubcategory = async (subcategory: Subcategory) => {
             <!-- <TableCell>-</TableCell> -->
             <TableCell>
               <div class="flex flex-col items-start">
-                <button class="inline-flex items-center gap-2 rounded-md text-sm text-red-600 transition-all focus-visible:ring-[3px] text-primary underline-offset-4 hover:underline p-0 h-auto cursor-pointer">
-                  Cập nhật
+                <button class="inline-flex items-center rounded-md text-sm text-red-600 transition-all focus-visible:ring-[3px] text-primary underline-offset-4 hover:underline p-0 h-auto cursor-pointer">
+                  Details<ArrowUpRight :size="12"/>
                 </button>
-                <button class="inline-flex items-center gap-2 rounded-md text-sm text-red-600 transition-all focus-visible:ring-[3px] text-primary underline-offset-4 hover:underline p-0 h-auto cursor-pointer">
-                  Quảng cáo
-                </button>
-                <button class="inline-flex items-center gap-2 rounded-md text-sm text-red-600 transition-all focus-visible:ring-[3px] text-primary underline-offset-4 hover:underline p-0 h-auto cursor-pointer">
-                  Xem thêm
-                </button>
+                <label class="inline-flex items-center pt-2 me-5 cursor-pointer">
+                  <input type="checkbox" class="sr-only peer" v-model="product.is_active" checked @change="updateActive(product.id)">
+                  <div class="relative w-9 h-5 bg-neutral-quaternary rounded-full peer peer-focus:ring-1 peer-focus:ring-red-300 dark:peer-focus:ring-red-300 dark:bg-gray-200 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-red-500 dark:peer-checked:bg-red-500"></div>
+                </label>
               </div>
             </TableCell>
           </TableRow>

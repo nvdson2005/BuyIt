@@ -1,11 +1,25 @@
 <script lang="ts" setup>
 import NavBar from '@/components/layout/NavBar.vue'
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { type Ref } from 'vue'
 import { OrderFilterOptions } from '@/utils/enum'
 import { Search, Store } from 'lucide-vue-next'
 import CustomImage from '@/components/ui/CustomImage.vue'
+import apiClient from '@/api/client'
 const selectedFilterOption: Ref<OrderFilterOptions> = ref(OrderFilterOptions.ALL)
+
+// const orders = ref([])
+
+onMounted(async () => {
+  try {
+    const response = await apiClient.get(`/buyer/orders`)
+
+
+  } catch (err) {
+    console.error("Getting orders failed:", err)
+  }
+})
+
 </script>
 <template>
   <NavBar />

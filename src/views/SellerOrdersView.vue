@@ -37,37 +37,36 @@ const toggleAccordion = () => {
 }
 
 const tabs = [
-  'Tất cả',
-  'Chờ xác nhận',
-  'Chuẩn bị hàng',
-  'Đang giao',
-  'Chờ lấy hàng',
-  'Đã giao cho ĐVVC',
-  'Hết hàng',
-  'Đã hủy'
+  'All',
+  'Pending Confirmation',
+  'Repairing',
+  'Delivering',
+  'Ready for Pickup',
+  'In Transit',
+  'Cancelled'
 ]
 
-const activeTab = ref('Tất cả')
+const activeTab = ref('All')
 const filteredOrders = ref<SellerOrder[]>([])
 const statusColor = ref('text-orange-500')
 
 watch(activeTab, () => {
-  if (activeTab.value === 'Tất cả') {
+  if (activeTab.value === 'All') {
     filteredOrders.value = orders.value
-  } else if(activeTab.value === 'Chờ xác nhận'){
+  } else if(activeTab.value === 'Pending Confirmation'){
     filteredOrders.value = orders.value.filter(
       (o) => o.order_status === 'Pending'
     )
     statusColor.value = "text-orange-500"
   }
-  else if(activeTab.value === 'Chuẩn bị hàng'){
+  else if(activeTab.value === 'Repairing'){
     filteredOrders.value = orders.value.filter(
       (o) => o.order_status === 'Paid'
     )
     statusColor.value = "text-orange-500"
 
   }
-  else if(activeTab.value === 'Đang giao'){
+  else if(activeTab.value === 'Ready for Pickup'){
     filteredOrders.value = orders.value.filter(
       (o) => o.order_status === 'Shipped'
     )
@@ -178,30 +177,10 @@ function selectCarrier(carrier:string){
   <div class="space-y-4">
     <!-- Header -->
     <div class="flex justify-between items-center">
-      <h2 class="text-2xl font-semibold">Quản lý đơn hàng</h2>
+      <h2 class="text-2xl font-semibold">Orders Management</h2>
       <div class="flex items-center gap-2">
-        <button class="inline-flex items-center gap-2 rounded-md text-sm font-medium transition-all focus-visible:ring-[3px] text-primary underline-offset-4 hover:underline text-blue-600 cursor-pointer"
-          >Không tìm thấy đơn hàng?</button
-        >
-        <button class="inline-flex items-center justify-center gap-2 px-3 py-2 whitespace-nowrap rounded-md
-                text-sm font-medium transition-all duration-200 cursor-pointer
-                border border-gray-300
-                bg-white text-gray-700
-                hover:bg-gray-100 hover:border-gray-400
-                active:bg-gray-200
-                focus:outline-none focus:ring-2 focus:ring-gray-300
-                mt-2">
-          Thêm đơn hàng
-        </button>
-        <button class="inline-flex items-center justify-center gap-2 px-3 py-2 whitespace-nowrap rounded-md
-                text-sm font-medium transition-all duration-200 cursor-pointer
-                border border-gray-300
-                text-white
-                active:bg-gray-200
-                focus:outline-none focus:ring-2 focus:ring-gray-300
-                mt-2
-                bg-[#ee4d2d] hover:bg-[#d73211]"
-          >Chuẩn bị đơn hàng loạt</button
+        <button class="inline-flex items-center gap-2 mr-4 rounded-md text-sm font-medium transition-all focus-visible:ring-[3px] text-primary underline-offset-4 hover:underline text-blue-600 cursor-pointer"
+          >Order not found?</button
         >
       </div>
     </div>
@@ -258,7 +237,7 @@ function selectCarrier(carrier:string){
         <!-- Bộ lọc ngày -->
          <div class="grid grid-cols-2 gap-6">
         <div class="flex items-center gap-6">
-          <label class="text-sm font-semibold whitespace-nowrap">Ngày tạo đơn</label>
+          <label class="text-sm font-semibold whitespace-nowrap">Order Date</label>
 
           <div class="flex items-center gap-2">
             <input
@@ -280,7 +259,7 @@ function selectCarrier(carrier:string){
 
         <!-- Đơn vị vận chuyển -->
         <div class="flex items-center gap-6">
-          <label class="text-sm font-semibold whitespace-nowrap">Đơn vị vận chuyển</label>
+          <label class="text-sm font-semibold whitespace-nowrap">Shipping Carrier</label>
           <div class="relative">
           <button
             class="inline-flex items-center px-3 py-2 rounded-md border border-gray-300
@@ -305,11 +284,11 @@ function selectCarrier(carrier:string){
         <div class="flex justify-end gap-2">
         <button class="inline-flex items-center px-3 py-2 whitespace-nowrap rounded-md text-white text-sm font-medium transition-all border border-gray-200 h-10 bg-[#ee4d2d] hover:bg-[#d73211] cursor-pointer"
                 @click="filter">
-          Áp dụng
+          Filter
         </button>
           <button class="inline-flex items-center px-3 py-2 whitespace-nowrap rounded-md text-sm font-medium transition-all border border-gray-200 h-10 justify-between bg-background text-foreground text-gray-700 hover:bg-gray-200 cursor-pointer"
                   @click="resetFilter">
-            Nhập Lại
+            Reset
           </button>
       </div>
       </div>
@@ -323,13 +302,13 @@ function selectCarrier(carrier:string){
         <TableHeader>
           <TableRow>
             <TableHead class="w-[50px]"><Checkbox v-model="checked_all"></Checkbox></TableHead>
-            <TableHead>Sản phẩm</TableHead>
-            <TableHead>Doanh thu đơn hàng</TableHead>
-            <TableHead>Trạng thái</TableHead>
-            <TableHead>Đơn vị vận chuyển</TableHead>
-            <TableHead>Thời gian tạo</TableHead>
-            <TableHead>Ngày giao hàng</TableHead>
-            <TableHead>Thao tác</TableHead>
+            <TableHead>Product</TableHead>
+            <TableHead>Order Revenue </TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Shipping Carrier</TableHead>
+            <TableHead>Order Date</TableHead>
+            <TableHead>Delivery Date</TableHead>
+            <TableHead>Operation</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -363,7 +342,7 @@ function selectCarrier(carrier:string){
               <TableCell>{{ formatted(order.actual_deliver_date) }}</TableCell>
               <TableCell>
                 <button class="inline-flex items-center gap-2 rounded-md text-sm font-medium transition-all focus-visible:ring-[3px] text-primary underline-offset-4 hover:underline text-blue-600"
-                  >Xem chi tiết</button
+                  >Details</button
                 >
               </TableCell>
             </TableRow>
@@ -375,7 +354,7 @@ function selectCarrier(carrier:string){
                 colspan="8"
                 class="text-center text-gray-500 py-10"
               >
-                Không có đơn hàng nào.
+                There are no recent orders.
               </TableCell>
             </TableRow>
           </template>

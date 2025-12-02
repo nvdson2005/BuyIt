@@ -183,6 +183,7 @@ export interface SellerProductShow {
   sub_category_id: string
   sale_price: number
   is_onsale: boolean
+  status_op: string
 }
 
 
