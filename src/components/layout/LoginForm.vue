@@ -13,8 +13,8 @@ const usernameError = ref(false)
 const passwordError = ref(false)
 
 const handleLogin = () => {
-  usernameError.value = !username.value;
-  passwordError.value = !password.value;
+  usernameError.value = !username.value
+  passwordError.value = !password.value
   emit('login', username.value, password.value)
 }
 defineProps({
@@ -23,37 +23,28 @@ defineProps({
     default: 'var(--red)',
   },
 })
-
-
 </script>
 <template>
-  <form
-  class="w-full h-full flex flex-col items-center px-6 py-8"
-  @submit.prevent="handleLogin"
-  >
+  <form class="w-full h-full flex flex-col items-center px-6 py-8" @submit.prevent="handleLogin">
     <input
       type="text"
       placeholder="Username"
-      class="input-box w-full border border-gray-300 px-3 py-2
-              focus:outline-none focus:ring-[3px] focus:ring-gray-300"
+      class="input-box w-full border border-gray-300 px-3 py-2 focus:outline-none focus:ring-[3px] focus:ring-gray-300"
       v-model="username"
     />
     <p v-if="usernameError" class="w-full text-left text-white text-sm mt-1">
-      Vui lòng nhập thông tin này
+      Please enter your username
     </p>
 
     <div class="w-full relative mb-8 mt-6">
       <input
         placeholder="Password"
-        class="input-box w-full border border-gray-300 px-3 py-2
-              focus:outline-none focus:ring-[3px] focus:ring-gray-300"
+        class="input-box w-full border border-gray-300 px-3 py-2 focus:outline-none focus:ring-[3px] focus:ring-gray-300"
         :type="isShowPassword ? 'text' : 'password'"
         v-model="password"
         @keyup.enter="handleLogin"
       />
-      <p v-if="passwordError" class="text-white text-sm mt-1">
-        Vui lòng nhập thông tin này
-      </p>
+      <p v-if="passwordError" class="text-white text-sm mt-1">Please enter your password</p>
       <div
         class="absolute top-5 right-3 -translate-y-1/2 cursor-pointer"
         @click="isShowPassword = !isShowPassword"
@@ -64,8 +55,7 @@ defineProps({
 
     <button
       type="submit"
-      class="inline-flex items-center justify-center gap-2 px-3 py-2 whitespace-nowrap bg-[var(--orange)] text-white rounded
-              font-medium transition-all w-full hover:bg-orange-600 transition-colors duration-200 cursor-pointer"
+      class="inline-flex items-center justify-center gap-2 px-3 py-2 whitespace-nowrap bg-[var(--orange)] text-white rounded font-medium transition-all w-full hover:bg-orange-600 transition-colors duration-200 cursor-pointer"
     >
       Login
     </button>
@@ -81,11 +71,7 @@ defineProps({
     <!-- Facebook-->
     <button
       type="button"
-      class="flex items-center justify-center ml-4 gap-2 px-4 py-2 rounded-lg
-      text-sm text-white font-medium transition-all duration-200 cursor-pointer
-      border border-gray-300
-      bg-[var(--orange)]
-      hover:bg-gray-50 hover:shadow-md active:scale-95"
+      class="flex items-center justify-center ml-4 gap-2 px-4 py-2 rounded-lg text-sm text-white font-medium transition-all duration-200 cursor-pointer border border-gray-300 bg-[var(--orange)] hover:bg-gray-50 hover:shadow-md active:scale-95"
     >
       <svg class="w-5 h-5" viewBox="0 0 24 24">
         <path
@@ -99,11 +85,7 @@ defineProps({
     <!-- Google -->
     <button
       type="button"
-      class="flex items-center justify-center mr-4 gap-2 px-4 py-2 rounded-lg
-      text-sm text-white font-medium transition-all duration-200 cursor-pointer
-      border border-gray-300
-      bg-[var(--orange)]
-      hover:bg-gray-50 hover:shadow-md active:scale-95"
+      class="flex items-center justify-center mr-4 gap-2 px-4 py-2 rounded-lg text-sm text-white font-medium transition-all duration-200 cursor-pointer border border-gray-300 bg-[var(--orange)] hover:bg-gray-50 hover:shadow-md active:scale-95"
     >
       <svg class="w-5 h-5" viewBox="0 0 24 24">
         <path
@@ -127,10 +109,11 @@ defineProps({
     </button>
   </div>
 
-<a href="#" class="text-gray-200 hover:text-white hover:underline block text-center mt-4 mb-3 text-sm font-medium">
-  Forgot your password?
-</a>
-
-
+  <a
+    href="#"
+    class="text-gray-200 hover:text-white hover:underline block text-center mt-4 mb-3 text-sm font-medium"
+  >
+    Forgot your password?
+  </a>
 </template>
 <style scoped></style>

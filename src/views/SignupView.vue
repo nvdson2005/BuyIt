@@ -3,6 +3,7 @@ import { useRouter } from 'vue-router'
 import SignupForm from '@/components/layout/SignupForm.vue'
 import BasicNavBar from '@/components/layout/BasicNavBar.vue'
 import apiClient from '@/api/client'
+import { notifyAsync, notify } from '@/utils/notify'
 const router = useRouter()
 
 function onLoginClick() {
@@ -17,29 +18,35 @@ function onSignupClick(
   password: string,
   retypePassword: string,
   phoneNumber: string,
-  role: 'Buyer' | 'Seller',
+  role: 'buyer' | 'seller',
 ) {
   if (password !== retypePassword) {
     console.error('Passwords do not match')
+    notify('Passwords do not match', 'error')
     return
   }
-  apiClient
-    .post('/signup', {
-      firstName,
-      lastName,
-      email,
-      username,
-      password,
-      phoneNumber,
-      role,
-    })
-    .then((response) => {
-      console.log('Signup successful:', response.data)
-      router.push({ name: 'login' })
-    })
-    .catch((error) => {
-      console.error('Signup failed:', error)
-    })
+  notifyAsync(
+    apiClient
+      .post('/signup', {
+        firstName,
+        lastName,
+        email,
+        username,
+        password,
+        phoneNumber,
+        role,
+      })
+      .then(() => {
+        notify('Signup successful!', 'success')
+        setTimeout(() => {
+          router.push({ name: 'login' })
+        }, 1000)
+      })
+      .catch((error) => {
+        notify(`${error.response.data.message}`, 'error')
+        console.error('Signup failed:', error.response.data.message)
+      }),
+  )
 }
 </script>
 

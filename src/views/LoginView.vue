@@ -6,6 +6,7 @@ import BasicNavBar from '@/components/layout/BasicNavBar.vue'
 import { onMounted, ref } from 'vue'
 import { CircleX } from 'lucide-vue-next'
 import { AxiosError } from 'axios'
+import { notifyAsync, notify } from '@/utils/notify'
 const router = useRouter()
 
 const errorMessage = ref('')
@@ -17,31 +18,36 @@ function onSignupClick() {
 async function onLoginClick(username: string, password: string) {
   errorMessage.value = ''
   try {
-    const response = await apiClient.post('/login', {
-      username,
-      password,
-      roleType: 'buyer',
-    })
+    const response = await notifyAsync(
+      apiClient.post('/login', {
+        username,
+        password,
+        roleType: 'buyer',
+      }),
+    )
     localStorage.setItem('username', username)
     localStorage.setItem('role', response.data.user.role)
     localStorage.setItem('id', response.data.user.id)
+    notify('Login successful!', 'success')
     router.push({ name: 'home' })
-
-    console.log('Login successful:', response)
   } catch (error: unknown) {
     if (error instanceof AxiosError) {
       if (error.response) {
         errorMessage.value = `Login failed: ${error.response.data.message || 'Unknown error'}`
+        // notify(errorMessage.value, 'error')
         console.error('Login failed:', error.response.data)
       } else if (error.request) {
         errorMessage.value = 'Login failed: No response from server'
+        // notify(errorMessage.value, 'error')
         console.error('Login failed: No response from server', error.request)
       } else {
         errorMessage.value = `Login failed: ${error.message}`
+        // notify(errorMessage.value, 'error')
         console.error('Login failed:', error.message)
       }
     } else if (error instanceof Error) {
       errorMessage.value = `Login failed: ${error.message}`
+      // notify(errorMessage.value, 'error')
       console.error('Login failed:', error.message)
     }
   }

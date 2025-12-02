@@ -1,17 +1,17 @@
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { Eye, EyeOff } from "lucide-vue-next";
+import { Eye, EyeOff } from 'lucide-vue-next'
 import apiClient from '@/api/client'
 
 const router = useRouter()
-const username = ref("");
-const password = ref("");
-const showPassword = ref(false);
-const usernameError = ref(false);
-const passwordError = ref(false);
-const loginMode = ref<"password" | "qr">("password");
-const qrCode = ref("");
+const username = ref('')
+const password = ref('')
+const showPassword = ref(false)
+const usernameError = ref(false)
+const passwordError = ref(false)
+const loginMode = ref<'password' | 'qr'>('password')
+const qrCode = ref('')
 const errorMessage = ref('')
 
 onMounted(async () => {
@@ -32,7 +32,7 @@ watch(loginMode, (newMode) => {
   }
 })
 
-async function handleLogin(){
+async function handleLogin() {
   errorMessage.value = ''
   usernameError.value = false
   passwordError.value = false
@@ -45,7 +45,7 @@ async function handleLogin(){
     const response = await apiClient.post('/login', {
       username: username.value,
       password: password.value,
-      roleType: 'shop',
+      roleType: 'seller',
     })
     localStorage.setItem('username', response.data.user.username)
     localStorage.setItem('role', response.data.user.role)
