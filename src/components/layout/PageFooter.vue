@@ -5,6 +5,10 @@ const router = useRouter()
 function navigateToCustomerService() {
   router.push('/customer-service')
 }
+
+function navigateToAbout() {
+  router.push('/about')
+}
 </script>
 <template>
   <div class="w-full bg-(--pure-light) border-t-slate-200 border flex flex-col items-center py-10">
@@ -26,11 +30,11 @@ function navigateToCustomerService() {
       <div>
         <div class="text-black mb-4 text-lg">About Us</div>
         <div class="text-slate-600 text-sm leading-8 flex flex-col items-baseline">
-          <button class="basic-hyperlink">About Company</button>
-          <button class="basic-hyperlink">Careers</button>
-          <button class="basic-hyperlink">Press & News</button>
-          <button class="basic-hyperlink">Store Locations</button>
-          <button class="basic-hyperlink">Affiliate Program</button>
+          <button class="basic-hyperlink" @click="navigateToAbout">About Company</button>
+          <button class="basic-hyperlink" @click="navigateToAbout">Careers</button>
+          <button class="basic-hyperlink" @click="navigateToAbout">Press & News</button>
+          <button class="basic-hyperlink" @click="navigateToAbout">Store Locations</button>
+          <button class="basic-hyperlink" @click="navigateToAbout">Affiliate Program</button>
         </div>
       </div>
       <div>
