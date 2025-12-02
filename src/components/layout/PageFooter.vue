@@ -1,15 +1,26 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { useRouter } from 'vue-router'
+const router = useRouter()
+
+function navigateToCustomerService() {
+  router.push('/customer-service')
+}
+</script>
 <template>
   <div class="w-full bg-(--pure-light) border-t-slate-200 border flex flex-col items-center py-10">
     <div class="w-[80%] grid grid-cols-4 gap-4">
       <div>
         <div class="text-black mb-4 text-lg">Customer Service</div>
         <div class="text-slate-600 text-sm leading-8 flex flex-col items-baseline">
-          <button class="basic-hyperlink">Help Center</button>
-          <button class="basic-hyperlink">How to Buy</button>
-          <button class="basic-hyperlink">Shipping & Delivery</button>
-          <button class="basic-hyperlink">Return & Refunds</button>
-          <button class="basic-hyperlink">Contact Us</button>
+          <button class="basic-hyperlink" @click="navigateToCustomerService">Help Center</button>
+          <button class="basic-hyperlink" @click="navigateToCustomerService">How to Buy</button>
+          <button class="basic-hyperlink" @click="navigateToCustomerService">
+            Shipping & Delivery
+          </button>
+          <button class="basic-hyperlink" @click="navigateToCustomerService">
+            Return & Refunds
+          </button>
+          <button class="basic-hyperlink" @click="navigateToCustomerService">Contact Us</button>
         </div>
       </div>
       <div>

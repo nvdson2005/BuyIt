@@ -33,7 +33,7 @@ defineProps({
 </script>
 <template>
   <div
-    class="cursor-pointer w-full h-full flex-col gap-2 rounded-md flex items-center justify-center bg-white hover:bg-slate-50 transition-colors duration-300"
+    class="cursor-pointer w-full h-fit flex-col gap-2 rounded-md flex items-center justify-center bg-white hover:bg-slate-50 transition-colors duration-300"
     @click="navigateOnClick()"
     @mouseenter="isHovering = true"
     @mouseleave="isHovering = false"
@@ -50,7 +50,7 @@ defineProps({
     >
       <slot />
     </div>
-    <p class="mt-1 text-sm font-medium text-gray-700">{{ buttonContent }}</p>
+    <p class="mt-1 text-sm font-medium text-gray-700 text-center">{{ buttonContent }}</p>
   </div>
 </template>
 <style scoped></style>

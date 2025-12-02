@@ -14,9 +14,9 @@ const panels = ref<Array<{ title: string; content: string; gradientColor: string
     gradientColor: 'bg-gradient-to-r from-green-500 to-blue-500',
   },
   {
-    title: 'The best place to buy and sell products online',
+    title: 'Enjoy the most simple and convenient shopping experience',
     content:
-      'BuyIt is the best place to buy and sell products online. We have a wide range of products to choose from, and our prices are unbeatable.',
+      'With BuyIt, you can enjoy the most simple and convenient shopping experience. We offer a wide range of products to choose from, and our prices are unbeatable.',
     gradientColor: 'bg-gradient-to-r from-red-500 to-orange-500',
   },
 ])
