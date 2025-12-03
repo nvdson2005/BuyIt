@@ -1,13 +1,21 @@
 <script lang="ts" setup>
-import { ref, onMounted } from 'vue'
-import { Percent, Briefcase, Gift } from 'lucide-vue-next'
-import PromoCard from '@/components/ui/PromoCard.vue'
-import apiClient from '@/api/client'
-import CreateProgramView from './CreateProgramView.vue'
-import CustomImage from '@/components/ui/CustomImage.vue'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/utils/Table.ts'
-import type { SellerProductShow } from '@/utils/interface'
+import { ref, onMounted } from "vue";
+import { Percent, Briefcase, Gift } from "lucide-vue-next";
+import PromoCard from "@/components/ui/PromoCard.vue";
+import apiClient from "@/api/client";
+import CreateProgramView from "./CreateProgramView.vue";
+import { type SellerProductShow } from "@/utils/interface";
+import CustomImage from "@/components/ui/CustomImage.vue";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
+} from '@/utils/Table.ts'
 
+const products = ref<SellerProductShow[]>([])
 const onsale_products = ref<SellerProductShow[]>([])
 const tabProducts = ref<SellerProductShow[]>([])
 const keyword = ref('')
@@ -25,16 +33,25 @@ onMounted(async () => {
   const shopId = localStorage.getItem('id')
   try {
     const response = await apiClient.get(`/products/get-by-shopid/${shopId}`)
-    onsale_products.value = response.data.products.filter(
-      (p: SellerProductShow) => p.is_onsale === true,
-    )
+    products.value = response.data.products.map((p: SellerProductShow) => ({
+      id: p.id,
+      name: p.name,
+      description: p.description,
+      rating: p.rating,
+      price: p.price,
+      sold_amount: p.sold_amount,
+      stock_quantity: p.stock_quantity,
+      image_url: p.image_url,
+      is_active: p.is_active,
+      sub_category_id: p.sub_category_id,
+      sale_price: p.sale_price,
+      is_onsale: p.is_onsale,
+      status_op: ''
+    }))
+    onsale_products.value = products.value.filter((p:SellerProductShow) => p.is_onsale === true)
     tabProducts.value = onsale_products.value
-  } catch (err: unknown) {
-    if (err instanceof Error) {
-      alert(err.message)
-    } else {
-      alert('An unknown error occurred')
-    }
+  } catch (err) {
+    console.error("Getting products failed: ", err)
   }
 })
 
@@ -52,8 +69,7 @@ function resetFilter() {
   tabProducts.value = onsale_products.value
 }
 
-const handleOnsaleProducts = (value: SellerProductShow[]) => {
-  console.log(value)
+const handleOnsaleProducts = (value:SellerProductShow[]) => {
   tabProducts.value = value
 }
 </script>
@@ -62,33 +78,32 @@ const handleOnsaleProducts = (value: SellerProductShow[]) => {
   <div class="space-y-6" v-if="!showCreateProgram">
     <!-- Tạo khuyến mãi -->
     <div class="bg-white p-6 rounded-lg shadow-sm">
-      <h2 class="text-xl font-semibold mb-2">Tạo Khuyến Mãi</h2>
+      <h2 class="text-xl font-semibold mb-2">Create New Promotion</h2>
       <p class="text-sm text-gray-500 mb-6">
-        Thiết lập các chương trình khuyến mãi riêng của Shop để tăng Doanh số và cải thiện tỉ lệ
-        chuyển đổi
-        <a href="#" class="text-blue-600">Tìm hiểu thêm</a>
+        Set up exclusive Shop promotions to boost Sales and improve Conversion Rate.
+        <a href="#" class="text-blue-600">Learn More</a>
       </p>
 
       <div class="grid grid-cols-3 gap-6">
         <PromoCard
           :icon="Percent"
-          title="Chương Trình Của Shop"
-          description="Tạo Chương trình của Shop để thiết lập các chương trình giảm giá sản phẩm"
-          buttonText="Tạo"
+          title="Shop Program"
+          description="Create new Shop Program for setting up Shop promotions"
+          buttonText="Create"
           @actionClick="onCreateProgram"
         />
         <PromoCard
           :icon="Briefcase"
-          title="Combo Khuyến Mãi"
-          description="Tạo Combo Khuyến Mãi để tăng giá trị đơn hàng trên mỗi Người mua"
-          buttonText="Tạo"
+          title="Promotion Combo"
+          description="Create Promotion Combo for orders revenue increase"
+          buttonText="Create"
           @actionClick="onCreateProgram"
         />
         <PromoCard
           :icon="Gift"
-          title="Mua Kèm Deal Sốc"
-          description="Tạo Mua Kèm Deal Sốc để tăng đơn hàng"
-          buttonText="Tạo"
+          title="Buy With Shock Deal"
+          description="Create Buy With Shock Deal for orders increase"
+          buttonText="Create"
           @actionClick="onCreateProgram"
         />
       </div>
@@ -97,59 +112,54 @@ const handleOnsaleProducts = (value: SellerProductShow[]) => {
     <!-- Danh sách -->
     <div class="bg-white rounded-lg shadow-sm">
       <div class="p-6 space-y-6">
-        <h3 class="text-lg font-semibold">Danh sách khuyến mãi</h3>
-        <div class="flex items-center gap-6 w-full">
-          <span class="text-sm text-gray-600">Tên sản phẩm</span>
-          <input
+        <h3 class="text-lg font-semibold">Promotion List</h3>
+          <div class="flex items-center gap-6 w-full">
+            <span class="text-sm text-gray-600">Product Name</span>
+            <input
             v-model="keyword"
-            class="rounded-md bg-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-[3px] focus:ring-gray-300"
-            placeholder="Nhập tên sản phẩm"
+            class="rounded-md bg-gray-100 px-3 py-2 text-sm
+              focus:outline-none focus:ring-[3px] focus:ring-gray-300"
+            placeholder="Enter product name..."
           />
 
-          <button
-            class="inline-flex items-center justify-center gap-2 px-3 py-2 whitespace-nowrap rounded-md text-sm text-red-500 font-medium transition-all cursor-pointer border border-red-500 hover:bg-red-50 active:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300"
-            @click="filteredProducts"
-          >
-            Tìm
-          </button>
-          <button
-            class="inline-flex items-center px-3 py-2 whitespace-nowrap rounded-md text-sm font-medium transition-all border border-gray-300 h-10 justify-between bg-background text-foreground text-gray-700 hover:bg-gray-200 cursor-pointer"
-            @click="resetFilter"
-          >
-            Nhập Lại
-          </button>
-        </div>
+           <button
+          class="inline-flex items-center justify-center gap-2 px-3 py-2 whitespace-nowrap rounded-md
+                text-sm text-red-500 font-medium transition-all cursor-pointer
+                border border-red-500
+                hover:bg-red-50
+                active:bg-gray-200
+                focus:outline-none focus:ring-2 focus:ring-gray-300"
+                @click="filteredProducts">
+              Find
+            </button>
+             <button class="inline-flex items-center px-3 py-2 whitespace-nowrap rounded-md text-sm font-medium transition-all border border-gray-300 h-10 justify-between bg-background text-foreground text-gray-700 hover:bg-gray-200 cursor-pointer"
+                  @click="resetFilter">
+                  Reset
+              </button>
+            </div>
         <div class="border border-gray-200 rounded-lg mt-4">
-          <Table>
-            <TableHeader class="bg-gray-50">
-              <TableRow>
-                <TableHead>Tên sản phẩm</TableHead>
-                <TableHead>Giá gốc</TableHead>
+        <Table>
+          <TableHeader class="bg-gray-50">
+            <TableRow>
+              <TableHead>Product Name</TableHead>
+              <TableHead>Original Price</TableHead>
 
-                <TableHead>Giá sau giảm</TableHead>
-                <!-- <TableHead>Giảm giá</TableHead> -->
-                <TableHead>Kho hàng</TableHead>
-                <!-- <TableHead>Giới hạn đặt hàng</TableHead> -->
-                <TableHead>Thao tác</TableHead>
-              </TableRow>
-            </TableHeader>
+              <TableHead>Discounted Price</TableHead>
+              <!-- <TableHead>Giảm giá</TableHead> -->
+              <TableHead>Stock</TableHead>
+              <!-- <TableHead>Giới hạn đặt hàng</TableHead> -->
+              <TableHead>Operations</TableHead>
+            </TableRow>
+          </TableHeader>
 
-            <TableBody>
-              <TableRow
-                class="w-full hover:bg-gray-100"
-                v-for="product in tabProducts"
-                :key="product.id"
-              >
-                <TableCell>
-                  <div class="flex gap-2 items-center">
-                    <CustomImage
-                      :src="product.image_url"
-                      class="w-15 h-15 object-cover rounded"
-                    ></CustomImage>
-                    <div>
-                      <div class="w-full font-medium whitespace-normal">{{ product.name }}</div>
-                      <div class="text-xs text-gray-500">đ{{ product.price }}</div>
-                    </div>
+          <TableBody>
+            <TableRow class='w-full hover:bg-gray-100' v-for="product in tabProducts" :key="product.id">
+              <TableCell>
+                <div class="flex gap-2 items-center">
+                  <CustomImage :src="product.image_url" class="w-15 h-15 object-cover rounded"></CustomImage>
+                  <div>
+                    <div class="w-full font-medium whitespace-normal">{{ product.name }}</div>
+                    <div class="text-xs text-gray-500">đ{{ product.price }}</div>
                   </div>
                 </TableCell>
                 <TableCell>
@@ -173,20 +183,18 @@ const handleOnsaleProducts = (value: SellerProductShow[]) => {
 
                 <TableCell>{{ product.stock_quantity }}</TableCell>
 
-                <TableCell>
-                  <div class="flex flex-col items-start">
-                    <button
-                      class="inline-flex items-center gap-2 rounded-md text-sm text-blue-600 transition-all focus-visible:ring-[3px] text-primary underline-offset-4 hover:underline p-0 h-auto cursor-pointer"
-                      @click="showCreateProgram = true"
-                    >
-                      Chi tiết
-                    </button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
-        </div>
+              <TableCell>
+                <div class="flex flex-col items-start">
+                <button class="inline-flex items-center gap-2 rounded-md text-sm text-blue-600 transition-all focus-visible:ring-[3px] text-primary underline-offset-4 hover:underline p-0 h-auto cursor-pointer"
+                  @click="showCreateProgram = true">
+                  Details
+                </button>
+              </div>
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      </div>
       </div>
     </div>
   </div>

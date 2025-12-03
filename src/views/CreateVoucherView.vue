@@ -57,11 +57,11 @@ async function handleSave() {
 
 <template>
   <div class="space-y-6">
-    <h2 class="text-2xl font-semibold">Tạo mã giảm giá mới</h2>
+    <h2 class="text-2xl font-semibold">Create New Voucher</h2>
 
     <!-- Thông tin cơ bản -->
     <div class="bg-white p-6 rounded-lg shadow-sm space-y-6">
-      <h3 class="font-semibold text-lg">Thông tin cơ bản</h3>
+      <h3 class="font-semibold text-lg">Basic Information</h3>
 
       <div class="grid grid-cols-[250px_1fr] items-start gap-10">
         <label class="flex items-center gap-2 text-sm leading-none font-medium flex items-center mb-2 pt-2">Loại mã</Label>
@@ -69,7 +69,7 @@ async function handleSave() {
         <RadioGroup
               v-model="voucher.applicable_scope"
               :options="[
-                { label: 'Voucher toàn shop', value: 'shop' }
+                { label: 'Shop Voucher', value: 'shop' }
               ]"
               direction="vertical"
             />
@@ -78,7 +78,7 @@ async function handleSave() {
       <div class="grid grid-cols-[250px_1fr] gap-10 items-center">
         <label class="flex items-center gap-2 text-sm leading-none font-medium flex items-center mb-2"
             for="program-name">
-          Tên chương trình giảm giá
+          Promotion Program Name
         </label>
         <div>
           <input
@@ -88,31 +88,31 @@ async function handleSave() {
               focus:outline-none focus:ring-[3px] focus:ring-gray-300"
             placeholder="Siêu Sale 15.02"/>
           <p class="text-xs text-gray-500 mt-1">
-            Tên Voucher sẽ không được hiển thị cho Người mua
+            Voucher name is invisible to customer
           </p>
         </div>
       </div>
       <div class="grid grid-cols-[250px_1fr] gap-10 items-center">
         <label class="flex items-center gap-2 text-sm leading-none font-medium flex items-center mb-2"
             for="program-name">
-          Mô tả
+          Description
         </label>
         <div>
           <input
             v-model="voucher.description"
             class="w-full rounded-md bg-gray-100 px-3 py-2 text-sm
               focus:outline-none focus:ring-[3px] focus:ring-gray-300"
-            placeholder="Mô tả ngắn gọn"/>
+            placeholder="Brief description"/>
         </div>
       </div>
 
       <div class="bg-[var(--red)] text-white p-4 rounded-lg">
-        <div class="font-semibold mb-2">Thiết lập Thời gian sử dụng mã</div>
+        <div class="font-semibold mb-2">Set up the Voucher Usage Period</div>
 
         <div class="flex gap-4 items-center">
           <div class="flex-1">
             <label class="flex items-center gap-2 text-sm text-white leading-none font-medium flex items-center mb-2 block">
-              Thời gian sử dụng mã
+              Usage Period
             </label>
 
             <div class="flex items-center gap-2">
@@ -135,17 +135,17 @@ async function handleSave() {
 
     <!-- Thiết lập mã giảm giá -->
     <div class="bg-white p-6 rounded-lg shadow-sm space-y-6">
-      <h3 class="font-semibold text-lg">Thiết lập mã giảm giá</h3>
+      <h3 class="font-semibold text-lg">Set up Voucher</h3>
 
       <div class="grid grid-cols-[250px_1fr] items-start gap-10">
         <label class="flex items-center gap-2 text-sm leading-none font-medium flex items-center mb-2 pt-2">
-          Loại Giảm giá <span class="text-red-500">*</span>
+          Discount Type <span class="text-red-500">*</span>
         </label>
         <RadioGroup
           v-model="voucher.discount_type"
           :options="[
-            { label: 'Giảm giá', value: 'fixed_amount' },
-            { label: 'Giảm phần trăm', value: 'percentage' }
+            { label: 'Fixed Amount', value: 'fixed_amount' },
+            { label: 'Percentage', value: 'percentage' }
           ]"
           direction="vertical"
             />
@@ -153,7 +153,7 @@ async function handleSave() {
 
       <div class="grid grid-cols-[250px_1fr] items-start gap-10">
         <label class="flex items-center gap-2 text-sm leading-none font-medium flex items-center mb-2 pt-2">
-          Mức giảm <span class="text-red-500">*</span>
+          Discount Amount <span class="text-red-500">*</span>
         </label>
 
         <div class="space-y-2">
@@ -164,7 +164,7 @@ async function handleSave() {
             class="w-32 rounded-md bg-gray-100 px-3 py-2 text-sm
               focus:outline-none focus:ring-[3px] focus:ring-gray-300"
             placeholder="10"/>
-            <span class="text-sm">GIẢM</span>
+            <span class="text-sm">DISCOUNTED</span>
           </div>
         </div>
       </div>
@@ -176,8 +176,8 @@ async function handleSave() {
           <RadioGroup
           v-model="discountCapType"
           :options="[
-            { label: 'Giới hạn', value: 'limited' },
-            { label: 'Không giới hạn', value: 'unlimited' }
+            { label: 'Limit', value: 'limited' },
+            { label: 'Unlimit', value: 'unlimited' }
           ]"
           direction="vertical"
             />
@@ -197,7 +197,7 @@ async function handleSave() {
       <div class="grid grid-cols-[250px_1fr] gap-10 items-center">
         <label class="flex items-center gap-2 text-sm leading-none font-medium flex items-center mb-2"
               for="min-order-value">
-          Giá trị đơn hàng tối thiểu
+          Minimum Order Value
         </label>
         <div class="flex gap-2">
           <span>₫</span>
@@ -214,7 +214,7 @@ async function handleSave() {
       <div class="grid grid-cols-[250px_1fr] gap-10 items-center">
         <label class="flex items-center gap-2 text-sm leading-none font-medium flex items-center mb-2"
               for="total-usage">
-          Tổng lượt sử dụng tối đa
+          Maximum Usage Limit
         </label>
         <div>
           <input
@@ -225,7 +225,7 @@ async function handleSave() {
               focus:outline-none focus:ring-[3px] focus:ring-gray-300"
             placeholder="50"/>
           <p class="text-xs text-gray-500 mt-1">
-            Tổng số Mã giảm giá có thể sử dụng
+
           </p>
         </div>
       </div>
@@ -243,7 +243,7 @@ async function handleSave() {
                 focus:outline-none focus:ring-2 focus:ring-gray-300
                 mt-2"
           @click="$emit('cancel')">
-          Hủy
+          Cancel
         </button>
 
         <button
@@ -257,7 +257,7 @@ async function handleSave() {
                 focus:outline-none focus:ring-2 focus:ring-gray-300
                 mt-2"
         @click="handleSave"
-      >Xác nhận</button>
+      >Confirm</button>
     </div>
   </div>
 </template>

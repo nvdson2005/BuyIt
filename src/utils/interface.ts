@@ -181,6 +181,7 @@ export interface SellerProductShow {
   sub_category_id: string
   sale_price: number
   is_onsale: boolean
+  status_op: string
 }
 
 export interface Category {
@@ -240,6 +241,29 @@ export interface SellerOrder {
   selected: boolean
 }
 
+export interface OrderItem{
+  order_item_id: string
+  prod_id: string
+  prod_var_id: string
+  quantity: number
+  unit_price: number
+  subtotal: number
+  productVariant: ProductVariant
+  product: Product
+}
+
+export interface BuyerOrder{
+  order_id: string
+  addr_id: string
+  order_date: Date
+  total_amount: number
+  updated_at: Date
+  buyer_id: string
+  order_status: string
+  orderitem: OrderItem[]
+}
+
+
 export interface Notification {
   id: string
   title: string
@@ -247,3 +271,4 @@ export interface Notification {
   created_at: Date
   is_read: boolean
 }
+

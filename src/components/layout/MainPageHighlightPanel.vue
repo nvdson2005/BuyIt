@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import type { FunctionalComponent } from 'vue'
 import IconContentButton from '../ui/IconContentButton.vue'
-import { Zap, CreditCard, Gift, Sparkles, Tag, Globe } from 'lucide-vue-next'
+import { Zap, CreditCard, Gift, Sparkles, Globe, TicketPercent } from 'lucide-vue-next'
 const quickLinks: Array<{ icon: FunctionalComponent; label: string; color: string }> = [
-  { icon: Zap, label: 'Giảm Giá Nhanh', color: 'text-orange-500' },
-  { icon: CreditCard, label: 'Thanh Toán', color: 'text-blue-500' },
-  { icon: Gift, label: 'Quà Tặng Hàng Ngày', color: 'text-purple-500' },
-  { icon: Sparkles, label: 'Hàng Mới Về', color: 'text-pink-500' },
-  { icon: Tag, label: 'Mã Giảm Giá', color: 'text-green-500' },
-  { icon: Globe, label: 'Quốc Tế', color: 'text-indigo-500' },
+  { icon: Zap, label: 'Flash Sale', color: 'text-orange-500' },
+  { icon: CreditCard, label: 'Pay', color: 'text-blue-500' },
+  { icon: Gift, label: 'Reward', color: 'text-purple-500' },
+  { icon: Sparkles, label: 'New Products', color: 'text-pink-500' },
+  { icon: TicketPercent, label: 'Voucher', color: 'text-green-500' },
+  { icon: Globe, label: 'Global', color: 'text-indigo-500' },
 ]
 </script>
 <template>

@@ -20,14 +20,14 @@ const username = ref('')
 const isLoggedIn = ref(true)
 
 const sidebarNav = {
-  'Quản Lý Đơn Hàng': ['Tất cả', 'Bàn Giao Đơn Hàng'],
-  'Quản Lý Sản Phẩm': ['Tất Cả Sản Phẩm', 'Thêm Sản Phẩm'],
-  'Kênh Marketing': [
-    'Kênh Marketing',
-    'Khuyến Mãi của Shop',
-    'Mã giảm giá của Shop'
+  'Order Management': ['All Orders', 'Order Handover'],
+  'Product Management': ['All Products', 'Add New Product'],
+  'Marketing Centre': [
+    'Marketing Centre',
+    'Shop Promotions',
+    'Shop Vouchers'
   ],
-  'Chăm sóc khách hàng': ['Quản lý Đánh Giá']
+  'Customer Service': ['Review Management']
 }
 
 function handleAddProduct() {
@@ -35,12 +35,12 @@ function handleAddProduct() {
 }
 
 function handleNavClick(item: string) {
-  if (item === 'Tất cả') activeView.value = 'all-orders'
-  else if (item === 'Tất Cả Sản Phẩm') activeView.value = 'all-products'
-  else if (item === 'Thêm Sản Phẩm') activeView.value = 'add-product'
-  else if (item === 'Kênh Marketing') activeView.value = 'marketing'
-  else if (item === 'Mã giảm giá của Shop') activeView.value = 'voucher'
-  else if (item === 'Khuyến Mãi của Shop') activeView.value = 'program'
+  if (item === 'All Orders') activeView.value = 'all-orders'
+  else if (item === 'All Products') activeView.value = 'all-products'
+  else if (item === 'Add New Product') activeView.value = 'add-product'
+  else if (item === 'Marketing Centre') activeView.value = 'marketing'
+  else if (item === 'Shop Promotions') activeView.value = 'program'
+  else if (item === 'Shop Vouchers') activeView.value = 'voucher'
 
 }
 
@@ -118,7 +118,7 @@ async function RetrieveUsername() {
     <!-- Sidebar -->
     <aside class="w-64 bg-white text-gray-800 flex flex-col border-r border-gray-300 flex-shrink-0">
       <div class="p-4 bg-[rgb(189,6,4)] text-white shadow cursor-pointer" @click="activeView = 'dashboard'">
-        <h2 class="text-xl font-semibold">Kênh Người Bán</h2>
+        <h2 class="text-xl font-semibold">BuyIt Seller Centre</h2>
       </div>
       <nav class="flex-1 overflow-y-auto">
         <div v-for="(items, section) in sidebarNav" :key="section" class="p-4">
@@ -158,7 +158,7 @@ async function RetrieveUsername() {
                 @click="handleLogout"
                 class="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
               >
-                Đăng xuất
+                Log Out
               </button>
             </div>
           </div>

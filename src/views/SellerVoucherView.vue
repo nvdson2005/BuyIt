@@ -67,64 +67,64 @@ const formatted = (t: Date) => {
   <div class="space-y-6" v-if="!showCreateVoucher">
     <!-- Header -->
     <div class="flex justify-between items-center">
-      <h2 class="text-2xl font-semibold">Mã Giảm Giá Của Shop</h2>
+      <h2 class="text-2xl font-semibold">Shop Voucher</h2>
       <button
         @click="onCreateVoucher"
         class="bg-[#ee4d2d] hover:bg-[#d73211] text-white px-4 py-2 rounded cursor-pointer"
       >
-        Tạo Voucher Mới
+        Create New Voucher
       </button>
     </div>
 
     <!-- Chỉ số quan trọng -->
     <div class="grid grid-cols-4 gap-4">
       <div class="bg-white p-4 rounded-lg shadow-sm text-center">
-        <p class="text-gray-500 text-sm">Doanh Số</p>
+        <p class="text-gray-500 text-sm">Revenue</p>
         <p class="text-2xl font-bold">₫ 0</p>
       </div>
       <div class="bg-white p-4 rounded-lg shadow-sm text-center">
-        <p class="text-gray-500 text-sm">Đơn hàng</p>
+        <p class="text-gray-500 text-sm">Orders</p>
         <p class="text-2xl font-bold">0</p>
       </div>
       <div class="bg-white p-4 rounded-lg shadow-sm text-center">
-        <p class="text-gray-500 text-sm">Tỉ lệ sử dụng</p>
+        <p class="text-gray-500 text-sm">Usage Percentage</p>
         <p class="text-2xl font-bold">0.00%</p>
       </div>
       <div class="bg-white p-4 rounded-lg shadow-sm text-center">
-        <p class="text-gray-500 text-sm">Người mua</p>
+        <p class="text-gray-500 text-sm">Buyers</p>
         <p class="text-2xl font-bold">0</p>
       </div>
     </div>
 
     <!-- cải thiện chuyển đổi -->
     <div>
-      <h3 class="font-semibold mb-3">Cải thiện tỷ lệ chuyển đổi</h3>
+      <h3 class="font-semibold mb-3">Voucher Type</h3>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <VoucherTypeCard
           icon="Ticket"
-          title="Voucher toàn Shop"
-          description="Voucher áp dụng cho tất cả sản phẩm trong Shop của bạn"
+          title="Shop Voucher"
+          description="The voucher is applicable to all your Shop products."
           @actionClick="onCreateVoucher"
         />
         <VoucherTypeCard
           icon="ShoppingBag"
-          title="Voucher sản phẩm"
-          description="Voucher chỉ áp dụng cho những sản phẩm nhất định mà Shop chọn"
+          title="Product Voucher"
+          description="The voucher is only applicable to specific products selected by the Shop."
           @actionClick="onCreateVoucher"
         />
       </div>
     </div>
     <div class="bg-white rounded-lg shadow-sm">
       <div class="p-6 space-y-6">
-        <h3 class="text-lg font-semibold">Danh sách chương trình</h3>
+        <h3 class="text-lg font-semibold">Vouchers List</h3>
 
       <Table>
           <TableHeader class="bg-gray-50">
             <TableRow>
-              <TableHead>Loại voucher</TableHead>
-              <TableHead>Mức giảm</TableHead>
-              <TableHead>Thời gian bắt đầu</TableHead>
-              <TableHead>Thời gian kết thúc</TableHead>
+              <TableHead>Voucher Type</TableHead>
+              <TableHead>Voucher Value</TableHead>
+              <TableHead>Start Date</TableHead>
+              <TableHead>End Date</TableHead>
             </TableRow>
           </TableHeader>
 

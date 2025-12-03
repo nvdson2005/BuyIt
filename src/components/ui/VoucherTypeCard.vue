@@ -29,7 +29,7 @@ const icons: Record<string, typeof Ticket> = {
         class="p-0 h-auto text-red-500 hover:underline cursor-pointer"
         @click="$emit('actionClick')"
       >
-        Tạo Voucher &gt;
+        Create Voucher &gt;
       </button>
     </div>
   </div>

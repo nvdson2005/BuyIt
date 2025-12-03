@@ -94,6 +94,7 @@ watch(isShowingDropdown, (value) => {
 </script>
 
 <template>
+
   <nav class="w-full bg-(--red) text-white shadow-md sticky top-0 z-50">
     <!-- Top Bar -->
     <div class="w-full max-w-7xl mx-auto px-4 lg:px-8">

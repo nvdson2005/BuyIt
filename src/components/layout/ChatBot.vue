@@ -9,6 +9,7 @@ const API_URL =
   'https://terrible-spooky-corpse-jj9wg97g9w443g54-5005.app.github.dev/webhooks/rest/webhook'
 
 const chatContainer = ref<HTMLElement | null>(null)
+const userId = localStorage.getItem('id')
 
 // ChatMessage type definition
 interface ChatMessage {
@@ -82,7 +83,7 @@ async function handleButtonClick(button: { title: string; payload: string }) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        sender: 'user',
+        sender: userId,
         message: button.payload,
       }),
     })
@@ -122,7 +123,7 @@ async function sendMessage() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        sender: 'user',
+        sender: userId,
         message: userMessage,
       }),
     })
@@ -150,7 +151,7 @@ async function sendMessage() {
       })
     }
   } catch (error) {
-    console.error('Lỗi khi gửi tin nhắn:', error)
+    console.error("Error sending message:", error);
     messages.value.push({
       from: 'bot',
       text: '⚠️ No connection to the chatbot! Try later',
@@ -239,7 +240,7 @@ async function sendMessage() {
                     v-for="(button, btnIdx) in msg.buttons"
                     :key="btnIdx"
                     @click="handleButtonClick(button)"
-                    class="px-3 py-2 bg-white text-slate-700 text-xs rounded-lg border border-slate-200 hover:bg-slate-50 hover:border-slate-300 transition-colors duration-200 shadow-sm"
+                    class="px-3 py-2 bg-white text-slate-700 text-xs rounded-lg border border-slate-200 hover:bg-slate-50 hover:border-slate-300 transition-colors duration-200 shadow-sm cursor-pointer"
                   >
                     {{ button.title }}
                   </button>
@@ -255,7 +256,7 @@ async function sendMessage() {
             <input
               v-model="input"
               type="text"
-              placeholder="Nhập tin nhắn..."
+              placeholder="Enter message..."
               class="flex-1 px-4 py-2 rounded-xl border border-slate-200 outline-none focus:ring-1 focus:ring-[var(--red)] text-slate-800"
             />
             <button
