@@ -22,38 +22,32 @@ onMounted(async () => {
       updated_at: o.updated_at,
       buyer_id: o.buyer_id,
       order_status: o.order_status,
-      orderitems: o.orderitems
+      orderitem: o.orderitem,
     }))
     filteredOrders.value = orders.value
   } catch (err) {
-    console.error("Getting orders failed:", err)
+    console.error('Getting orders failed:', err)
   }
 })
 
-function filterOrder(option: OrderFilterOptions){
-  if(option === OrderFilterOptions.ALL){
+function filterOrder(option: OrderFilterOptions) {
+  if (option === OrderFilterOptions.ALL) {
     filteredOrders.value = orders.value
-  }
-  else if(option === OrderFilterOptions.PENDING){
-    filteredOrders.value = orders.value.filter(o => o.order_status === 'Pending' || o.order_status === 'Paid')
-  }
-  else if(option === OrderFilterOptions.DELIVERING){
-    filteredOrders.value = orders.value.filter(o => o.order_status === 'Delivering')
-  }
-  else if(option === OrderFilterOptions.DELIVERED){
-    filteredOrders.value = orders.value.filter(o => o.order_status === 'Delivered')
-  }
-  else if(option === OrderFilterOptions.CANCELLED){
-    filteredOrders.value = orders.value.filter(o => o.order_status === 'Cancelled')
-  }
-  else if(option === OrderFilterOptions.RETURN_REFUNDED){
-    filteredOrders.value = orders.value.filter(o => o.order_status === 'Return')
+  } else if (option === OrderFilterOptions.PENDING) {
+    filteredOrders.value = orders.value.filter(
+      (o) => o.order_status === 'Pending' || o.order_status === 'Paid',
+    )
+  } else if (option === OrderFilterOptions.DELIVERING) {
+    filteredOrders.value = orders.value.filter((o) => o.order_status === 'Delivering')
+  } else if (option === OrderFilterOptions.DELIVERED) {
+    filteredOrders.value = orders.value.filter((o) => o.order_status === 'Delivered')
+  } else if (option === OrderFilterOptions.CANCELLED) {
+    filteredOrders.value = orders.value.filter((o) => o.order_status === 'Cancelled')
+  } else if (option === OrderFilterOptions.RETURN_REFUNDED) {
+    filteredOrders.value = orders.value.filter((o) => o.order_status === 'Return')
   }
   selectedFilterOption.value = option
-
 }
-
-
 </script>
 <template>
   <NavBar />
@@ -140,20 +134,15 @@ function filterOrder(option: OrderFilterOptions){
       </div>
       <!-- Orders List -->
       <div class="space-y-6">
-        <div
-          v-for="o in filteredOrders"
-          :key="o.order_id"
-          class="bg-white rounded-xl shadow-xl"
-        >
+        <div v-for="o in filteredOrders" :key="o.order_id" class="bg-white rounded-xl shadow-xl">
           <!-- Header -->
           <div class="flex items-center justify-between px-6 pt-4">
             <div class="flex items-center gap-2 font-medium text-slate-700">
               <Store class="w-5 h-5" />
 
               <!-- Shop name (nếu có OrderItem) -->
-              <span
-              >
-                {{ o.orderitems[0]?.product.shop_name}}
+              <span>
+                {{ o.orderitem[0]?.product.shop_name }}
               </span>
 
               <span class="ml-2 px-2 py-0.5 border border-rose-400 text-rose-500 text-xs rounded">
@@ -165,16 +154,12 @@ function filterOrder(option: OrderFilterOptions){
             </div>
 
             <div class="inline-flex items-center gap-2 text-green-600">
-              <CalendarCheck2/>{{ o.order_status }}
+              <CalendarCheck2 />{{ o.order_status }}
             </div>
           </div>
           <div class="border-b border-gray-300">
             <!-- Order Items -->
-            <div
-              v-for="item in o.orderitems"
-              :key="item.order_item_id"
-              class="px-6 py-4 gap-4"
-            >
+            <div v-for="item in o.orderitem" :key="item.order_item_id" class="px-6 py-4 gap-4">
               <div class="flex gap-4">
                 <CustomImage
                   :src="item.productVariant.image_url"
@@ -188,14 +173,14 @@ function filterOrder(option: OrderFilterOptions){
                       {{ item.product.name }}
                     </div>
                     <div class="text-xs text-slate-500 mt-1">
-                      Phân loại: {{ item.productVariant?.name || "N/A" }}
+                      Phân loại: {{ item.productVariant?.name || 'N/A' }}
                     </div>
                     <div class="text-xs text-slate-500">x{{ item.quantity }}</div>
                   </div>
                   <div class="flex justify-end">
-                  <div class="text-lg text-[#DC0E0E] font-semibold text-right">
-                    ₫{{ item.productVariant.price  }}
-                  </div>
+                    <div class="text-lg text-[#DC0E0E] font-semibold text-right">
+                      ₫{{ item.productVariant.price }}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -203,16 +188,17 @@ function filterOrder(option: OrderFilterOptions){
           </div>
           <!-- Footer -->
           <div class="items-center justify-between px-6 py-4">
-
             <div class="flex justify-end gap-3">
               <span class="text-base text-slate-600">Tổng tiền:</span>
               <span class="text-xl font-bold text-[#DC0E0E]">₫{{ o.total_amount }}</span>
             </div>
-            <div v-if="o.order_status === 'Delivered'" class="flex justify-end gap-4 mt-4 font-semibold text-sm">
+            <div
+              v-if="o.order_status === 'Delivered'"
+              class="flex justify-end gap-4 mt-4 font-semibold text-sm"
+            >
               <button
                 class="w-32 px-4 py-2 border border-slate-300 rounded text-white bg-[var(--red)] hover:bg-red-600 cursor-pointer"
-                @click="handleReview(o)"
-                >
+              >
                 Rate
               </button>
               <button

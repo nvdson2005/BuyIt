@@ -1,23 +1,10 @@
-<script lang='ts' setup>
+<script lang="ts" setup>
 import { ref, onMounted, computed, defineEmits } from 'vue'
 import apiClient from '@/api/client'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/utils/Table.ts'
 import CustomImage from '@/components/ui/CustomImage.vue'
-import { Plus, Save, Trash } from "lucide-vue-next";
-import {type SellerProductShow } from "@/utils/interface";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow
-} from '@/utils/Table.ts'
-
-const emit = defineEmits(['onsale_change', 'onSave', 'onCancel'])
-const products = ref<SellerProductShow[]>([])
-const selectedProduct = ref<string | null>(null)
-
+import { Plus, Save, Trash } from 'lucide-vue-next'
+import { type SellerProductShow } from '@/utils/interface'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/utils/Table.ts'
 
 const emit = defineEmits(['onsale_change', 'onSave', 'onCancel'])
 const products = ref<SellerProductShow[]>([])
@@ -48,10 +35,10 @@ onMounted(async () => {
       sub_category_id: p.sub_category_id,
       sale_price: p.sale_price,
       is_onsale: p.is_onsale,
-      status_op: ''
+      status_op: '',
     }))
   } catch (err) {
-    console.error("Getting products failed: ", err)
+    console.error('Getting products failed: ', err)
   }
 })
 
@@ -66,8 +53,7 @@ async function handleConfirmProduct() {
     }
     selectedProduct.value = ''
   } catch (err) {
-      console.error("Update onsale product failed: ", err)
-
+    console.error('Update onsale product failed: ', err)
   }
   showProductSelector.value = false
   emit('onsale_change', onsale_products.value)
@@ -81,15 +67,13 @@ async function handleSaveChange(product_id: string, sale_price: number) {
     if (product) {
       product.sale_price = sale_price
     }
-
   } catch (err) {
-    console.error("Update product sale price failed: ", err)
-
+    console.error('Update product sale price failed: ', err)
   }
   emit('onsale_change', onsale_products.value)
 }
 
-async function handleDelete(product_id: string, price: number){
+async function handleDelete(product_id: string, price: number) {
   // Xử lý xoá
   try {
     await apiClient.patch(`/products/update_saleprice/${product_id}/${price}`)
@@ -99,10 +83,8 @@ async function handleDelete(product_id: string, price: number){
       product.is_onsale = false
       product.sale_price = price
     }
-
   } catch (err) {
-      console.error("Delete promotion failed: ", err)
-
+    console.error('Delete promotion failed: ', err)
   }
   emit('onsale_change', onsale_products.value)
 }
@@ -161,15 +143,9 @@ async function handleDelete(product_id: string, price: number){
       </p>
 
       <button
-          class="inline-flex items-center justify-center gap-2 px-3 py-2 whitespace-nowrap rounded-md
-                text-sm text-red-500 font-medium transition-all cursor-pointer
-                border border-red-500
-                bg-white text-gray-700
-                hover:bg-red-50
-                active:bg-gray-200
-                focus:outline-none focus:ring-2 focus:ring-gray-300"
-                @click="showProductSelector = !showProductSelector"
-                >
+        class="inline-flex items-center justify-center gap-2 px-3 py-2 whitespace-nowrap rounded-md text-sm text-red-500 font-medium transition-all cursor-pointer border border-red-500 bg-white text-gray-700 hover:bg-red-50 active:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300"
+        @click="showProductSelector = !showProductSelector"
+      >
         <Plus class="mr-2" :size="16" /> Add Product
       </button>
 
@@ -232,23 +208,30 @@ async function handleDelete(product_id: string, price: number){
 
               <TableCell>
                 <div class="flex item-center">
-                <button class="items-center gap-2 mr-2 rounded-md text-sm text-red-500 transition-all hover:ring-[3px] ring-red-200 hover:bg-red-200 h-auto cursor-pointer"
-                  @click="handleSaveChange(product.id, product.sale_price)">
-                  <Save :size="24"/>
-                </button>
-                <button class="items-center gap-2 rounded-md text-sm text-red-600 transition-all hover:ring-[3px] ring-red-200 hover:bg-red-200 h-auto cursor-pointer"
-                  @click="handleDelete(product.id, product.price)">
-                  <Trash :size="24"/>
-                </button>
-              </div>
+                  <button
+                    class="items-center gap-2 mr-2 rounded-md text-sm text-red-500 transition-all hover:ring-[3px] ring-red-200 hover:bg-red-200 h-auto cursor-pointer"
+                    @click="handleSaveChange(product.id, product.sale_price)"
+                  >
+                    <Save :size="24" />
+                  </button>
+                  <button
+                    class="items-center gap-2 rounded-md text-sm text-red-600 transition-all hover:ring-[3px] ring-red-200 hover:bg-red-200 h-auto cursor-pointer"
+                    @click="handleDelete(product.id, product.price)"
+                  >
+                    <Trash :size="24" />
+                  </button>
+                </div>
               </TableCell>
             </TableRow>
           </TableBody>
         </Table>
       </div>
     </div>
-    <div v-if="showProductSelector" class="fixed inset-0 bg-black/40 flex items-center justify-center p-4">
-      <div class="bg-white rounded-lg max-w-md w-full p-6 ">
+    <div
+      v-if="showProductSelector"
+      class="fixed inset-0 bg-black/40 flex items-center justify-center p-4"
+    >
+      <div class="bg-white rounded-lg max-w-md w-full p-6">
         <h2 class="text-lg font-semibold mb-4">My Products</h2>
 
         <!-- LIST EXISTING ADDRESSES -->
@@ -269,35 +252,37 @@ async function handleDelete(product_id: string, price: number){
           </div>
         </div>
 
-
-          <div class="flex gap-3">
-            <button class="flex-1 text-sm border border-gray-300 py-2 rounded cursor-pointer" @click="showProductSelector = false">Cancel</button>
-            <button class="flex-1 bg-[#ee4d2d] text-sm text-white py-2 rounded hover:bg-gray-500 cursor-pointer" @click="handleConfirmProduct">
-              Confirm
-            </button>
-          </div>
-
+        <div class="flex gap-3">
+          <button
+            class="flex-1 text-sm border border-gray-300 py-2 rounded cursor-pointer"
+            @click="showProductSelector = false"
+          >
+            Cancel
+          </button>
+          <button
+            class="flex-1 bg-[#ee4d2d] text-sm text-white py-2 rounded hover:bg-gray-500 cursor-pointer"
+            @click="handleConfirmProduct"
+          >
+            Confirm
+          </button>
+        </div>
       </div>
     </div>
     <!-- Footer actions -->
     <div class="flex justify-end gap-4 pb-6">
       <button
-          class="inline-flex items-center justify-center gap-2 px-3 py-2 whitespace-nowrap rounded-md
-                text-sm font-medium transition-all cursor-pointer
-                border border-gray-300
-                bg-white text-gray-700
-                hover:bg-gray-100 hover:border-gray-400
-                active:bg-gray-200
-                focus:outline-none focus:ring-2 focus:ring-gray-300
-                mt-2"
-          @click="$emit('onCancel')">
-          Cancel
-        </button>
+        class="inline-flex items-center justify-center gap-2 px-3 py-2 whitespace-nowrap rounded-md text-sm font-medium transition-all cursor-pointer border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 hover:border-gray-400 active:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300 mt-2"
+        @click="$emit('onCancel')"
+      >
+        Cancel
+      </button>
 
       <button
         class="inline-flex items-center justify-center gap-2 px-3 py-2 whitespace-nowrap rounded-md text-white font-medium transition-all cursor-pointer border border-gray-300 bg-[#ee4d2d] text-gray-700 hover:bg-[#d73211] hover:border-gray-400 active:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300 mt-2"
         @click="$emit('onSave')"
-      >Save</button>
+      >
+        Save
+      </button>
     </div>
   </div>
 </template>
