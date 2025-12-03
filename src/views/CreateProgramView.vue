@@ -1,8 +1,10 @@
 <script lang='ts' setup>
-import { ref, onMounted, computed, defineEmits } from "vue";
+import { ref, onMounted, computed, defineEmits } from 'vue'
+import apiClient from '@/api/client'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/utils/Table.ts'
+import CustomImage from '@/components/ui/CustomImage.vue'
 import { Plus, Save, Trash } from "lucide-vue-next";
 import {type SellerProductShow } from "@/utils/interface";
-import apiClient from "@/api/client";
 import {
   Table,
   TableBody,
@@ -11,18 +13,22 @@ import {
   TableHeader,
   TableRow
 } from '@/utils/Table.ts'
-import CustomImage from "@/components/ui/CustomImage.vue";
+
+const emit = defineEmits(['onsale_change', 'onSave', 'onCancel'])
+const products = ref<SellerProductShow[]>([])
+const selectedProduct = ref<string | null>(null)
+
 
 const emit = defineEmits(['onsale_change', 'onSave', 'onCancel'])
 const products = ref<SellerProductShow[]>([])
 const selectedProduct = ref('')
 
 const other_products = computed(() => {
-  return products.value.filter(p => p.is_onsale === false)
+  return products.value.filter((p) => p.is_onsale === false)
 })
 
-const onsale_products = computed(() =>{
-  return products.value.filter(p => p.is_onsale === true)
+const onsale_products = computed(() => {
+  return products.value.filter((p) => p.is_onsale === true)
 })
 
 onMounted(async () => {
@@ -49,14 +55,12 @@ onMounted(async () => {
   }
 })
 
-const showProductSelector = ref(false);
-
-
+const showProductSelector = ref(false)
 
 async function handleConfirmProduct() {
   try {
     await apiClient.patch(`/products/update_onsale/${selectedProduct.value}`)
-    const product = products.value.find(p => p.id === selectedProduct.value)
+    const product = products.value.find((p) => p.id === selectedProduct.value)
     if (product) {
       product.is_onsale = true
     }
@@ -66,15 +70,14 @@ async function handleConfirmProduct() {
 
   }
   showProductSelector.value = false
-  emit('onsale_change', onsale_products.value);
-
+  emit('onsale_change', onsale_products.value)
 }
 
 async function handleSaveChange(product_id: string, sale_price: number) {
   // Xử lý cập nhật sale_price
   try {
     await apiClient.patch(`/products/update_saleprice/${product_id}/${sale_price}`)
-    const product = products.value.find(p => p.id === product_id)
+    const product = products.value.find((p) => p.id === product_id)
     if (product) {
       product.sale_price = sale_price
     }
@@ -83,16 +86,15 @@ async function handleSaveChange(product_id: string, sale_price: number) {
     console.error("Update product sale price failed: ", err)
 
   }
-    emit('onsale_change', onsale_products.value);
-
-};
+  emit('onsale_change', onsale_products.value)
+}
 
 async function handleDelete(product_id: string, price: number){
   // Xử lý xoá
   try {
     await apiClient.patch(`/products/update_saleprice/${product_id}/${price}`)
     await apiClient.patch(`/products/update_onsale/${product_id}`)
-    const product = products.value.find(p => p.id === product_id)
+    const product = products.value.find((p) => p.id === product_id)
     if (product) {
       product.is_onsale = false
       product.sale_price = price
@@ -102,10 +104,8 @@ async function handleDelete(product_id: string, price: number){
       console.error("Delete promotion failed: ", err)
 
   }
-    emit('onsale_change', onsale_products.value);
-
-
-};
+  emit('onsale_change', onsale_products.value)
+}
 </script>
 
 <template>
@@ -189,10 +189,17 @@ async function handleDelete(product_id: string, price: number){
           </TableHeader>
 
           <TableBody>
-            <TableRow class='w-full hover:bg-gray-100' v-for="product in onsale_products" :key="product.id">
+            <TableRow
+              class="w-full hover:bg-gray-100"
+              v-for="product in onsale_products"
+              :key="product.id"
+            >
               <TableCell>
                 <div class="flex gap-2 items-center">
-                  <CustomImage :src="product.image_url" class="w-15 h-15 object-cover rounded"></CustomImage>
+                  <CustomImage
+                    :src="product.image_url"
+                    class="w-15 h-15 object-cover rounded"
+                  ></CustomImage>
                   <div>
                     <div class="w-full font-medium whitespace-normal">{{ product.name }}</div>
                     <div class="text-xs text-gray-500">đ{{ product.price }}</div>
@@ -210,8 +217,8 @@ async function handleDelete(product_id: string, price: number){
                   <span>₫</span>
                   <input
                     v-model="product.sale_price"
-                    class=" w-24 h-8 rounded-md border-gray-200 bg-gray-200 text-gray-900 px-3 py-2 text-sm
-                      focus:outline-none focus:ring-[3px] focus:ring-gray-300"/>
+                    class="w-24 h-8 rounded-md border-gray-200 bg-gray-200 text-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-[3px] focus:ring-gray-300"
+                  />
                 </div>
               </TableCell>
 
@@ -222,7 +229,6 @@ async function handleDelete(product_id: string, price: number){
               </TableCell> -->
 
               <TableCell>{{ product.stock_quantity }}</TableCell>
-
 
               <TableCell>
                 <div class="flex item-center">
@@ -246,22 +252,22 @@ async function handleDelete(product_id: string, price: number){
         <h2 class="text-lg font-semibold mb-4">My Products</h2>
 
         <!-- LIST EXISTING ADDRESSES -->
-          <div class="space-y-4 mb-4 max-h-64 overflow-y-auto pr-2">
-            <div
-              v-for="product in other_products"
-              :key="product.id"
-              class="p-3 border rounded cursor-pointer hover:border-[#ee4d2d]"
-              :class="{ 'border-[#ee4d2d] bg-red-50': selectedProduct === product.id }"
-              @click="selectedProduct = product.id"
-            >
-              <div class="flex items-center gap-2 mb-1">
-                <CustomImage :src="product.image_url" class="w-15 h-15 object-cover rounded" />
-                <strong>{{ product.name }}</strong>
-                <span class="text-gray-400">|</span>
-                <span>{{ product.price }}đ</span>
-              </div>
+        <div class="space-y-4 mb-4 max-h-64 overflow-y-auto pr-2">
+          <div
+            v-for="product in other_products"
+            :key="product.id"
+            class="p-3 border rounded cursor-pointer hover:border-[#ee4d2d]"
+            :class="{ 'border-[#ee4d2d] bg-red-50': selectedProduct === product.id }"
+            @click="selectedProduct = product.id"
+          >
+            <div class="flex items-center gap-2 mb-1">
+              <CustomImage :src="product.image_url" class="w-15 h-15 object-cover rounded" />
+              <strong>{{ product.name }}</strong>
+              <span class="text-gray-400">|</span>
+              <span>{{ product.price }}đ</span>
             </div>
           </div>
+        </div>
 
 
           <div class="flex gap-3">
@@ -274,7 +280,7 @@ async function handleDelete(product_id: string, price: number){
       </div>
     </div>
     <!-- Footer actions -->
-      <div class="flex justify-end gap-4 pb-6">
+    <div class="flex justify-end gap-4 pb-6">
       <button
           class="inline-flex items-center justify-center gap-2 px-3 py-2 whitespace-nowrap rounded-md
                 text-sm font-medium transition-all cursor-pointer
@@ -288,19 +294,10 @@ async function handleDelete(product_id: string, price: number){
           Cancel
         </button>
 
-        <button
-        class="
-        inline-flex items-center justify-center gap-2 px-3 py-2 whitespace-nowrap rounded-md
-                text-white font-medium transition-all cursor-pointer
-                border border-gray-300
-                bg-[#ee4d2d] text-gray-700
-                hover:bg-[#d73211] hover:border-gray-400
-                active:bg-gray-200
-                focus:outline-none focus:ring-2 focus:ring-gray-300
-                mt-2"
+      <button
+        class="inline-flex items-center justify-center gap-2 px-3 py-2 whitespace-nowrap rounded-md text-white font-medium transition-all cursor-pointer border border-gray-300 bg-[#ee4d2d] text-gray-700 hover:bg-[#d73211] hover:border-gray-400 active:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300 mt-2"
         @click="$emit('onSave')"
       >Save</button>
     </div>
   </div>
 </template>
-

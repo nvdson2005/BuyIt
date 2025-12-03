@@ -29,7 +29,6 @@ const handleCancel = () => {
   showCreateProgram.value = false
 }
 
-
 onMounted(async () => {
   const shopId = localStorage.getItem('id')
   try {
@@ -58,21 +57,21 @@ onMounted(async () => {
 
 function filteredProducts() {
   if (keyword.value.trim()) {
-    tabProducts.value = tabProducts.value.filter(p =>
-      p.name.toLowerCase().includes(keyword.value.toLowerCase())
+    tabProducts.value = tabProducts.value.filter((p: SellerProductShow) =>
+      p.name.toLowerCase().includes(keyword.value.toLowerCase()),
     )
   }
   keyword.value = ''
 }
 
-function resetFilter(){
+function resetFilter() {
   keyword.value = ''
   tabProducts.value = onsale_products.value
 }
 
 const handleOnsaleProducts = (value:SellerProductShow[]) => {
   tabProducts.value = value
-};
+}
 </script>
 
 <template>
@@ -99,7 +98,6 @@ const handleOnsaleProducts = (value:SellerProductShow[]) => {
           description="Create Promotion Combo for orders revenue increase"
           buttonText="Create"
           @actionClick="onCreateProgram"
-
         />
         <PromoCard
           :icon="Gift"
@@ -107,14 +105,12 @@ const handleOnsaleProducts = (value:SellerProductShow[]) => {
           description="Create Buy With Shock Deal for orders increase"
           buttonText="Create"
           @actionClick="onCreateProgram"
-
         />
       </div>
     </div>
 
     <!-- Danh sách -->
     <div class="bg-white rounded-lg shadow-sm">
-
       <div class="p-6 space-y-6">
         <h3 class="text-lg font-semibold">Promotion List</h3>
           <div class="flex items-center gap-6 w-full">
@@ -165,30 +161,27 @@ const handleOnsaleProducts = (value:SellerProductShow[]) => {
                     <div class="w-full font-medium whitespace-normal">{{ product.name }}</div>
                     <div class="text-xs text-gray-500">đ{{ product.price }}</div>
                   </div>
-                </div>
-              </TableCell>
-              <TableCell>
-                <div class="flex items-center gap-1">
-                  <span>₫</span>
-                  <div>{{ product.price }}</div>
-                </div>
-              </TableCell>
-              <TableCell>
-                <div class="flex items-center gap-1">
-                  <span>₫</span>
-                  <div>{{ product.sale_price }}</div>
+                </TableCell>
+                <TableCell>
+                  <div class="flex items-center gap-1">
+                    <span>₫</span>
+                    <div>{{ product.price }}</div>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div class="flex items-center gap-1">
+                    <span>₫</span>
+                    <div>{{ product.sale_price }}</div>
+                  </div>
+                </TableCell>
 
-                </div>
-              </TableCell>
-
-              <!-- <TableCell>
+                <!-- <TableCell>
                 <div class="text-sm text-gray-600">
                   Hoặc <span class="font-bold">15%</span> GIẢM
                 </div>
               </TableCell> -->
 
-              <TableCell>{{ product.stock_quantity }}</TableCell>
-
+                <TableCell>{{ product.stock_quantity }}</TableCell>
 
               <TableCell>
                 <div class="flex flex-col items-start">
@@ -203,13 +196,12 @@ const handleOnsaleProducts = (value:SellerProductShow[]) => {
         </Table>
       </div>
       </div>
-  </div>
+    </div>
   </div>
   <CreateProgramView
-  @onCancel="handleCancel"
-  @onSave="handleCancel"
-  @onsale_change="handleOnsaleProducts"
-  v-if="showCreateProgram" ></CreateProgramView>
+    @onCancel="handleCancel"
+    @onSave="handleCancel"
+    @onsale_change="handleOnsaleProducts"
+    v-if="showCreateProgram"
+  ></CreateProgramView>
 </template>
-
-

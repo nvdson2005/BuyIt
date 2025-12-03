@@ -5,7 +5,8 @@ const showPopup = ref(false)
 const showChatPanel = ref(false)
 
 // LINK PORT OF CHATBOT ON CODESPACE
-const API_URL = "https://terrible-spooky-corpse-jj9wg97g9w443g54-5005.app.github.dev/webhooks/rest/webhook"
+const API_URL =
+  'https://terrible-spooky-corpse-jj9wg97g9w443g54-5005.app.github.dev/webhooks/rest/webhook'
 
 const chatContainer = ref<HTMLElement | null>(null)
 const userId = localStorage.getItem('id')
@@ -17,48 +18,49 @@ interface ChatMessage {
   buttons?: { title: string; payload: string }[]
 }
 
-const messages = ref<ChatMessage[]>([
-])
+const messages = ref<ChatMessage[]>([])
 
-onMounted(async() => {
+onMounted(async () => {
   setTimeout(() => {
     showPopup.value = true
   }, 1000)
   try {
     const response = await fetch(API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        sender: userId,
-        message: "/start", // gửi intent start
+        sender: 'user',
+        message: '/start', // gửi intent start
       }),
-    });
+    })
 
-    const data = await response.json();
+    const data = await response.json()
     if (data && data.length > 0) {
-      data.forEach((msg) => {
+      data.forEach((msg: { text?: string; buttons?: { title: string; payload: string }[] }) => {
         messages.value.push({
-          from: "bot",
-          text: msg.text,
+          from: 'bot',
+          text: msg.text || '',
           buttons: msg.buttons || [],
-        });
-      });
+        })
+      })
     }
   } catch (err) {
-    console.error("Error sending button payload:", err);
+    console.error('Error sending button payload:', err)
   }
 })
 
-
 // AUTO SCROLL TO THE CURRENT MESSAGE
-watch(messages, async () => {
-  await nextTick()
-  const el = chatContainer.value
-  if (el) {
-    el.scrollTop = el.scrollHeight
-  }
-}, { deep: true })
-
+watch(
+  messages,
+  async () => {
+    await nextTick()
+    const el = chatContainer.value
+    if (el) {
+      el.scrollTop = el.scrollHeight
+    }
+  },
+  { deep: true },
+)
 
 const hidePopup = () => {
   setTimeout(() => {
@@ -70,48 +72,45 @@ const hidePopup = () => {
 //      FOR CHATBOT IMPLEMENTATION
 // =======================================
 
-
 const input = ref('')
 
 // BUTTON CLICK
 async function handleButtonClick(button: { title: string; payload: string }) {
-
-  messages.value.push({ from: 'user', text: button.title });
+  messages.value.push({ from: 'user', text: button.title })
 
   try {
     const response = await fetch(API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         sender: userId,
         message: button.payload,
       }),
-    });
+    })
 
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
 
-    const data = await response.json();
+    const data = await response.json()
 
     if (data && data.length > 0) {
-      data.forEach((msg) => {
+      data.forEach((msg: { text?: string; buttons?: { title: string; payload: string }[] }) => {
         if (msg.text) {
           messages.value.push({
-            from: "bot",
+            from: 'bot',
             text: msg.text,
             buttons: msg.buttons || [],
-          });
+          })
         }
-      });
+      })
     }
   } catch (error) {
-    console.error("Error sending button payload:", error);
+    console.error('Error sending button payload:', error)
     messages.value.push({
-      from: "bot",
-      text: "⚠️ No connection to the chatbot! Try later",
-    });
+      from: 'bot',
+      text: '⚠️ No connection to the chatbot! Try later',
+    })
   }
 }
-
 
 async function sendMessage() {
   if (!input.value.trim()) return
@@ -121,48 +120,46 @@ async function sendMessage() {
 
   try {
     const response = await fetch(API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         sender: userId,
         message: userMessage,
       }),
-    });
+    })
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      throw new Error(`HTTP error! status: ${response.status}`)
     }
 
-    const data = await response.json();
+    const data = await response.json()
 
     if (data && data.length > 0) {
-      data.forEach((msg) => {
+      data.forEach((msg: { text?: string; buttons?: { title: string; payload: string }[] }) => {
         if (msg.text) {
           messages.value.push({
-            from: "bot",
+            from: 'bot',
             text: msg.text,
             buttons: msg.buttons || [],
-          });
+          })
         }
-      });
+      })
     } else {
       messages.value.push({
-        from: "bot",
-        text: " Sorry, I receive no response from the server!😅",
-      });
+        from: 'bot',
+        text: ' Sorry, I receive no response from the server!😅',
+      })
     }
   } catch (error) {
     console.error("Error sending message:", error);
     messages.value.push({
-      from: "bot",
-      text: "⚠️ No connection to the chatbot! Try later",
-    });
+      from: 'bot',
+      text: '⚠️ No connection to the chatbot! Try later',
+    })
   }
-
 }
 </script>
 <template>
-
   <div class="fixed bottom-8 right-8">
     <!-- Chat Bot Icon -->
     <transition name="scale-slide">
@@ -209,7 +206,10 @@ async function sendMessage() {
             </div>
           </div>
           <!-- Messages -->
-          <div ref="chatContainer" class="flex-1 px-4 py-3 overflow-y-auto bg-gray-50 z-50 scroll-smooth">
+          <div
+            ref="chatContainer"
+            class="flex-1 px-4 py-3 overflow-y-auto bg-gray-50 z-50 scroll-smooth"
+          >
             <div
               v-for="(msg, idx) in messages"
               :key="idx"
@@ -223,9 +223,11 @@ async function sendMessage() {
                 <!-- Message bubble -->
                 <div
                   class="px-4 py-2 rounded-2xl text-sm mb-1"
-                  :class="msg.from === 'bot'
-                    ? 'bg-white text-slate-800 shadow border border-slate-100'
-                    : 'bg-[var(--red)] text-white'"
+                  :class="
+                    msg.from === 'bot'
+                      ? 'bg-white text-slate-800 shadow border border-slate-100'
+                      : 'bg-[var(--red)] text-white'
+                  "
                   v-html="msg.text"
                 ></div>
 

@@ -21,15 +21,26 @@ const showAddressDialog = ref(false)
 const showNewAddressForm = ref(false)
 
 // Computed
-const item_ids = computed(() => route.query.ids?.split(',') || [])
-const card_methods = computed(() => methods.value.filter(m => m.name === 'Online Banking'))
-const subtotal = computed(() => checkoutItems.value.reduce((total, item) => total + item.price * item.quantity, 0))
-const shippingFee = computed(() => shippingMethod.value === 'express' ? 17000 : 0)
+const item_ids = computed(() => {
+  const ids = route.query.ids
+  if (typeof ids === 'string') {
+    return ids.split(',')
+  }
+  if (Array.isArray(ids)) {
+    return ids
+  }
+  return []
+})
+const card_methods = computed(() => methods.value.filter((m) => m.name === 'Online Banking'))
+const subtotal = computed(() =>
+  checkoutItems.value.reduce((total, item) => total + item.price * item.quantity, 0),
+)
+const shippingFee = computed(() => (shippingMethod.value === 'express' ? 17000 : 0))
 const total = computed(() => subtotal.value + shippingFee.value)
 const payment = ref<Payment>({
-  method_name: "Cash",
-  method_id: "",
-  option_id: ""
+  method_name: 'Cash',
+  method_id: '',
+  option_id: '',
 })
 
 const newAddress = ref<Omit<Address, 'address_id' | 'user_id' | 'created_at' | 'updated_at'>>({
@@ -41,19 +52,20 @@ const newAddress = ref<Omit<Address, 'address_id' | 'user_id' | 'created_at' | '
   state: '',
   zipcode: '',
   phone_number: '',
-  is_default: false
+  is_default: false,
 })
-
 
 // Methods
 const handleConfirmAddress = () => {
-  currentAddress.value = addresses.value.find(addr => addr.address_id === selectedAddress.value)!
+  currentAddress.value = addresses.value.find((addr) => addr.address_id === selectedAddress.value)!
   showAddressDialog.value = false
 }
 
 const handleAddNewAddress = async () => {
   const requiredFields = ['full_name', 'phone_number', 'street', 'city']
-  const isValid = requiredFields.every(field => newAddress.value[field as keyof typeof newAddress.value])
+  const isValid = requiredFields.every(
+    (field) => newAddress.value[field as keyof typeof newAddress.value],
+  )
 
   if (!isValid) {
     alert('Vui lòng điền đầy đủ thông tin bắt buộc')
@@ -66,8 +78,7 @@ const handleAddNewAddress = async () => {
     resetNewAddress()
     showNewAddressForm.value = false
   } catch (err) {
-      console.error("Adding new address failed:", err)
-
+    console.error('Adding new address failed:', err)
   }
 }
 
@@ -81,10 +92,9 @@ const resetNewAddress = () => {
     state: '',
     zipcode: '',
     phone_number: '',
-    is_default: false
+    is_default: false,
   }
 }
-
 
 const handlePlaceOrder = async () => {
   if (!currentAddress.value) {
@@ -96,19 +106,18 @@ const handlePlaceOrder = async () => {
     productId: item.prod_id,
     productVariantId: item.prod_var_id,
     quantity: item.quantity,
-    price: item.price
+    price: item.price,
   }))
 
   if (payment.value.method_name === 'Cash') {
-    const cashMethod = methods.value.find(m => m.name === 'Cash')
+    const cashMethod = methods.value.find((m) => m.name === 'Cash')
     payment.value.method_id = cashMethod?.method_id || ''
     payment.value.option_id = cashMethod?.option_id || ''
-  }
-  else {
-    const cardMethod = methods.value.find(m => m.name === 'Online Banking')
+  } else {
+    const cardMethod = methods.value.find((m) => m.name === 'Online Banking')
     payment.value.option_id = cardMethod?.option_id || ''
   }
-  const selectedMethod = methods.value.find(m => m.method_id === payment.value.method_id)
+  const selectedMethod = methods.value.find((m) => m.method_id === payment.value.method_id)
 
   if (!selectedMethod) {
     alert('Phương thức thanh toán không hợp lệ')
@@ -116,13 +125,13 @@ const handlePlaceOrder = async () => {
   }
 
   try {
-    const order_res = await apiClient.post('buyer/order/create', {
+    await apiClient.post('buyer/order/create', {
       addressId: currentAddress.value.address_id,
       orderItems: order_items,
       methodId: payment.value.method_id,
       optionId: payment.value.option_id,
       amount: total.value,
-      shippingCost: shippingFee.value
+      shippingCost: shippingFee.value,
     })
 
     alert('Đặt hàng thành công!')
@@ -142,7 +151,7 @@ onMounted(async () => {
     const [productsRes, addressRes, methodsRes] = await Promise.all([
       apiClient.get(`/products/get-by-items/${item_ids.value.join(',')}`),
       apiClient.get<{ addresses: Address[] }>(`/user/addresses`),
-      apiClient.get(`/buyer/payments`)
+      apiClient.get(`/buyer/payments`),
     ])
 
     checkoutItems.value = productsRes.data.products.map((item: CartItem) => ({
@@ -154,7 +163,7 @@ onMounted(async () => {
       price: item.price,
       image_url: item.image_url,
       product_name: item.product_name,
-      stock_quantity: item.stock_quantity
+      stock_quantity: item.stock_quantity,
     }))
 
     addresses.value = addressRes.data.addresses
@@ -163,11 +172,11 @@ onMounted(async () => {
       method_id: method.method_id,
       option_id: method.option_id,
       account_number: method.account_number,
-      is_default: method.is_default
+      is_default: method.is_default,
     }))
-    currentAddress.value = addresses.value.find(addr => addr.is_default) || addresses.value[0]
+    currentAddress.value = addresses.value.find((addr) => addr.is_default) || addresses.value[0]
   } catch (err) {
-    console.error("Getting data failed:", err)
+    console.error('Getting data failed:', err)
   }
 })
 </script>
@@ -209,7 +218,10 @@ onMounted(async () => {
                 Default
               </span>
             </div>
-            <p class="text-gray-600">{{ currentAddress.street }}, {{ currentAddress.ward }}, {{ currentAddress.district }}, {{ currentAddress.city }}</p>
+            <p class="text-gray-600">
+              {{ currentAddress.street }}, {{ currentAddress.ward }}, {{ currentAddress.district }},
+              {{ currentAddress.city }}
+            </p>
           </div>
         </template>
 
@@ -233,13 +245,14 @@ onMounted(async () => {
           </div>
         </div>
 
-        <div v-for="item in checkoutItems" :key="item.id" class="p-4 border-b border-gray-300 last:border-b-0">
+        <div
+          v-for="item in checkoutItems"
+          :key="item.id"
+          class="p-4 border-b border-gray-300 last:border-b-0"
+        >
           <div class="flex items-center gap-4">
             <div class="flex-1 flex items-center gap-3">
-              <CustomImage
-                :src="item.image_url"
-                class="w-20 h-20 object-cover rounded"
-              />
+              <CustomImage :src="item.image_url" class="w-20 h-20 object-cover rounded" />
               <div class="flex-1">
                 <h3 class="line-clamp-2 mb-1">{{ item.product_name }}</h3>
                 <p class="text-sm">{{ item.variant_name }}</p>
@@ -274,7 +287,10 @@ onMounted(async () => {
           <span class="text-gray-600">₫17.000</span>
         </div>
 
-        <div class="flex items-center justify-between py-3 cursor-pointer" @click="shippingMethod = 'standard'">
+        <div
+          class="flex items-center justify-between py-3 cursor-pointer"
+          @click="shippingMethod = 'standard'"
+        >
           <div class="flex items-center gap-3">
             <input type="radio" value="standard" v-model="shippingMethod" />
             <span>Standard - Giao hàng tiết kiệm</span>
@@ -298,7 +314,11 @@ onMounted(async () => {
         </label>
 
         <div v-if="payment.method_name === 'Online Banking'">
-          <div v-for="method in card_methods" :key="method.method_id" class="flex items-center gap-3 px-3 py-1 cursor-pointer">
+          <div
+            v-for="method in card_methods"
+            :key="method.method_id"
+            class="flex items-center gap-3 px-3 py-1 cursor-pointer"
+          >
             <input type="radio" :value="method.method_id" v-model="payment.method_id" />
             <span>Card number: {{ method.account_number }}</span>
           </div>
@@ -344,7 +364,10 @@ onMounted(async () => {
     </div>
 
     <!-- ADDRESS DIALOG -->
-    <div v-if="showAddressDialog" class="fixed inset-0 bg-black/40 flex items-center justify-center p-4">
+    <div
+      v-if="showAddressDialog"
+      class="fixed inset-0 bg-black/40 flex items-center justify-center p-4"
+    >
       <div class="bg-white rounded-lg max-w-md w-full p-6">
         <h2 class="text-lg font-semibold mb-4">My Address</h2>
 
@@ -366,7 +389,9 @@ onMounted(async () => {
                   class="px-2 py-0.5 bg-red-100 text-[#ee4d2d] text-xs rounded border border-[#ee4d2d]"
                 >Default</span>
               </div>
-              <p class="text-sm text-gray-600">{{ addr.street }}, {{ addr.ward }}, {{ addr.district }}, {{ addr.city }}</p>
+              <p class="text-sm text-gray-600">
+                {{ addr.street }}, {{ addr.ward }}, {{ addr.district }}, {{ addr.city }}
+              </p>
             </div>
           </div>
 
@@ -488,7 +513,7 @@ onMounted(async () => {
   transition: background-color 0.2s;
 }
 
-input[type="radio"] {
+input[type='radio'] {
   width: 16px;
   height: 16px;
   accent-color: #dc2626;
