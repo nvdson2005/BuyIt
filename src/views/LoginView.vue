@@ -6,6 +6,7 @@ import BasicNavBar from '@/components/layout/BasicNavBar.vue'
 import { onMounted, ref } from 'vue'
 import { CircleX } from 'lucide-vue-next'
 import { AxiosError } from 'axios'
+import { notifyAsync, notify } from '@/utils/notify'
 const router = useRouter()
 
 const errorMessage = ref('')
@@ -17,31 +18,36 @@ function onSignupClick() {
 async function onLoginClick(username: string, password: string) {
   errorMessage.value = ''
   try {
-    const response = await apiClient.post('/login', {
-      username,
-      password,
-      roleType: 'buyer',
-    })
+    const response = await notifyAsync(
+      apiClient.post('/login', {
+        username,
+        password,
+        roleType: 'buyer',
+      }),
+    )
     localStorage.setItem('username', username)
     localStorage.setItem('role', response.data.user.role)
     localStorage.setItem('id', response.data.user.id)
+    notify('Login successful!', 'success')
     router.push({ name: 'home' })
-
-    console.log('Login successful:', response)
   } catch (error: unknown) {
     if (error instanceof AxiosError) {
       if (error.response) {
         errorMessage.value = `Login failed: ${error.response.data.message || 'Unknown error'}`
+        // notify(errorMessage.value, 'error')
         console.error('Login failed:', error.response.data)
       } else if (error.request) {
         errorMessage.value = 'Login failed: No response from server'
+        // notify(errorMessage.value, 'error')
         console.error('Login failed: No response from server', error.request)
       } else {
         errorMessage.value = `Login failed: ${error.message}`
+        // notify(errorMessage.value, 'error')
         console.error('Login failed:', error.message)
       }
     } else if (error instanceof Error) {
       errorMessage.value = `Login failed: ${error.message}`
+      // notify(errorMessage.value, 'error')
       console.error('Login failed:', error.message)
     }
   }
@@ -64,14 +70,14 @@ onMounted(async () => {
         class="w-full h-full object-scale-down"
       />
     </div>
-    <div class="w-[30%] bg-[var(--red)] shadow-2xl absolute rounded-2xl mx-4 top-1/4 right-0">
+    <div class="w-[30%] bg-(--red) shadow-2xl absolute rounded-2xl mx-4 top-1/4 right-0">
       <div class="w-full h-full flex flex-col items-center px-6 pt-8">
-        <div class="w-full flex mb-6 border-b-2 border-gray-300 text-white h-10">
+        <div class="w-full flex mb-6 text-white h-10">
           <div class="flex-1 flex-col items-center">
             <button class="cursor-pointer px-4 h-full rounded">Login</button>
             <div
               :class="[
-                'transition-all duration-200 ease-in-out w-full border-b-2 border-b-[var(--orange)]',
+                'transition-all duration-200 ease-in-out w-full border-b-2 border-b-(--pure-light)',
               ]"
             ></div>
           </div>

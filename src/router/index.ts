@@ -19,6 +19,7 @@ import ShopProgram from '@/views/ShopProgram.vue'
 import SearchResultView from '@/views/SearchResultView.vue'
 import CustomerServiceView from '@/views/CustomerServiceView.vue'
 import AboutView from '@/views/AboutView.vue'
+import PaymentView from '@/views/PaymentView.vue'
 const router = createRouter({
   history: createWebHistory(),
   routes: [
@@ -121,6 +122,11 @@ const router = createRouter({
       path: '/about',
       name: 'about',
       component: AboutView,
+    },
+    {
+      path: '/payment',
+      name: 'payment',
+      component: PaymentView,
     },
   ],
 })

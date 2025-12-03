@@ -6,20 +6,49 @@ import { OrderFilterOptions } from '@/utils/enum'
 import { Search, Store } from 'lucide-vue-next'
 import CustomImage from '@/components/ui/CustomImage.vue'
 import apiClient from '@/api/client'
+import { type BuyerOrder } from '@/utils/interface'
 const selectedFilterOption: Ref<OrderFilterOptions> = ref(OrderFilterOptions.ALL)
-
-// const orders = ref([])
-
+const orders = ref<BuyerOrder[]>([])
+const filteredOrders = ref<BuyerOrder[]>([])
 onMounted(async () => {
   try {
     const response = await apiClient.get(`/buyer/orders`)
-
-
+    orders.value = response.data.orders.map((o: BuyerOrder) => ({
+      order_id: o.order_id,
+      addr_id: o.addr_id,
+      order_date: o.order_date,
+      total_amount: o.total_amount,
+      updated_at: o.updated_at,
+      buyer_id: o.buyer_id,
+      order_status: o.order_status,
+      orderitem: o.orderitem
+    }))
+    filteredOrders.value = orders.value
   } catch (err) {
     console.error("Getting orders failed:", err)
   }
 })
 
+function filterOrder(option: OrderFilterOptions){
+  if(option === OrderFilterOptions.ALL){
+    filteredOrders.value = orders.value
+  }
+  else if(option === OrderFilterOptions.PENDING){
+    filteredOrders.value = orders.value.filter(o => o.order_status === 'Pending' || o.order_status === 'Paid')
+  }
+  else if(option === OrderFilterOptions.DELIVERING){
+    filteredOrders.value = orders.value.filter(o => o.order_status === 'Delivering')
+  }
+  else if(option === OrderFilterOptions.DELIVERED){
+    filteredOrders.value = orders.value.filter(o => o.order_status === 'Delivered')
+  }
+  else if(option === OrderFilterOptions.CANCELLED){
+    filteredOrders.value = orders.value.filter(o => o.order_status === 'Cancelled')
+  }
+  else if(option === OrderFilterOptions.RETURN_REFUNDED){
+    filteredOrders.value = orders.value.filter(o => o.order_status === 'Return')
+  }
+}
 </script>
 <template>
   <NavBar />
@@ -34,7 +63,7 @@ onMounted(async () => {
               ? 'border-b-2 border-[var(--orange)] text-[var(--orange)]'
               : 'text-slate-600'
           "
-          @click="selectedFilterOption = OrderFilterOptions.ALL"
+          @click="filterOrder(OrderFilterOptions.ALL)"
         >
           {{ OrderFilterOptions.ALL }}
         </button>
@@ -45,13 +74,13 @@ onMounted(async () => {
               ? 'border-b-2 border-[var(--orange)] text-[var(--orange)]'
               : 'text-slate-600'
           "
-          @click="selectedFilterOption = OrderFilterOptions.PENDING"
+          @click="filterOrder(OrderFilterOptions.PENDING)"
         >
           {{ OrderFilterOptions.PENDING }}
         </button>
         <button
           class="px-6 py-4 text-base font-medium focus:outline-none"
-          @click="selectedFilterOption = OrderFilterOptions.DELIVERING"
+          @click="filterOrder(OrderFilterOptions.DELIVERING)"
           :class="
             selectedFilterOption === OrderFilterOptions.DELIVERING
               ? 'border-b-2 border-[var(--orange)] text-[var(--orange)]'
@@ -67,7 +96,7 @@ onMounted(async () => {
               ? 'border-b-2 border-[var(--orange)] text-[var(--orange)]'
               : 'text-slate-600'
           "
-          @click="selectedFilterOption = OrderFilterOptions.DELIVERED"
+          @click="filterOrder(OrderFilterOptions.DELIVERED)"
         >
           {{ OrderFilterOptions.DELIVERED }}
         </button>
@@ -78,7 +107,7 @@ onMounted(async () => {
               ? 'border-b-2 border-[var(--orange)] text-[var(--orange)]'
               : 'text-slate-600'
           "
-          @click="selectedFilterOption = OrderFilterOptions.CANCELLED"
+          @click="filterOrder(OrderFilterOptions.CANCELLED)"
         >
           {{ OrderFilterOptions.CANCELLED }}
         </button>
@@ -89,7 +118,7 @@ onMounted(async () => {
               ? 'border-b-2 border-[var(--orange)] text-[var(--orange)]'
               : 'text-slate-600'
           "
-          @click="selectedFilterOption = OrderFilterOptions.RETURN_REFUNDED"
+          @click="filterOrder(OrderFilterOptions.RETURN_REFUNDED)"
         >
           {{ OrderFilterOptions.RETURN_REFUNDED }}
         </button>
@@ -107,11 +136,11 @@ onMounted(async () => {
       <!-- Orders List -->
       <div class="space-y-6">
         <!-- Order Card 1 -->
-        <div class="bg-white rounded-xl shadow-xl">
+        <div v-for="o in filteredOrders" :key="o.order_id" class="bg-white rounded-xl shadow-xl">
           <div class="flex items-center justify-between px-6 pt-4">
             <div class="flex items-center gap-2 font-medium text-slate-700">
               <Store class="w-5 h-5" />
-              Cửa Hàng Chính Hãng
+              <!-- {{ o.orderitem[0]?.product.shop_name}} -->
               <span class="ml-2 px-2 py-0.5 border border-rose-400 text-rose-500 text-xs rounded"
                 >Chat</span
               >
@@ -137,18 +166,18 @@ onMounted(async () => {
               <span class="text-green-500 font-medium">Đã giao</span>
             </div>
           </div>
-          <div class="px-6 py-4 flex gap-4 border-b">
+          <div v-for="item in o.orderitem" :key="item.order_item_id" class="px-6 py-4 flex gap-4 border-b">
             <CustomImage
-              src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=80&q=80"
+              :src="item.productVariant.image_url"
               alt="product"
               class="w-20 h-20 object-cover rounded"
             />
             <div class="flex flex-col justify-between flex-1">
               <div>
                 <div class="font-medium text-slate-800">
-                  Wireless Bluetooth Headphones - Premium Sound Quality
+                  {{ item.product.name }}
                 </div>
-                <div class="text-xs text-slate-500 mt-1">Phân loại: Black, Standard</div>
+                <div class="text-xs text-slate-500 mt-1">Phân loại: {{ item.productVariant.name }}</div>
                 <div class="text-xs text-slate-500">x1</div>
               </div>
               <button
@@ -159,8 +188,8 @@ onMounted(async () => {
             </div>
             <div class="flex flex-col items-end justify-between">
               <div>
-                <div class="text-xs text-slate-400 line-through text-right">₫1,558,800</div>
-                <div class="text-lg text-rose-500 font-semibold text-right">₫1,299,000</div>
+                <div class="text-xs text-slate-400 line-through text-right">₫{{ item.productVariant.price }}</div>
+                <!-- <div class="text-lg text-rose-500 font-semibold text-right">₫1,299,000</div> -->
               </div>
             </div>
           </div>
@@ -168,7 +197,7 @@ onMounted(async () => {
             <div></div>
             <div class="flex items-center gap-3">
               <span class="text-base text-slate-600">Tổng tiền:</span>
-              <span class="text-xl font-bold text-rose-500">₫1,299,000</span>
+              <span class="text-xl font-bold text-rose-500">₫{{ o.total_amount }}</span>
               <button
                 class="px-5 py-2 border border-slate-300 rounded text-slate-700 font-medium hover:bg-gray-50"
               >
