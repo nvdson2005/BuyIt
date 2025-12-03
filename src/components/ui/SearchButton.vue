@@ -16,7 +16,11 @@ const performSearch = async () => {
 }
 </script>
 <template>
-  <button class="rounded-xl w-full h-full bg-[var(--orange)] cursor-pointer" @click="performSearch">
+  <button
+    class="w-full h-full bg-(--orange) cursor-pointer"
+    @click="performSearch"
+    @keydown.enter="performSearch"
+  >
     <Search class="inline-block mr-1" />
   </button>
 </template>

@@ -2,15 +2,31 @@
 import SearchButton from '../ui/SearchButton.vue'
 import ShopButton from '../ui/ShopButton.vue'
 import { useRouter } from 'vue-router'
-import { CircleUserRound, Package, LogOut } from 'lucide-vue-next'
-import { ref, type Ref, computed, onMounted } from 'vue'
-
+import { CircleUserRound, Package, LogOut, Bell, ChevronDown, Globe } from 'lucide-vue-next'
+import { ref, type Ref, computed, onMounted, watch, onUnmounted } from 'vue'
+import apiClient from '@/api/client'
+import type { Notification } from '@/utils/interface'
+import NotificationItem from '../ui/NotificationItem.vue'
 const username = ref('')
 const router = useRouter()
 const isLoggedIn: Ref<boolean> = ref(true)
 const loginStatus = computed(() => (isLoggedIn.value ? true : false))
 const isShowingDropdown: Ref<boolean> = ref(false)
-const searchQuery: Ref<string> = ref('')
+const searchQuery = ref('')
+const isShowingNotificationsDropdown: Ref<boolean> = ref(false)
+const notifications = ref<Notification[]>([])
+async function RetrieveNotifications() {
+  const response = await apiClient.get('/user/notifications')
+  notifications.value = response.data?.notifications || []
+}
+
+async function UpdateReadStatus() {
+  const response = await apiClient.put('/user/notifications/read', {
+    notificationIds: notifications.value.map((notification) => notification.id),
+  })
+  notifications.value = response.data?.notifications || []
+  isShowingNotificationsDropdown.value = false
+}
 const navigateToLogin: () => void = () => {
   router.push('/login')
 }
@@ -19,6 +35,12 @@ const navigateToSignup: () => void = () => {
 }
 const navigateToCart: () => void = () => {
   router.push('/cart')
+}
+const navigateToHome: () => void = () => {
+  router.push('/')
+}
+const navigateToSeller: () => void = () => {
+  router.push('/sellerlog')
 }
 
 const logOut: () => Promise<void> = async () => {
@@ -30,155 +52,224 @@ const logOut: () => Promise<void> = async () => {
   router.push('/login')
 }
 
+const handleSearch = (e: KeyboardEvent) => {
+  if (e.key === 'Enter' && searchQuery.value.trim()) {
+    router.push({ name: 'search', query: { query: searchQuery.value.trim() } })
+  }
+}
+
+onUnmounted(() => {
+  UpdateReadStatus().catch((error) => {
+    console.error('Error updating read status:', error)
+  })
+})
+
 onMounted(() => {
   const storedUsername = localStorage.getItem('username')
   if (storedUsername) {
     isLoggedIn.value = true
     username.value = storedUsername
+    RetrieveNotifications()
   } else {
     isLoggedIn.value = false
     username.value = ''
   }
 })
+
+// Close dropdown when clicking outside
+watch(isShowingDropdown, (value) => {
+  if (value) {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement
+      if (!target.closest('.user-dropdown')) {
+        isShowingDropdown.value = false
+        document.removeEventListener('click', handleClickOutside)
+      }
+    }
+    setTimeout(() => {
+      document.addEventListener('click', handleClickOutside)
+    }, 0)
+  }
+})
 </script>
 
 <template>
-  <nav>
-    <div class="navbar-header">
-      <div class="left-section">
-        <p>Seller Center</p>
-        <p class="divider">|</p>
-        <p>Download</p>
-        <p class="divider">|</p>
-        <p>Follow Us</p>
-      </div>
-      <div class="right-section">
-        <p>Notifications</p>
-        <p class="divider">|</p>
-        <p>Tiếng Việt</p>
-        <div v-if="!loginStatus">
-          <p class="divider">|</p>
-          <p @click="navigateToSignup">Sign Up</p>
-          <p class="divider">|</p>
-          <p @click="navigateToLogin">Log In</p>
-        </div>
-        <div v-if="loginStatus" class="relative">
-          <p class="divider">|</p>
-          <p @mouseenter="isShowingDropdown = true" @mouseleave="isShowingDropdown = false">
-            {{ username }}
-          </p>
-          <!-- Dropdown menu can be added here -->
-          <div
-            class="absolute top-4 right-0 w-50 bg-white text-black rounded-md shadow-lg mt-2 transition-all duration-200 z-10"
-            :class="[
-              isShowingDropdown
-                ? 'block opacity-100 -translate-y-2'
-                : 'hidden opacity-0 pointer-events-none translate-y-2',
-            ]"
-            @mouseenter="isShowingDropdown = true"
-            @mouseleave="isShowingDropdown = false"
+  <nav class="w-full bg-(--red) text-white shadow-md sticky top-0 z-50">
+    <!-- Top Bar -->
+    <div class="w-full max-w-7xl mx-auto px-4 lg:px-8">
+      <div class="flex items-center justify-between h-10 text-sm">
+        <!-- Left Section - Removed non-interactive items -->
+        <div class="hidden md:flex items-center gap-4">
+          <button
+            @click="navigateToSeller"
+            class="hover:text-orange-200 transition-colors flex items-center gap-1"
           >
-            <div class="w-full h-full flex flex-col items-baseline-last">
-              <div
-                class="px-4 py-2 hover:text-orange-500 cursor-pointer flex items-center justify-between gap-2"
-                @click="router.push('/profile')"
-              >
-                <CircleUserRound class="w-6 h-6" /> My Profile
-              </div>
-              <div
-                class="px-4 py-2 hover:text-orange-500 cursor-pointer flex items-center justify-between gap-2"
-                @click="router.push('/orders')"
-              >
-                <Package class="w-6 h-6" /> My Orders
-              </div>
-              <div
-                class="px-4 py-2 hover:text-orange-500 cursor-pointer flex items-center justify-between gap-2"
-                @click="logOut"
-              >
-                <LogOut class="w-6 h-6" /> Log Out
+            <span>Seller Center</span>
+          </button>
+        </div>
+
+        <!-- Right Section -->
+        <div class="flex items-center gap-4 ml-auto">
+          <!-- Notifications (if logged in) -->
+          <div class="relative">
+            <button
+              v-if="loginStatus"
+              class="hover:text-orange-200 transition-colors relative"
+              title="Notifications"
+              @click="isShowingNotificationsDropdown = !isShowingNotificationsDropdown"
+            >
+              <Bell class="w-5 h-5" />
+              <span
+                class="absolute -top-1 -right-1 w-2 h-2 bg-orange-400 rounded-full"
+                v-if="notifications.length > 0"
+              ></span>
+            </button>
+            <div
+              v-if="isShowingNotificationsDropdown"
+              class="absolute flex flex-col top-full right-0 mt-2 w-96 bg-white text-gray-800 rounded-lg shadow-xl border border-gray-200 overflow-hidden transition-all duration-200 z-50"
+            >
+              <NotificationItem
+                v-for="notification in notifications"
+                :notification="notification"
+                :key="notification.id"
+              />
+            </div>
+          </div>
+          <!-- Language Selector -->
+          <button
+            class="hover:text-orange-200 transition-colors flex items-center gap-1"
+            title="Language"
+          >
+            <Globe class="w-4 h-4" />
+            <span class="hidden sm:inline">English</span>
+          </button>
+
+          <!-- Auth Buttons or User Menu -->
+          <div v-if="!loginStatus" class="flex items-center gap-2">
+            <span class="text-white/70">|</span>
+            <button @click="navigateToSignup" class="hover:text-orange-200 transition-colors px-2">
+              Sign Up
+            </button>
+            <span class="text-white/70">|</span>
+            <button @click="navigateToLogin" class="hover:text-orange-200 transition-colors px-2">
+              Log In
+            </button>
+          </div>
+
+          <!-- User Dropdown -->
+          <div v-if="loginStatus" class="relative user-dropdown">
+            <button
+              @click="isShowingDropdown = !isShowingDropdown"
+              class="flex items-center gap-1 hover:text-orange-200 transition-colors px-2"
+            >
+              <span class="hidden sm:inline">{{ username }}</span>
+              <ChevronDown
+                class="w-4 h-4 transition-transform"
+                :class="{ 'rotate-180': isShowingDropdown }"
+              />
+            </button>
+            <div
+              v-if="isShowingDropdown"
+              class="absolute top-full right-0 mt-2 w-48 bg-white text-gray-800 rounded-lg shadow-xl border border-gray-200 overflow-hidden transition-all duration-200 z-50"
+            >
+              <div class="py-1">
+                <button
+                  @click="
+                    () => {
+                      router.push('/profile')
+                      isShowingDropdown = false
+                    }
+                  "
+                  class="w-full px-4 py-2 hover:bg-gray-100 transition-colors flex items-center gap-3 text-left"
+                >
+                  <CircleUserRound class="w-5 h-5 text-gray-600" />
+                  <span>My Profile</span>
+                </button>
+                <button
+                  @click="
+                    () => {
+                      router.push('/orders')
+                      isShowingDropdown = false
+                    }
+                  "
+                  class="w-full px-4 py-2 hover:bg-gray-100 transition-colors flex items-center gap-3 text-left"
+                >
+                  <Package class="w-5 h-5 text-gray-600" />
+                  <span>My Orders</span>
+                </button>
+                <div class="border-t border-gray-200 my-1"></div>
+                <button
+                  @click="
+                    () => {
+                      isShowingDropdown = false
+                      logOut()
+                    }
+                  "
+                  class="w-full px-4 py-2 hover:bg-red-50 transition-colors flex items-center gap-3 text-left text-red-600"
+                >
+                  <LogOut class="w-5 h-5" />
+                  <span>Log Out</span>
+                </button>
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-    <div class="navbar-header-with-search">
-      <div class="logo-section" @click="router.push('/')">
-        <img src="/src/assets/images/Logo.png" alt="Logo" style="width: 50px; height: 50px" />
-        <h2 class="font-bold text-2xl">BuyIt</h2>
-      </div>
-      <div class="middle-section" style="flex-grow: 1">
-        <div class="search-section" style="display: flex; align-items: center; flex-grow: 1">
-          <input
-            class="input-box"
-            type="text"
-            placeholder="Search for products, brands and more"
-            style="width: 100%; height: 40px; border-radius: 5px; padding: 0 10px; font-size: 14px"
-            v-model="searchQuery"
+
+    <!-- Main Navbar with Search -->
+    <div class="w-full max-w-7xl mx-auto px-4 lg:px-8 py-3">
+      <div class="flex items-center justify-between gap-4">
+        <!-- Logo -->
+        <button
+          @click="navigateToHome"
+          class="flex items-center gap-3 hover:opacity-90 transition-opacity shrink-0"
+        >
+          <img
+            src="/src/assets/images/Logo.png"
+            alt="BuyIt Logo"
+            class="w-12 h-12 object-contain"
           />
-          <div class="w-20 h-10">
-            <SearchButton v-model="searchQuery"></SearchButton>
+          <h2 class="font-bold text-2xl hidden sm:block">BuyIt</h2>
+        </button>
+
+        <!-- Search Section -->
+        <div class="flex-1 max-w-2xl mx-4">
+          <div class="flex items-center gap-0 bg-white rounded-lg overflow-hidden shadow-sm">
+            <input
+              v-model="searchQuery"
+              @keyup="handleSearch"
+              type="text"
+              placeholder="Search for products, brands and more"
+              class="flex-1 h-12 px-4 text-gray-800 focus:outline-none text-sm"
+            />
+            <div class="w-16 h-12 shrink-0">
+              <SearchButton v-model="searchQuery" />
+            </div>
           </div>
         </div>
-        <p style="font-size: 14px; margin-top: 3px; margin-bottom: 5px">
-          Phone, Laptop, Tablet, Accessories
-        </p>
-      </div>
-      <div
-        @click="navigateToCart"
-        class="h-full w-25 scale-125 flex items-center justify-center cursor-pointer"
-      >
-        <ShopButton></ShopButton>
+
+        <!-- Cart Button -->
+        <button
+          @click="navigateToCart"
+          class="relative flex items-center justify-center w-12 h-12 hover:bg-white/10 rounded-lg transition-colors shrink-0"
+          title="Shopping Cart"
+        >
+          <ShopButton />
+          <span
+            v-if="false"
+            class="absolute -top-1 -right-1 bg-orange-400 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-semibold"
+          >
+            0
+          </span>
+        </button>
       </div>
     </div>
   </nav>
 </template>
 
 <style scoped>
-nav {
-  width: 100%;
-  /* height: 100%; */
-  background-color: var(--red);
-  color: white;
-}
-
-.navbar-header {
-  margin-left: 10%;
-  margin-right: 10%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  font-size: 14px;
-}
-.divider {
-  margin: 0 10px;
-  color: var(--light-pink);
-}
-.navbar-header * {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  padding-top: 5px;
-}
-
-.navbar-header-with-search {
-  margin-top: 10px;
-  margin-left: 10%;
-  margin-right: 10%;
-  height: 80px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-}
-
-.navbar-header-with-search .logo-section {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  height: 100%;
-  cursor: pointer;
+.user-dropdown {
+  z-index: 1000;
 }
 </style>

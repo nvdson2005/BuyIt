@@ -1,5 +1,3 @@
-import type { InputNumberMethods } from "primevue"
-
 export interface CartItem {
   id: string
   quantity: number
@@ -185,11 +183,9 @@ export interface SellerProductShow {
   is_onsale: boolean
 }
 
-
 export interface Category {
   category_id: string
   name: string
-
 }
 
 export interface Voucher {
@@ -213,7 +209,6 @@ export interface Subcategory {
   id: string
   name: string
   category_id: string
-
 }
 export interface SellerOrderItem {
   order_id: string
@@ -232,10 +227,9 @@ export interface SellerOrderItem {
   shipment_id: string
   ship_status: string
   actual_deliver_date: Date | null
-
 }
 
-export interface SellerOrder{
+export interface SellerOrder {
   order_id: string
   order_status: string
   order_date: Date
@@ -246,3 +240,10 @@ export interface SellerOrder{
   selected: boolean
 }
 
+export interface Notification {
+  id: string
+  title: string
+  body: string
+  created_at: Date
+  is_read: boolean
+}

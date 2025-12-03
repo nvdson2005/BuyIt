@@ -217,7 +217,7 @@ const chosenRole = ref<'buyer' | 'seller'>('buyer')
         <button
           type="button"
           class="cursor-pointer px-4 py-2 h-full rounded w-full transition-colors duration-200"
-          :class="chosenRole === 'buyer' ? 'bg-orange-600' : 'bg-(--orange)'"
+          :class="chosenRole === 'buyer' ? 'bg-orange-600 font-bold' : 'bg-(--orange)'"
           @click="chosenRole = 'buyer'"
         >
           Buyer
@@ -225,7 +225,7 @@ const chosenRole = ref<'buyer' | 'seller'>('buyer')
         <button
           type="button"
           class="cursor-pointer px-4 py-2 h-full rounded w-full transition-colors duration-200"
-          :class="chosenRole === 'seller' ? 'bg-orange-600' : 'bg-(--orange)'"
+          :class="chosenRole === 'seller' ? 'bg-orange-600 font-bold' : 'bg-(--orange)'"
           @click="chosenRole = 'seller'"
         >
           Seller

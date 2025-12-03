@@ -62,7 +62,7 @@ function onSignupClick(
     </div>
     <div class="w-[30%] bg-[var(--red)] shadow-2xl absolute rounded-2xl mx-4 top-1/6 right-0">
       <div class="w-full h-full flex flex-col items-center px-6 pt-8">
-        <div class="w-full flex mb-6 border-b-2 border-gray-300 text-white h-10">
+        <div class="w-full flex mb-6 text-white h-10">
           <div class="flex-1 flex-col items-center">
             <button class="cursor-pointer px-4 h-full rounded" @click="onLoginClick()">
               Login
@@ -72,7 +72,7 @@ function onSignupClick(
             <button class="cursor-pointer px-4 h-full rounded">Sign Up</button>
             <div
               :class="[
-                'transition-all duration-200 ease-in-out w-full border-b-2 border-b-[var(--orange)]',
+                'transition-all duration-200 ease-in-out w-full border-b-2 border-b-(--pure-light)',
               ]"
             ></div>
           </div>
