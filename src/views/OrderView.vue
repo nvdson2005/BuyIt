@@ -6,11 +6,22 @@ import { OrderFilterOptions } from '@/utils/enum'
 import { Search, Store, CalendarCheck2 } from 'lucide-vue-next'
 import CustomImage from '@/components/ui/CustomImage.vue'
 import apiClient from '@/api/client'
+import ReviewForm from '@/components/layout/ReviewForm.vue'
 import { type BuyerOrder } from '@/utils/interface'
 const selectedFilterOption: Ref<OrderFilterOptions> = ref(OrderFilterOptions.ALL)
 const orders = ref<BuyerOrder[]>([])
 const filteredOrders = ref<BuyerOrder[]>([])
-
+const showReviewForm = ref(false)
+const selectedOrder = ref<BuyerOrder>({
+  order_id: '',
+  addr_id: '',
+  order_date: new Date,
+  total_amount: 0,
+  updated_at: new Date,
+  buyer_id: '',
+  order_status: '',
+  orderitems: []
+})
 onMounted(async () => {
   try {
     const response = await apiClient.get(`/buyer/orders`)
@@ -53,6 +64,11 @@ function filterOrder(option: OrderFilterOptions){
 
 }
 
+function handleReview(order: BuyerOrder){
+  selectedOrder.value = order
+  showReviewForm.value = true
+
+}
 
 </script>
 <template>
@@ -232,4 +248,9 @@ function filterOrder(option: OrderFilterOptions){
       </div>
     </div>
   </div>
+  <ReviewForm
+    v-if="showReviewForm"
+    :order="selectedOrder"
+    @onCancel="showReviewForm = false"
+  />
 </template>
