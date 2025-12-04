@@ -54,14 +54,16 @@ const fetchAllDatas = async () => {
     recommendedProducts.value = recommendedResponse.data.products
     // console.log('Fetched recommended products:', recommendedProducts.value)
 
-    const otherProductsResponse = await apiClient.get(
-      `/products/random/${product.value?.sub_category_id}?excludeProductId=${product.value?.id}`,
-    )
-    recommendedProducts.value = otherProductsResponse.data?.products
+
 
     // Fetch reviews
     const reviewsResponse = await apiClient.get(`/products/${product.value?.id}/reviews`)
     reviews.value = reviewsResponse.data.reviews || []
+
+    const otherProductsResponse = await apiClient.get(
+      `/products/random/${product.value?.sub_category_id}?excludeProductId=${product.value?.id}`,
+    )
+    recommendedProducts.value = otherProductsResponse.data?.products
     // console.log('Fetched product reviews:', reviews.value)
   } catch (error) {
     console.error('Error fetching product data:', error)
@@ -486,9 +488,8 @@ const onNavigateToShop = () => {
               <div class="text-slate-700 mb-2">
                 {{ review.comment }}
               </div>
-              <div class="flex gap-2">
-                <img class="w-16 h-16 object-cover rounded" />
-                <img class="w-16 h-16 object-cover rounded" />
+              <div class="flex gap-2" v-if="review.image_url">
+                <img :src="review.image_url" class="w-16 h-16 object-cover rounded" />
               </div>
             </div>
           </div>

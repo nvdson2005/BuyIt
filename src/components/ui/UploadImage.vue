@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { ref, watch } from 'vue';
-import { Upload, Link, X, Image } from 'lucide-vue-next';
+import { Upload, Link, X } from 'lucide-vue-next';
 
 // Props và emits
 const props = defineProps<{
@@ -117,7 +117,7 @@ function triggerFileInput() {
         ]"
       >
         <Upload :size="16" />
-        Tải từ máy
+        From device
       </button>
       <button
         @click="activeTab = 'url'"
@@ -129,7 +129,7 @@ function triggerFileInput() {
         ]"
       >
         <Link :size="16" />
-        Nhập URL
+        Enter URL
       </button>
     </div>
 
@@ -172,12 +172,12 @@ function triggerFileInput() {
           <Upload class="mx-auto text-gray-400 mb-3" :size="40" />
 
           <div v-if="isUploading">
-            <p class="text-sm text-gray-600 font-medium">Đang upload ảnh...</p>
-            <p class="text-xs text-gray-500 mt-1">Vui lòng chờ</p>
+            <p class="text-sm text-gray-600 font-medium">Image uploading...</p>
+            <p class="text-xs text-gray-500 mt-1">Please wait</p>
           </div>
           <div v-else>
-            <p class="text-sm font-medium text-gray-700">Chọn ảnh từ máy tính</p>
-            <p class="text-xs text-gray-500 mt-1">PNG, JPG, GIF, WEBP - Tối đa 32MB</p>
+            <p class="text-sm font-medium text-gray-700">Choose image</p>
+            <p class="text-xs text-gray-500 mt-1">PNG, JPG, GIF, WEBP</p>
             <button
               type="button"
               class="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-primary text-white text-sm font-medium rounded-md hover:bg-primary/90 transition-colors"
@@ -223,11 +223,11 @@ function triggerFileInput() {
               :disabled="!imageUrl"
               class="px-4 py-2 bg-primary text-white text-sm font-medium rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              Xác nhận
+              Confirm
             </button>
           </div>
           <p class="text-xs text-gray-500">
-            Nhập URL ảnh hợp lệ (bắt đầu bằng http:// hoặc https://)
+            Enter valid URL (Start with http:// or https://)
           </p>
         </div>
       </div>

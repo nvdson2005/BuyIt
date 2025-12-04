@@ -92,6 +92,7 @@ export interface Review {
   rating: number
   comment: string
   created_at: string
+  image_url: string
   variant_name?: string
   buyer_name?: string
   buyer_avatar_url?: string
@@ -260,7 +261,8 @@ export interface BuyerOrder{
   updated_at: Date
   buyer_id: string
   order_status: string
-  orderitem: OrderItem[]
+  is_reviewed: boolean
+  orderitems: OrderItem[]
 }
 
 
@@ -271,4 +273,3 @@ export interface Notification {
   created_at: Date
   is_read: boolean
 }
-

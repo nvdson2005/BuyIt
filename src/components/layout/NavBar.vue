@@ -115,7 +115,7 @@ watch(isShowingDropdown, (value) => {
           <div class="relative">
             <button
               v-if="loginStatus"
-              class="hover:text-orange-200 transition-colors relative"
+              class="hover:text-orange-200 transition-colors relative cursor-pointer"
               title="Notifications"
               @click="isShowingNotificationsDropdown = !isShowingNotificationsDropdown"
             >
@@ -142,7 +142,7 @@ watch(isShowingDropdown, (value) => {
             title="Language"
           >
             <Globe class="w-4 h-4" />
-            <span class="hidden sm:inline">English</span>
+            <span class="hidden sm:inline cursor-pointer">English</span>
           </button>
 
           <!-- Auth Buttons or User Menu -->
@@ -163,7 +163,7 @@ watch(isShowingDropdown, (value) => {
               @click="isShowingDropdown = !isShowingDropdown"
               class="flex items-center gap-1 hover:text-orange-200 transition-colors px-2"
             >
-              <span class="hidden sm:inline">{{ username }}</span>
+              <span class="hidden sm:inline cursor-pointer">{{ username }}</span>
               <ChevronDown
                 class="w-4 h-4 transition-transform"
                 :class="{ 'rotate-180': isShowingDropdown }"
@@ -181,7 +181,7 @@ watch(isShowingDropdown, (value) => {
                       isShowingDropdown = false
                     }
                   "
-                  class="w-full px-4 py-2 hover:bg-gray-100 transition-colors flex items-center gap-3 text-left"
+                  class="w-full px-4 py-2 hover:bg-gray-100 transition-colors flex items-center gap-3 text-left cursor-pointer"
                 >
                   <CircleUserRound class="w-5 h-5 text-gray-600" />
                   <span>My Profile</span>
@@ -193,7 +193,7 @@ watch(isShowingDropdown, (value) => {
                       isShowingDropdown = false
                     }
                   "
-                  class="w-full px-4 py-2 hover:bg-gray-100 transition-colors flex items-center gap-3 text-left"
+                  class="w-full px-4 py-2 hover:bg-gray-100 transition-colors flex items-center gap-3 text-left cursor-pointer"
                 >
                   <Package class="w-5 h-5 text-gray-600" />
                   <span>My Orders</span>
@@ -206,7 +206,7 @@ watch(isShowingDropdown, (value) => {
                       logOut()
                     }
                   "
-                  class="w-full px-4 py-2 hover:bg-red-50 transition-colors flex items-center gap-3 text-left text-red-600"
+                  class="w-full px-4 py-2 hover:bg-red-50 transition-colors flex items-center gap-3 text-left text-red-600 cursor-pointer"
                 >
                   <LogOut class="w-5 h-5" />
                   <span>Log Out</span>
@@ -224,7 +224,7 @@ watch(isShowingDropdown, (value) => {
         <!-- Logo -->
         <button
           @click="navigateToHome"
-          class="flex items-center gap-3 hover:opacity-90 transition-opacity shrink-0"
+          class="flex items-center gap-3 hover:opacity-90 transition-opacity shrink-0 cursor-pointer"
         >
           <img
             src="/src/assets/images/Logo.png"
@@ -253,7 +253,7 @@ watch(isShowingDropdown, (value) => {
         <!-- Cart Button -->
         <button
           @click="navigateToCart"
-          class="relative flex items-center justify-center w-12 h-12 hover:bg-white/10 rounded-lg transition-colors shrink-0"
+          class="relative flex items-center justify-center w-12 h-12 hover:bg-white/10 rounded-lg transition-colors shrink-0 cursor-pointer"
           title="Shopping Cart"
         >
           <ShopButton />

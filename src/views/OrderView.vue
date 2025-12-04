@@ -20,6 +20,7 @@ const selectedOrder = ref<BuyerOrder>({
   updated_at: new Date,
   buyer_id: '',
   order_status: '',
+  is_reviewed: false,
   orderitems: []
 })
 onMounted(async () => {
@@ -33,7 +34,8 @@ onMounted(async () => {
       updated_at: o.updated_at,
       buyer_id: o.buyer_id,
       order_status: o.order_status,
-      orderitem: o.orderitem,
+      is_reviewed: o.is_reviewed,
+      orderitems: o.orderitems,
     }))
     filteredOrders.value = orders.value
   } catch (err) {
@@ -62,7 +64,11 @@ function filterOrder(option: OrderFilterOptions) {
 function handleReview(order: BuyerOrder){
   selectedOrder.value = order
   showReviewForm.value = true
+}
 
+function handleSave(){
+  showReviewForm.value = false
+  selectedOrder.value.is_reviewed = true
 }
 
 </script>
@@ -159,7 +165,7 @@ function handleReview(order: BuyerOrder){
 
               <!-- Shop name (nếu có OrderItem) -->
               <span>
-                {{ o.orderitem[0]?.product.shop_name }}
+                {{ o.orderitems[0]?.product.shop_name }}
               </span>
 
               <span class="ml-2 px-2 py-0.5 border border-rose-400 text-rose-500 text-xs rounded">
@@ -176,7 +182,7 @@ function handleReview(order: BuyerOrder){
           </div>
           <div class="border-b border-gray-300">
             <!-- Order Items -->
-            <div v-for="item in o.orderitem" :key="item.order_item_id" class="px-6 py-4 gap-4">
+            <div v-for="item in o.orderitems" :key="item.order_item_id" class="px-6 py-4 gap-4">
               <div class="flex gap-4">
                 <CustomImage
                   :src="item.productVariant.image_url"
@@ -213,7 +219,7 @@ function handleReview(order: BuyerOrder){
               v-if="o.order_status === 'Delivered'"
               class="flex justify-end gap-4 mt-4 font-semibold text-sm"
             >
-              <button
+              <button v-if="o.is_reviewed === false"
                 class="w-32 px-4 py-2 border border-slate-300 rounded text-white bg-[var(--red)] hover:bg-red-600 cursor-pointer"
                 @click="handleReview(o)"
               >
@@ -240,5 +246,6 @@ function handleReview(order: BuyerOrder){
     v-if="showReviewForm"
     :order="selectedOrder"
     @onCancel="showReviewForm = false"
+    @onSave="handleSave"
   />
 </template>
