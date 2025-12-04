@@ -40,8 +40,8 @@ const newSubcategory = ref('')
 // Variables support for button and input
 const showCategories = ref(false)
 const showSubcategories = ref(false)
-const selectedCategory = ref('Chọn ngành hàng')
-const selectedSubcategory = ref('Chọn ngành hàng con')
+const selectedCategory = ref('Choose Category')
+const selectedSubcategory = ref('Choose Subcategory')
 const addNewSubcategory = ref(false)
 
 
@@ -75,7 +75,7 @@ async function fetch_subcategory(category: Category){
     subcategories.value = sub_res.data.subcategories
     console.log("Subcategories:", subcategories.value)
 
-    selectedSubcategory.value = "Chọn phân loại hàng"
+    selectedSubcategory.value = "Choose Subcategory"
   } catch (err) {
     console.error("Error fetch sub:", err)
   }
@@ -135,7 +135,7 @@ function removeVariant(index: number) {
 
 async function handleSave() {
   if (!newProduct.value.name || !newProduct.value.price || !newProduct.value.stock_quantity|| !newProduct.value.sub_category_id) {
-    alert('Vui lòng điền đầy đủ thông tin bắt buộc!')
+    alert('Please enter all obligated fields!')
     return
   }
   const shop_id = localStorage.getItem('id')
@@ -182,8 +182,8 @@ async function handleSave() {
     }
 
     category_id.value = ''
-    selectedCategory.value = 'Chọn ngành hàng'
-    selectedSubcategory.value = 'Chọn ngành hàng con'
+    selectedCategory.value = 'Choose Category'
+    selectedSubcategory.value = 'Cnoose Subcategory'
     emit('cancel')
   } catch (error) {
     console.error('Subcategory insertion failed:', error);
@@ -195,21 +195,21 @@ async function handleSave() {
 <template>
   <div class="space-y-6">
     <!-- 1. Thông tin cơ bản -->
-    <FormSection title="Thông tin cơ bản" :required="true">
+    <FormSection title="Basic Information" :required="true">
       <div class="space-y-6">
 
 
         <!-- Tên sản phẩm -->
         <div>
           <label class="text-sm font-medium">
-            Tên sản phẩm <span class="text-red-500">*</span>
+            Product Name <span class="text-red-500">*</span>
           </label>
           <input
             id="product-name"
             v-model="newProduct.name"
             class="w-full rounded-md bg-gray-100 px-3 py-2 text-sm
               focus:outline-none focus:ring-[3px] focus:ring-gray-300"
-            placeholder="Nhập tên sản phẩm (Thương hiệu + Loại + Thông số)"
+            placeholder="Enter Product Name"
           />
         </div>
 
@@ -217,14 +217,14 @@ async function handleSave() {
         <div>
 
           <label class="text-sm font-medium">
-            Hình ảnh sản phẩm
+            Product Image
           </label>
           <UploadImage v-model="newProduct.image_url"></UploadImage>
         </div>
         <!-- Gía hiển thị -->
          <div>
           <label class="text-sm font-medium">
-            Giá hiển thị <span class="text-red-500">*</span>
+            Display Price <span class="text-red-500">*</span>
           </label>
           <input
             type="number"
@@ -237,7 +237,7 @@ async function handleSave() {
 
         <div>
           <label class="text-sm font-medium">
-            Kho hàng <span class="text-red-500">*</span>
+            Stock <span class="text-red-500">*</span>
           </label>
           <input
             type="number"
@@ -251,7 +251,7 @@ async function handleSave() {
         <div class="relative">
           <label class="text-sm font-medium"
                 for="category">
-            Ngành hàng <span class="text-red-500">*</span>
+            Category <span class="text-red-500">*</span>
           </label>
 
           <button
@@ -278,7 +278,7 @@ async function handleSave() {
         <div class="relative">
           <label class="text-sm font-medium"
                 for="category">
-            Ngành hàng con <span class="text-red-500">*</span>
+            Subcategory <span class="text-red-500">*</span>
           </label>
 
           <button
@@ -301,14 +301,14 @@ async function handleSave() {
               {{ item.name }}
             </li>
             <button @click="addNewSubcategory= !addNewSubcategory" class="inline-flex gap-2 px-3 py-2 w-full px-3 py-2 hover:bg-gray-100 cursor-pointer text-sm">
-              <PlusCircle :size="16" /> Thêm nhóm phân loại
+              <PlusCircle :size="16" /> Add New Subcategory
             </button>
             <div v-if="addNewSubcategory">
               <input
               v-model="newSubcategory"
               class="w-50 rounded-md bg-gray-100 mr-4 px-3 py-2 ml-4 mb-4 text-sm
                 focus:outline-none focus:ring-[3px] focus:ring-gray-300"
-              placeholder="Nhóm phân loại hàng mới"
+              placeholder="New Subcategory"
             />
               <button
               class="
@@ -321,7 +321,7 @@ async function handleSave() {
                       focus:outline-none focus:ring-2 focus:ring-gray-300
                       "
               @click="handleAddSubcategory"
-          >Thêm
+          >Save
             </button>
           </div>
           </ul>
@@ -330,33 +330,33 @@ async function handleSave() {
         <div>
           <label class="text-sm font-medium"
           for="description">
-            Mô tả sản phẩm <span class="text-red-500">*</span>
+            Product Description <span class="text-red-500">*</span>
           </label>
           <textarea
             id="description"
             v-model="newProduct.description"
             class="w-full h-30 rounded-md bg-gray-100 px-3 py-2 text-sm
               focus:outline-none focus:ring-[3px] focus:ring-gray-300"
-            placeholder="Nhập mô tả chi tiết về sản phẩm..."
-            rows="8"
+            placeholder="Enter product description"
+            rows="5"
           ></textarea>
         </div>
       </div>
     </FormSection>
 
     <!-- 3. Thông tin bán hàng -->
-    <FormSection title="Thông tin bán hàng">
+    <FormSection title="Selling Information">
       <div class="space-y-6">
 
         <div>
-          <label class="text-sm font-medium">Phân loại hàng</label>
+          <label class="text-sm font-medium">Variants</label>
           <button
             @click="addVariant"
             class="inline-flex items-center justify-center gap-2 px-3 py-2 whitespace-nowrap rounded-md
                   text-sm font-medium transition-all cursor-pointer
                   border border-gray-200 w-full h-10 justify-start mt-2
                   bg-background text-foreground hover:bg-gray-200 ">
-            <PlusCircle :size="16" class="mr-2" /> Thêm nhóm phân loại
+            <PlusCircle :size="16" class="mr-2" /> Add New Variant
           </button>
         </div>
 
@@ -364,45 +364,45 @@ async function handleSave() {
         <div v-for="(variant, index) in newProduct.variants" :key="index" class="border border-gray-200 rounded-md p-4 space-y-4">
 
           <div>
-            <label class="text-sm font-medium">Nhóm phân loại</label>
+            <label class="text-sm font-medium">Name</label>
             <input
               v-model="variant.name"
               class="w-full rounded-md bg-gray-100 px-3 py-2 mb-2 text-sm
                 focus:outline-none focus:ring-[3px] focus:ring-gray-300"
-              placeholder="VD: Màu đỏ, Size M"
+              placeholder="Example: Red, Size M"
             />
           </div>
           <div>
-            <label class="text-sm font-medium">Hình ảnh</label>
+            <label class="text-sm font-medium">Image</label>
             <UploadImage v-model="variant.image_url"></UploadImage>
           </div>
 
           <div>
-            <label class="text-sm font-medium">Giá</label>
+            <label class="text-sm font-medium">Price</label>
             <input
               v-model="variant.price"
               type="number"
               class="w-full rounded-md bg-gray-100 px-3 py-2 mb-2 text-sm
                 focus:outline-none focus:ring-[3px] focus:ring-gray-300"
-              placeholder="Nhập giá"
+              placeholder="Enter Variant Price"
             />
           </div>
 
           <div>
-            <label class="text-sm font-medium">Kho hàng</label>
+            <label class="text-sm font-medium">Stock</label>
             <input
               v-model="variant.stock_quantity"
               type="number"
               class="w-full rounded-md bg-gray-100 px-3 py-2 mb-2 text-sm
                 focus:outline-none focus:ring-[3px] focus:ring-gray-300"
-              placeholder="Nhập số lượng"
+              placeholder="Enter quantity"
             />
           </div>
           <div class="flex justify-end">
             <button
               class="text-red-500 text-sm underline cursor-pointer"
               @click="removeVariant(index)">
-              Xóa
+              Delete
             </button>
           </div>
         </div>
@@ -424,19 +424,7 @@ async function handleSave() {
                 focus:outline-none focus:ring-2 focus:ring-gray-300
                 mt-2"
           @click="$emit('cancel')">
-          Hủy
-        </button>
-      <button
-          class="inline-flex items-center justify-center gap-2 px-3 py-2 whitespace-nowrap rounded-md
-                text-sm font-medium transition-all cursor-pointer
-                border border-gray-300
-                bg-white text-gray-700
-                hover:bg-gray-100 hover:border-gray-400
-                active:bg-gray-200
-                focus:outline-none focus:ring-2 focus:ring-gray-300
-                mt-2"
-                @click="handleSave">
-                Lưu & Ẩn
+          Cancel
         </button>
       <button
         class="
@@ -449,7 +437,7 @@ async function handleSave() {
                 focus:outline-none focus:ring-2 focus:ring-gray-300
                 mt-2"
         @click="handleSave"
-      >Lưu & Hiển thị</button>
+      >Save</button>
     </div>
   </div>
 </template>

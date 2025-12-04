@@ -88,14 +88,14 @@ const handleOnsaleProducts = (value: SellerProductShow[]) => {
         <PromoCard
           :icon="Briefcase"
           title="Promotion Combo"
-          description="Create Promotion Combo for orders revenue increase"
+          description="Create Promotion Combo for boosting orders revenue"
           buttonText="Create"
           @actionClick="onCreateProgram"
         />
         <PromoCard
           :icon="Gift"
           title="Buy With Shock Deal"
-          description="Create Buy With Shock Deal for orders increase"
+          description="Create Buy With Shock Deal for boosting orders number"
           buttonText="Create"
           @actionClick="onCreateProgram"
         />

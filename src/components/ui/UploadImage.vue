@@ -15,7 +15,6 @@ const emit = defineEmits<{
 const activeTab = ref<'upload' | 'url'>('upload');
 const imageUrl = ref(props.modelValue || '');
 const isUploading = ref(false);
-const showPreview = ref(false);
 
 // Watch để cập nhật khi modelValue thay đổi từ bên ngoài
 watch(() => props.modelValue, (newVal) => {
@@ -61,7 +60,6 @@ async function uploadImage(event: Event) {
     if (data.success) {
       imageUrl.value = data.data.url;
       emit('update:modelValue', data.data.url);
-      showPreview.value = true;
     } else {
       alert(`❌ Lỗi: ${data.error.message}`);
     }
@@ -82,10 +80,8 @@ function handleUrlInput() {
       return;
     }
     emit('update:modelValue', imageUrl.value);
-    showPreview.value = true;
   } else {
     emit('update:modelValue', '');
-    showPreview.value = false;
   }
 }
 
@@ -93,7 +89,6 @@ function handleUrlInput() {
 function removeImage() {
   imageUrl.value = '';
   emit('update:modelValue', '');
-  showPreview.value = false;
 }
 
 // Hàm trigger file input
@@ -138,7 +133,7 @@ function triggerFileInput() {
       <!-- Tab Upload từ máy -->
       <div v-if="activeTab === 'upload'" class="space-y-4">
         <!-- Preview ảnh -->
-        <div v-if="showPreview && imageUrl" class="text-center">
+        <div v-if=" imageUrl" class="text-center">
           <div class="relative inline-block">
             <img
               :src="imageUrl"
@@ -190,13 +185,12 @@ function triggerFileInput() {
       <!-- Tab Nhập URL -->
       <div v-if="activeTab === 'url'" class="space-y-4">
         <!-- Preview ảnh từ URL -->
-        <div v-if="showPreview && imageUrl" class="text-center">
+        <div v-if="imageUrl" class="text-center">
           <div class="relative inline-block">
             <img
               :src="imageUrl"
               alt="Preview"
               class="max-w-full h-48 object-cover rounded-lg border-2 border-dashed border-gray-300"
-              @error="showPreview = false"
             />
             <button
               @click="removeImage"

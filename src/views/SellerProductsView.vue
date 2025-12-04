@@ -13,7 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/utils/Table";
-
+import UpdateProductForm from "@/components/layout/UpdateProductForm.vue";
 
 const shopId = localStorage.getItem('id')
 
@@ -27,7 +27,8 @@ const tab = ref('all')
 // Support
 const keyword = ref("")
 const showSubCategories = ref(false)
-const selectedSubcategory = ref('Tìm theo ngành hàng con')
+const selectedSubcategory = ref('Subcategory')
+const showUpdateForm = ref(false)
 const active_products = computed(() => {
   return products.value.filter(p => p.is_active === true)
 })
@@ -40,6 +41,21 @@ const soldout_products = computed(() => {
   return products.value.filter(p => p.stock_quantity === 0)
 })
 
+const updatedProduct = ref<SellerProductShow>({
+  id: "",
+  name: "",
+  description: "",
+  rating: 0,
+  price: 0,
+  sold_amount: 0,
+  stock_quantity: 0,
+  image_url: "",
+  is_active: false,
+  sub_category_id: "",
+  sale_price: 0,
+  is_onsale: false,
+  status_op: ""
+})
 
 watch(tab, (tabChange) => {
   if(tabChange == 'all'){
@@ -97,7 +113,7 @@ async function filteredProducts() {
       p.name.toLowerCase().includes(keyword.value.toLowerCase())
     )
   }
-  selectedSubcategory.value = 'Tìm theo ngành hàng con'
+  selectedSubcategory.value = 'Subcategory'
   sub_category_id.value = ''
   keyword.value = ''
 
@@ -121,6 +137,11 @@ async function updateActive(product_id: string){
       console.error('Getting subcategory failed: ', err)
 
     }
+}
+
+function updateProduct(product: SellerProductShow){
+  updatedProduct.value = product
+  showUpdateForm.value = true
 }
 </script>
 
@@ -182,7 +203,7 @@ async function updateActive(product_id: string){
           v-model="keyword"
             class="w-full rounded-md bg-gray-100 px-3 py-2 text-sm
               focus:outline-none focus:ring-[3px] focus:ring-gray-300"
-            placeholder="Tìm kiếm Tên sản phẩm"
+            placeholder="Find products followed by name"
           />
           <div class="relative">
           <button class="inline-flex items-center px-3 py-2 whitespace-nowrap rounded-md text-sm font-medium transition-all border border-gray-200 w-full h-10 justify-between bg-background text-foreground text-gray-700 hover:bg-gray-200 border-gray-300 cursor-pointer"
@@ -271,13 +292,16 @@ async function updateActive(product_id: string){
               <!-- interface Product không có sku -->
               <!-- <div class="text-xs text-gray-500">{{ product.sku }}</div>  -->
             </TableCell>
-            <TableCell>{{ product.sold_amount }}</TableCell>
-            <TableCell>{{ product.price }}</TableCell>
+            <TableCell>đ {{ product.sold_amount*product.price }}</TableCell>
+            <TableCell>đ {{ product.price }}</TableCell>
             <TableCell>{{ product.stock_quantity }}</TableCell>
             <!-- <TableCell>-</TableCell> -->
             <TableCell>
               <div class="flex flex-col items-start">
-                <button class="inline-flex items-center rounded-md text-sm text-red-600 transition-all focus-visible:ring-[3px] text-primary underline-offset-4 hover:underline p-0 h-auto cursor-pointer">
+                <button
+                class="inline-flex items-center rounded-md text-sm text-red-600 transition-all focus-visible:ring-[3px] text-primary underline-offset-4 hover:underline p-0 h-auto cursor-pointer"
+                @click="updateProduct(product)"
+                >
                   Details<ArrowUpRight :size="12"/>
                 </button>
                 <label class="inline-flex items-center pt-2 me-5 cursor-pointer">
@@ -291,6 +315,11 @@ async function updateActive(product_id: string){
       </Table>
     </div>
   </div>
+  <UpdateProductForm
+  v-if="showUpdateForm"
+  :product="updatedProduct"
+  @onCancel="showUpdateForm=false">
+  </UpdateProductForm>
 </template>
 
 
