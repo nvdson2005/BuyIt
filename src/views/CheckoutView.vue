@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { MapPin, Plus } from 'lucide-vue-next'
+import { notify, notifyAsync } from '@/utils/notify'
 import PageFooter from '@/components/layout/PageFooter.vue'
 import CustomImage from '@/components/ui/CustomImage.vue'
 import apiClient from '@/api/client'
@@ -125,7 +126,8 @@ const handlePlaceOrder = async () => {
   }
 
   try {
-    await apiClient.post('buyer/order/create', {
+    await notifyAsync(
+      apiClient.post('buyer/order/create', {
       addressId: currentAddress.value.address_id,
       orderItems: order_items,
       methodId: payment.value.method_id,
@@ -133,8 +135,9 @@ const handlePlaceOrder = async () => {
       amount: total.value,
       shippingCost: shippingFee.value,
     })
+    );
 
-    alert('Đặt hàng thành công!')
+    notify("Place Order successfully!", 'success')
     router.back()
   } catch (error) {
     console.error('Order creation failed:', error)
@@ -354,7 +357,7 @@ onMounted(async () => {
           <div class="text-right">
             <button
               @click="handlePlaceOrder"
-              class="bg-[#ee4d2d] hover:bg-[#d73211] text-white px-12 h-12 rounded cursor-pointer"
+              class="bg-[var(--red)] hover:bg-red-600 text-white px-12 h-12 rounded cursor-pointer"
             >
               Place Order
             </button>

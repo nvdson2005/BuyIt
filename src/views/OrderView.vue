@@ -8,6 +8,7 @@ import CustomImage from '@/components/ui/CustomImage.vue'
 import apiClient from '@/api/client'
 import ReviewForm from '@/components/layout/ReviewForm.vue'
 import { type BuyerOrder } from '@/utils/interface'
+import { notify, notifyAsync } from '@/utils/notify'
 const selectedFilterOption: Ref<OrderFilterOptions> = ref(OrderFilterOptions.ALL)
 const orders = ref<BuyerOrder[]>([])
 const filteredOrders = ref<BuyerOrder[]>([])
@@ -48,16 +49,14 @@ function filterOrder(option: OrderFilterOptions) {
     filteredOrders.value = orders.value
   } else if (option === OrderFilterOptions.PENDING) {
     filteredOrders.value = orders.value.filter(
-      (o) => o.order_status === 'Pending' || o.order_status === 'Paid',
+      (o) => o.order_status === 'Pending' || o.order_status === 'Paid' || o.order_status === 'Packing',
     )
   } else if (option === OrderFilterOptions.DELIVERING) {
-    filteredOrders.value = orders.value.filter((o) => o.order_status === 'Delivering')
+    filteredOrders.value = orders.value.filter((o) => o.order_status === 'Shipped')
   } else if (option === OrderFilterOptions.DELIVERED) {
     filteredOrders.value = orders.value.filter((o) => o.order_status === 'Delivered')
   } else if (option === OrderFilterOptions.CANCELLED) {
     filteredOrders.value = orders.value.filter((o) => o.order_status === 'Cancelled')
-  } else if (option === OrderFilterOptions.RETURN_REFUNDED) {
-    filteredOrders.value = orders.value.filter((o) => o.order_status === 'Return')
   }
   selectedFilterOption.value = option
 }
@@ -71,6 +70,33 @@ function handleSave(){
   selectedOrder.value.is_reviewed = true
 }
 
+async function handleCancel(o: BuyerOrder){
+  try {
+    await notifyAsync(
+      apiClient.put(`/buyer/order/${o.order_id}/status`, {
+      status: 'Cancelled'
+      })
+    );
+    o.order_status = 'Cancelled'
+    notify(`Cancel order successfully!`, 'success')
+  } catch (error) {
+    notify(`Cancel order failed!`, 'error')
+
+    console.error('Update product failed:', error);
+  }
+}
+
+async function handleReceive(o: BuyerOrder){
+  try {
+    await apiClient.put(`/buyer/order/${o.order_id}/status`, {
+      status: 'Delivered'
+      })
+    o.order_status = 'Delivered'
+  } catch (error) {
+
+    console.error('Update product failed:', error);
+  }
+}
 </script>
 <template>
   <NavBar />
@@ -133,7 +159,7 @@ function handleSave(){
         >
           {{ OrderFilterOptions.CANCELLED }}
         </button>
-        <button
+        <!-- <button
           class="px-6 py-4 text-base font-medium focus:outline-none cursor-pointer"
           :class="
             selectedFilterOption === OrderFilterOptions.RETURN_REFUNDED
@@ -143,7 +169,7 @@ function handleSave(){
           @click="filterOrder(OrderFilterOptions.RETURN_REFUNDED)"
         >
           {{ OrderFilterOptions.RETURN_REFUNDED }}
-        </button>
+        </button> -->
       </div>
       <!-- Search bar -->
       <div class="mb-4">
@@ -235,6 +261,28 @@ function handleSave(){
                 class="w-32 px-4 py-2 border border-slate-300 rounded text-slate-600 hover:bg-gray-50 cursor-pointer"
               >
                 Buy Again
+              </button>
+            </div>
+            <div
+              v-if="o.order_status === 'Pending'"
+              class="flex justify-end gap-4 mt-4 font-semibold text-sm"
+            >
+              <button v-if="o.is_reviewed === false"
+                class="w-32 px-4 py-2 border border-slate-300 rounded text-slate-600 hover:bg-gray-50 cursor-pointer"
+                @click="handleCancel(o)"
+              >
+                Cancel Order
+              </button>
+            </div>
+            <div
+              v-if="o.order_status === 'Shipped'"
+              class="flex justify-end gap-4 mt-4 font-semibold text-sm"
+            >
+              <button v-if="o.is_reviewed === false"
+                class="w-36 px-4 py-2 border border-slate-300 rounded text-white bg-[var(--red)] hover:bg-red-600 cursor-pointer"
+                @click="handleReceive(o)"
+              >
+                Confirm Receipt
               </button>
             </div>
           </div>

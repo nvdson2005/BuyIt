@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { ref, watch, onMounted, computed } from 'vue'
 import { ChevronDown } from 'lucide-vue-next'
-import Checkbox from '@/components/ui/Checkbox.vue'
+// import Checkbox from '@/components/ui/Checkbox.vue'
 import CustomImage from '@/components/ui/CustomImage.vue'
 import { type SellerOrder, type SellerOrderItem } from '@/utils/interface'
 import apiClient from '@/api/client'
-
+import { notify, notifyAsync } from '@/utils/notify';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/utils/Table.ts'
 
 const checked_all = ref(false)
@@ -29,29 +29,28 @@ const toggleAccordion = () => {
 
 const tabs = [
   'All',
-  'Pending Confirmation',
-  'Repairing',
-  'Delivering',
-  'Ready for Pickup',
-  'In Transit',
+  'Pending',
+  'Packing',
+  'Shipped',
+  'Delivered',
   'Cancelled',
 ]
 
 const activeTab = ref('All')
 const filteredOrders = ref<SellerOrder[]>([])
-const statusColor = ref('text-orange-500')
+const statusColors: Record<string, string> = {
+  Pending: 'text-orange-600',
+  Packing: 'text-orange-400',
+  Shipped: 'text-blue-400',
+  Delivered: 'text-green-500',
+  Cancelled: 'text-red-500',
+}
 
 watch(activeTab, () => {
   if (activeTab.value === 'All') {
     filteredOrders.value = orders.value
-  } else if (activeTab.value === 'Pending Confirmation') {
-    filteredOrders.value = orders.value.filter((o) => o.order_status === 'Pending')
-    statusColor.value = 'text-orange-500'
-  } else if (activeTab.value === 'Repairing') {
-    filteredOrders.value = orders.value.filter((o) => o.order_status === 'Paid')
-    statusColor.value = 'text-orange-500'
-  } else if (activeTab.value === 'Ready for Pickup') {
-    filteredOrders.value = orders.value.filter((o) => o.order_status === 'Shipped')
+  } else {
+    filteredOrders.value = orders.value.filter((o) => o.order_status === activeTab.value)
   }
 })
 
@@ -109,7 +108,7 @@ onMounted(async () => {
     filteredOrders.value = orders.value
   } catch (err) {
     console.error('Get category failed: ', err)
-    alert('An unknown error occurred')
+    // alert('An unknown error occurred')
   }
 })
 
@@ -159,6 +158,57 @@ function selectCarrier(carrier: string) {
   selectedCarrier.value = carrier
   showCarrier.value = false
 }
+
+function changeTab(status: string){
+  activeTab.value = status
+}
+
+function showOperation(status: string){
+  if(status === 'Pending'){
+    return 'Confirm Order';
+  }
+  else if(status === 'Packing'){
+    return 'Packed and Shipped';
+  }
+  else if(status === 'Shipped'){
+    return 'Confirm Buyer Receipt';
+  }
+}
+
+async function updateStatus(order: SellerOrder){
+  const nextStatus = ref('');
+  if(order.order_status === 'Pending'){
+    nextStatus.value = 'Packing';
+  }
+  else if(order.order_status === 'Packing'){
+    nextStatus.value = 'Shipped';
+  }
+  else if(order.order_status === 'Shipped'){
+    nextStatus.value = 'Delivered';
+
+  }
+  else if(order.order_status === 'Delivered'){
+    nextStatus.value = 'Cancelled';
+  }
+  else if(order.order_status === 'Cancelled'){
+    nextStatus.value = 'Return';
+  }
+  try {
+    await notifyAsync(
+      apiClient.patch(`/shop/order/${order.order_id}/status`, {
+      status: nextStatus.value
+    })
+    );
+    order.order_status = nextStatus.value
+    notify(`Update status of order to ${nextStatus.value} successfully!`, 'success')
+    activeTab.value = 'All'
+  } catch (error) {
+    notify(`Update status of order to ${nextStatus.value} failed!`, 'error')
+
+    console.error('Update product failed:', error);
+  }
+}
+
 </script>
 <template>
   <div class="space-y-4">
@@ -303,7 +353,7 @@ function selectCarrier(carrier: string) {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead class="w-[50px]"><Checkbox v-model="checked_all"></Checkbox></TableHead>
+            <!-- <TableHead class="w-[50px]" v-if="activeTab !== 'All' && activeTab !== 'Delivered'"><Checkbox v-model="checked_all"></Checkbox></TableHead> -->
             <TableHead>Product</TableHead>
             <TableHead>Order Revenue </TableHead>
             <TableHead>Status</TableHead>
@@ -316,7 +366,7 @@ function selectCarrier(carrier: string) {
         <TableBody>
           <template v-if="filteredOrders.length > 0">
             <TableRow v-for="order in filteredOrders" :key="order.order_id" class="align-top">
-              <TableCell><Checkbox v-model="order.selected"></Checkbox></TableCell>
+              <!-- <TableCell v-if="activeTab !== 'All' && activeTab !== 'Delivered'"><Checkbox v-model="order.selected"></Checkbox></TableCell> -->
               <TableCell>
                 <div
                   v-for="item in order.order_items"
@@ -337,16 +387,28 @@ function selectCarrier(carrier: string) {
               </TableCell>
               <TableCell>0</TableCell>
               <TableCell>
-                <span :class="statusColor">{{ order.ship_status }}</span>
+                <span :class="statusColors[order.order_status]">
+                  {{ order.order_status }}
+                </span>
               </TableCell>
               <TableCell>{{ order.carrier_name }}</TableCell>
               <TableCell>{{ formatted(order.order_date) }}</TableCell>
               <TableCell>{{ formatted(order.actual_deliver_date) }}</TableCell>
               <TableCell>
-                <button
-                  class="inline-flex items-center gap-2 rounded-md text-sm font-medium transition-all focus-visible:ring-[3px] text-primary underline-offset-4 hover:underline text-blue-600"
+                <button v-if="activeTab === 'All'"
+                  class="inline-flex items-center gap-2 rounded-md text-sm font-medium transition-all focus-visible:ring-[3px] text-primary underline-offset-4 hover:underline text-[var(--red)] cursor-pointer"
+                  @click="changeTab(order.order_status)"
                 >
                   Details
+                </button>
+                <div v-else-if="activeTab === 'Cancelled' || activeTab === 'Delivered'"
+                  class="inline-flex items-center gap-2 text-sm text-gray-500 transition-all text-primary"
+                >
+                  No operation
+                </div>
+
+                <button v-else class="bg-[var(--red)] text-sm font-semibold text-white px-3 py-2 rounded hover:bg-red-600 cursor-pointer active:bg-red-200" @click="updateStatus(order)">
+                  {{ showOperation(order.order_status) }}
                 </button>
               </TableCell>
             </TableRow>

@@ -4,6 +4,7 @@ import FormSection from '@/components/layout/FormSection.vue'
 import apiClient from '@/api/client'
 import { PlusCircle, ChevronDown } from 'lucide-vue-next'
 import UploadImage from '@/components/ui/UploadImage.vue'
+import { notify, notifyAsync } from '@/utils/notify';
 import { type SellerProduct, type Category, type Subcategory } from '@/utils/interface'
 // Lấy dữ liệu từ form điền cho interface Product
 const newProduct = ref<SellerProduct>({
@@ -153,10 +154,14 @@ async function handleSave() {
     const prod_id = response.data.product.id;
 
     alert(newProduct.value.variants)
-    await apiClient.post('/products/insert_variants', {
+    await notifyAsync(
+      apiClient.post('/products/insert_variants', {
       product_id: prod_id,
       variants: newProduct.value.variants
-    });
+    })
+  );
+
+    notify("Add new product successfully!", 'success');
     newProduct.value = {
       id: '',
       name: '',
@@ -186,6 +191,8 @@ async function handleSave() {
     selectedSubcategory.value = 'Cnoose Subcategory'
     emit('cancel')
   } catch (error) {
+    notify("Add new product failed!", 'error');
+
     console.error('Subcategory insertion failed:', error);
   }
 }
