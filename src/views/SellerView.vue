@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, type Ref, computed, onMounted } from 'vue'
+import { ref, type Ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import {type Notification } from '@/utils/interface'
+import { type Notification, type SellerOrder, type SellerOrderItem } from '@/utils/interface'
 import { Bell } from 'lucide-vue-next'
 import AddProductView from './AddProductView.vue'
 import SellerDashBoard from './SellerDashBoard.vue'
@@ -21,16 +21,14 @@ const username = ref('')
 const isLoggedIn = ref(true)
 const isShowingNotificationsDropdown: Ref<boolean> = ref(false)
 const notifications = ref<Notification[]>([])
+const orders = ref<SellerOrder[]>([])
+const shopId = localStorage.getItem('id')
 
 const sidebarNav = {
   'Order Management': ['All Orders', 'Order Handover'],
   'Product Management': ['All Products', 'Add New Product'],
-  'Marketing Centre': [
-    'Marketing Centre',
-    'Shop Promotions',
-    'Shop Vouchers'
-  ],
-  'Customer Service': ['Review Management']
+  'Marketing Centre': ['Marketing Centre', 'Shop Promotions', 'Shop Vouchers'],
+  'Customer Service': ['Review Management'],
 }
 
 function handleAddProduct() {
@@ -44,7 +42,6 @@ function handleNavClick(item: string) {
   else if (item === 'Marketing Centre') activeView.value = 'marketing'
   else if (item === 'Shop Promotions') activeView.value = 'program'
   else if (item === 'Shop Vouchers') activeView.value = 'voucher'
-
 }
 
 const currentView = computed(() => {
@@ -67,7 +64,6 @@ const currentView = computed(() => {
   }
 })
 
-
 function toggleUserMenu() {
   isUserMenuOpen.value = !isUserMenuOpen.value
 }
@@ -81,8 +77,6 @@ const handleLogout: () => Promise<void> = async () => {
   router.push('/sellerlog')
 }
 
-
-
 onMounted(async () => {
   const cookie = await cookieStore.get('connect.sid')
   const role = localStorage.getItem('role')
@@ -90,13 +84,14 @@ onMounted(async () => {
   if (!cookie) {
     router.push('/sellerlog')
     return
-  }
-  else if(role === 'buyer'){
+  } else if (role === 'buyer') {
     router.push('/')
-  }
-  else{
+  } else {
     username.value = localStorage.getItem('username') || ''
     RetrieveNotifications()
+    if (activeView.value === 'dashboard') {
+      await retrieveOrders()
+    }
     if (username.value) {
       setTimeout(() => {
         isLoading.value = false
@@ -134,21 +129,93 @@ async function UpdateReadStatus() {
   isShowingNotificationsDropdown.value = false
 }
 
-function handleNotification(){
+function handleNotification() {
   isShowingNotificationsDropdown.value = !isShowingNotificationsDropdown.value
-  if(isShowingNotificationsDropdown.value){
-    RetrieveNotifications();
+  if (!isShowingNotificationsDropdown.value) {
+    UpdateReadStatus()
   }
-  else{
-    UpdateReadStatus();
+  // if (isShowingNotificationsDropdown.value) {
+  //   RetrieveNotifications()
+  // } else {
+  //   UpdateReadStatus()
+  // }
+}
+
+async function retrieveOrders() {
+  if (!shopId) return
+  try {
+    const res = await apiClient.get(`/shop/orders/${shopId}`)
+    const orderItems: SellerOrderItem[] = res.data.orderItems.map((item: SellerOrderItem) => ({
+      order_id: item.order_id,
+      product_id: item.product_id,
+      variant_id: item.variant_id,
+      product_name: item.product_name,
+      variant_name: item.variant_name,
+      image_url: item.image_url,
+      order_item_id: item.order_item_id,
+      quantity: item.quantity,
+      total_amount: item.total_amount,
+      order_status: item.order_status,
+      order_date: item.order_date,
+      carrier_id: item.carrier_id,
+      carrier_name: item.carrier_name,
+      shipment_id: item.shipment_id,
+      ship_status: item.ship_status,
+      actual_deliver_date: item.actual_deliver_date,
+    }))
+
+    const groupedOrders: Record<string, SellerOrder> = {}
+    orderItems.forEach((item) => {
+      if (!groupedOrders[item.order_id]) {
+        groupedOrders[item.order_id] = {
+          order_id: item.order_id,
+          order_status: item.order_status,
+          order_date: item.order_date,
+          actual_deliver_date: item.actual_deliver_date,
+          ship_status: item.ship_status,
+          carrier_name: item.carrier_name,
+          order_items: [],
+          selected: false,
+        }
+      }
+      if (groupedOrders[item.order_id] && item.order_id) {
+        groupedOrders[item.order_id]?.order_items?.push(item)
+      }
+    })
+
+    orders.value = Object.values(groupedOrders)
+  } catch (err) {
+    console.error('Get orders failed: ', err)
   }
 }
+
+const orderStatistics = computed(() => {
+  return {
+    pending: orders.value.filter((o) => o.order_status === 'Pending').length,
+    paid: orders.value.filter((o) => o.order_status === 'Paid').length,
+    packing: orders.value.filter((o) => o.order_status === 'Packing').length,
+    delivering: orders.value.filter((o) => o.order_status === 'Delivering').length,
+    delivered: orders.value.filter((o) => o.order_status === 'Delivered').length,
+    cancelled: orders.value.filter((o) => o.order_status === 'Cancelled').length,
+    returned: orders.value.filter((o) => o.order_status === 'Return').length,
+  }
+})
+
+// Fetch orders when dashboard is displayed
+watch(activeView, (newView) => {
+  if (newView === 'dashboard') {
+    retrieveOrders()
+  }
+})
 </script>
 <template>
   <div class="min-h-screen bg-gray-100 flex">
     <!-- Sidebar -->
     <aside class="w-64 bg-white text-gray-800 flex flex-col border-r border-gray-300 flex-shrink-0">
-      <div class="p-4 bg-[rgb(189,6,4)] text-white shadow cursor-pointer" @click="activeView = 'dashboard'">
+      <div
+        class="p-4 bg-[rgb(189,6,4)] text-white shadow cursor-pointer"
+        @click="activeView = 'dashboard'"
+      >
         <h2 class="text-xl font-semibold">BuyIt Seller Centre</h2>
       </div>
       <nav class="flex-1 overflow-y-auto">
@@ -170,7 +237,9 @@ function handleNotification(){
 
     <!-- Main Content -->
     <div class="flex-1 flex flex-col overflow-hidden">
-      <header class="bg-[rgb(189,6,4)] text-white p-4 flex items-center justify-between flex-shrink-0">
+      <header
+        class="bg-[rgb(189,6,4)] text-white p-4 flex items-center justify-between flex-shrink-0"
+      >
         <div class="flex items-center gap-4 ml-auto">
           <div class="relative">
             <button
@@ -181,7 +250,7 @@ function handleNotification(){
               <Bell class="w-5 h-5" />
               <span
                 class="absolute -top-1 -right-1 w-2 h-2 bg-orange-400 rounded-full"
-                v-if="notifications.length > 0"
+                v-if="notifications.some((notification) => !notification.is_read)"
               ></span>
             </button>
             <div
@@ -221,15 +290,16 @@ function handleNotification(){
       <main class="flex-1 p-6 overflow-y-auto">
         <component
           :is="currentView"
+          v-bind="activeView === 'dashboard' ? orderStatistics : {}"
           @add-new-product="() => (activeView = 'add-product')"
           @cancel="() => (activeView = 'all-products')"
           @save="handleAddProduct"
           @voucher="() => (activeView = 'voucher')"
           @program="() => (activeView = 'program')"
+          @update:status="RetrieveNotifications"
         />
       </main>
     </div>
   </div>
 </template>
-<style scoped>
-</style>
+<style scoped></style>

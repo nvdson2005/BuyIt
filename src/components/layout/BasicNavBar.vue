@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-import { defineProps } from 'vue'
 import { useRouter } from 'vue-router'
 const router = useRouter()
 const props = defineProps({
@@ -25,8 +24,8 @@ function navigateToHome() {
   router.push({ name: 'home' })
 }
 
-function navigateToSeller(){
-  router.push({name:'sellerlog'})
+function navigateToSeller() {
+  router.push({ name: 'sellerlog' })
 }
 </script>
 <template>
@@ -43,10 +42,16 @@ function navigateToSeller(){
       <span class="ml-6 text-white font-medium">{{ title }}</span>
     </div>
     <div class="ml-auto flex items-center gap-6">
-      <button @click="navigateToSeller" class="hover:text-white hover:underline text-gray-200 cursor-pointer">
-      Kênh người bán
+      <button
+        @click="navigateToSeller"
+        class="hover:text-white hover:underline text-gray-200 cursor-pointer"
+      >
+        Seller Login
       </button>
-      <button @click="navigateToHelp" class="hover:text-white hover:underline text-gray-200 cursor-pointer">
+      <button
+        @click="navigateToHelp"
+        class="hover:text-white hover:underline text-gray-200 cursor-pointer"
+      >
         Need Support?
       </button>
     </div>
