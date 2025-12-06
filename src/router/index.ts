@@ -20,6 +20,7 @@ import SearchResultView from '@/views/SearchResultView.vue'
 import CustomerServiceView from '@/views/CustomerServiceView.vue'
 import AboutView from '@/views/AboutView.vue'
 import PaymentView from '@/views/PaymentView.vue'
+import ShopHomeView from '@/views/ShopHomeView.vue'
 const router = createRouter({
   history: createWebHistory(),
   routes: [
@@ -128,6 +129,11 @@ const router = createRouter({
       name: 'payment',
       component: PaymentView,
     },
+    {
+      path: '/shop/:id',
+      name: 'shop',
+      component: ShopHomeView
+    }
   ],
 })
 

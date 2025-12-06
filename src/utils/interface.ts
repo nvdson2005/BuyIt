@@ -273,3 +273,13 @@ export interface Notification {
   created_at: Date
   is_read: boolean
 }
+
+
+export interface UserVoucher {
+  id: string
+  buyer_id: string
+  voucher_id: string
+  claim_date: Date
+  used_date: Date
+  is_used: boolean
+}
