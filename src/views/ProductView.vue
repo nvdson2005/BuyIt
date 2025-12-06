@@ -12,7 +12,7 @@ import {
   type Review,
 } from '@/utils/interface'
 import { onMounted, ref, computed, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import LoadingScreen from '@/components/layout/LoadingScreen.vue'
 import ProductCard from '@/components/ui/ProductCard.vue'
 import { notify } from '@/utils/notify'
@@ -21,6 +21,7 @@ import { AxiosError } from 'axios'
 const product = ref<ApiProduct | null>(null)
 const shop = ref<Shop | null>(null)
 const route = useRoute()
+const router = useRouter()
 // const router = useRouter()
 const isLoading = ref(true)
 const quantity = ref(1)
@@ -136,10 +137,9 @@ async function OnAddToCart() {
 // }
 
 const onNavigateToShop = () => {
-  console.log('Navigating to shop page...')
-  // if (shop.value) {
-  //   router.push({ name: 'shop', params: { id: shop.value.id } })
-  // }
+  if (shop.value) {
+    router.push({ name: 'shop', params: { id: shop.value.id } })
+  }
 }
 </script>
 <template>
@@ -262,8 +262,8 @@ const onNavigateToShop = () => {
         <div class="mt-4 flex gap-2">
           <button v-for="variant in productVariants" :key="variant.variant_id" class="p-0">
             <div
-              class="w-fit h-fit border rounded flex items-center justify-center cursor-pointer hover:shadow-md"
-              :class="[chosenVariant == variant ? 'border-rose-500 shadow-md' : 'border-gray-300']"
+              class="w-full px-4 py-2 border rounded text-white hover:bg-gray-50 cursor-pointer hover:shadow-md"
+              :class="[chosenVariant == variant ? 'border-rose-500 shadow-md bg-red-50' : 'border-gray-300']"
               @click="
                 () => {
                   chosenVariant = variant
@@ -316,7 +316,7 @@ const onNavigateToShop = () => {
       <div class="flex items-center gap-4">
         <img class="w-14 h-14 rounded object-cover" />
         <div>
-          <div class="font-semibold text-slate-800">{{ shop?.name }}</div>
+          <div class="font-semibold text-slate-800 cursor-pointer" @click="onNavigateToShop()">{{ shop?.name }}</div>
           <div class="text-xs text-slate-500 mt-1">
             {{ shop?.followers }} followers | {{ shop?.rating }}
             <span class="text-yellow-400">★</span>
@@ -344,7 +344,7 @@ const onNavigateToShop = () => {
           Chat
         </button>
         <button
-          class="border border-gray-300 px-6 py-2 rounded text-slate-700 hover:bg-gray-50 flex items-center gap-2"
+          class="border border-gray-300 px-6 py-2 rounded text-slate-700 hover:bg-gray-50 flex items-center gap-2 cursor-pointer"
           @click="
             (e) => {
               e.preventDefault()
