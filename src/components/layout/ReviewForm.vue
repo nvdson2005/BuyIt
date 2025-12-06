@@ -1,9 +1,9 @@
 <script lang="ts" setup>
 
-  import { defineProps, defineEmits, ref } from 'vue';
+  import {ref } from 'vue';
   import {type BuyerOrder, type Review} from '@/utils/interface';
   import CustomImage from '../ui/CustomImage.vue';
-  import ReviewImage from '../ui/ReviewImage.vue';
+  import UploadImageButton from '../ui/UploadImageButton.vue';
   import { Star } from 'lucide-vue-next';
   import apiClient from '@/api/client';
   const props = defineProps<{
@@ -118,7 +118,7 @@
             rows="5"
           ></textarea>
         </div>
-        <ReviewImage v-model="reviews[index]!.image_url"></ReviewImage>
+        <UploadImageButton v-model="reviews[index]!.image_url"></UploadImageButton>
       </div>
     </div>
     <p v-if="rateError" class="text-sm text-red-600 mb-2">Please rate products before confirm!</p>
