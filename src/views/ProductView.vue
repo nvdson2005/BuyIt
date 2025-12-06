@@ -32,42 +32,50 @@ const reviews = ref<Review[]>([])
 
 const fetchAllDatas = async () => {
   try {
+    isLoading.value = true
+
     const response = await apiClient.get<ProductInfoResponse>(`/products/info/${route.params.id}`)
     product.value = response.data.product || null
-    // console.log('Fetched product details:', response.data.product)
+
     productAttributes.value = response.data.product.attributes || []
-    // console.log('Product attributes:', productAttributes.value)
+    productVariants.value = response.data.product.variants || []
 
-    if (product.value) {
-      // Fetch shop details
-      const shopResponse = await apiClient.get(`/shop/get-detail/${product.value.shop_id}`)
-      // console.log('Fetched shop details:', shopResponse.data.shop)
-      shop.value = shopResponse.data.shop
+    isLoading.value = false
 
-      // Set variants from the product response
-      productVariants.value = product.value.variants || []
-      // console.log('Product variants:', productVariants.value)
+    if (!product.value) {
+      return
     }
 
-    // Fetch recommended products
-    const recommendedResponse = await apiClient.get(`/products/explore-today`)
-    recommendedProducts.value = recommendedResponse.data.products
-    // console.log('Fetched recommended products:', recommendedProducts.value)
+    // Set up parallel requests
+    const promises = {
+      shop: apiClient.get(`/shop/get-detail/${product.value.shop_id}`),
+      reviews: apiClient.get(`/products/${product.value.id}/reviews`),
+      recommended: apiClient.get(`/products/explore-today`),
+      otherProducts: apiClient.get(
+        `/products/random/${product.value.sub_category_id}?excludeProductId=${product.value.id}`,
+      ),
+    }
 
+    // Parallel fetch
+    const [shopResponse, reviewsResponse, recommendedResponse, otherProductsResponse] =
+      await Promise.allSettled(Object.values(promises))
+    shop.value = shopResponse?.status === 'fulfilled' ? shopResponse.value?.data.shop : null
+    reviews.value =
+      reviewsResponse?.status === 'fulfilled' ? reviewsResponse.value?.data.reviews : []
+    recommendedProducts.value =
+      recommendedResponse?.status === 'fulfilled' ? recommendedResponse.value?.data.products : []
+    const otherProducts =
+      otherProductsResponse?.status === 'fulfilled'
+        ? otherProductsResponse.value?.data.products
+        : []
+    if (recommendedProducts.value.length <= 5) {
+      recommendedProducts.value = [...recommendedProducts.value, ...otherProducts]
+    }
 
-
-    // Fetch reviews
-    const reviewsResponse = await apiClient.get(`/products/${product.value?.id}/reviews`)
-    reviews.value = reviewsResponse.data.reviews || []
-
-    const otherProductsResponse = await apiClient.get(
-      `/products/random/${product.value?.sub_category_id}?excludeProductId=${product.value?.id}`,
-    )
-    recommendedProducts.value = otherProductsResponse.data?.products
-    // console.log('Fetched product reviews:', reviews.value)
+    isLoading.value = false
   } catch (error) {
     console.error('Error fetching product data:', error)
-  } finally {
+    notify('Failed to fetch product data. Please try again later.', 'error')
     isLoading.value = false
   }
 }
@@ -372,44 +380,6 @@ const onNavigateToShop = () => {
     </div>
     <!-- Product Suggestion Grids -->
     <div class="w-full max-w-6xl flex flex-col gap-6">
-      <!-- <div class="bg-white rounded-xl shadow p-6"> -->
-      <!-- <div class="font-semibold text-slate-700 mb-4">You May Also Like</div>
-        <div class="grid grid-cols-5 gap-4"> -->
-      <!-- Suggestion Card Example -->
-      <!-- <div
-            v-for="i in 5"
-            :key="'suggest-' + i"
-            class="bg-white rounded-xl border p-3 shadow-sm hover:shadow-md transition"
-          >
-            <div class="relative">
-              <div
-                class="absolute left-2 top-2 bg-yellow-400 text-[10px] font-semibold text-black px-2 py-0.5 rounded"
-              >
-                Flash Sale
-              </div>
-              <div
-                class="absolute right-2 top-2 bg-rose-500 text-[10px] text-white px-2 py-0.5 rounded"
-              >
-                -28%
-              </div>
-              <img alt="" class="object-cover h-32 w-full rounded" />
-            </div>
-            <div class="mt-2 text-sm font-medium text-slate-800 line-clamp-2">
-              Laptop Dell Inspiron 15 3520 i5-1235U RAM 8GB SSD 256GB 15.6" FHD
-            </div>
-            <div class="mt-1 flex items-baseline gap-2">
-              <div class="text-rose-500 font-semibold text-base">₫12,990.00</div>
-              <div class="text-xs text-slate-400 line-through">₫17,990.00</div>
-            </div>
-            <div class="mt-1 flex items-center gap-2 text-xs text-slate-500">
-              <span class="text-yellow-400">★</span>
-              <span>4.7</span>
-              <span>890 sold</span>
-            </div>
-          </div> -->
-      <!-- </div> -->
-      <!-- </div> -->
-      <!-- Other Shop Products -->
       <div class="bg-white rounded-xl shadow p-6">
         <div class="font-semibold text-slate-700 mb-4">Other products</div>
         <div class="grid grid-cols-5 gap-4">
