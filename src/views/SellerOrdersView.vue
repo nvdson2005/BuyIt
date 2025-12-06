@@ -31,7 +31,7 @@ const tabs = [
   'All',
   'Pending',
   'Packing',
-  'Shipped',
+  'Delivering',
   'Delivered',
   'Cancelled',
 ]
@@ -41,7 +41,7 @@ const filteredOrders = ref<SellerOrder[]>([])
 const statusColors: Record<string, string> = {
   Pending: 'text-orange-600',
   Packing: 'text-orange-400',
-  Shipped: 'text-blue-400',
+  Delivering: 'text-blue-400',
   Delivered: 'text-green-500',
   Cancelled: 'text-red-500',
 }
@@ -168,9 +168,9 @@ function showOperation(status: string){
     return 'Confirm Order';
   }
   else if(status === 'Packing'){
-    return 'Packed and Shipped';
+    return 'Packed and Delivering';
   }
-  else if(status === 'Shipped'){
+  else if(status === 'Delivering'){
     return 'Confirm Buyer Receipt';
   }
 }
@@ -181,9 +181,9 @@ async function updateStatus(order: SellerOrder){
     nextStatus.value = 'Packing';
   }
   else if(order.order_status === 'Packing'){
-    nextStatus.value = 'Shipped';
+    nextStatus.value = 'Delivering';
   }
-  else if(order.order_status === 'Shipped'){
+  else if(order.order_status === 'Delivering'){
     nextStatus.value = 'Delivered';
 
   }

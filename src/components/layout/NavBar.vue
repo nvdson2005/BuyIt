@@ -3,7 +3,7 @@ import SearchButton from '../ui/SearchButton.vue'
 import ShopButton from '../ui/ShopButton.vue'
 import { useRouter } from 'vue-router'
 import { CircleUserRound, Package, LogOut, Bell, ChevronDown, Globe } from 'lucide-vue-next'
-import { ref, type Ref, computed, onMounted, watch, onUnmounted } from 'vue'
+import { ref, type Ref, computed, onMounted, watch } from 'vue'
 import apiClient from '@/api/client'
 import type { Notification } from '@/utils/interface'
 import NotificationItem from '../ui/NotificationItem.vue'
@@ -58,11 +58,11 @@ const handleSearch = (e: KeyboardEvent) => {
   }
 }
 
-onUnmounted(() => {
-  UpdateReadStatus().catch((error) => {
-    console.error('Error updating read status:', error)
-  })
-})
+// onUnmounted(() => {
+//   UpdateReadStatus().catch((error) => {
+//     console.error('Error updating read status:', error)
+//   })
+// })
 
 onMounted(() => {
   const storedUsername = localStorage.getItem('username')
@@ -91,6 +91,16 @@ watch(isShowingDropdown, (value) => {
     }, 0)
   }
 })
+
+function handleNotification(){
+  isShowingNotificationsDropdown.value = !isShowingNotificationsDropdown.value
+  if(isShowingNotificationsDropdown.value){
+    RetrieveNotifications();
+  }
+  else{
+    UpdateReadStatus()
+  }
+}
 </script>
 
 <template>
@@ -117,7 +127,7 @@ watch(isShowingDropdown, (value) => {
               v-if="loginStatus"
               class="hover:text-orange-200 transition-colors relative cursor-pointer"
               title="Notifications"
-              @click="isShowingNotificationsDropdown = !isShowingNotificationsDropdown"
+              @click="handleNotification"
             >
               <Bell class="w-5 h-5" />
               <span
