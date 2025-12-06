@@ -8,6 +8,7 @@ export interface CartItem {
   image_url: string
   product_name: string
   stock_quantity: number
+  shop_id: string
 }
 
 export interface Product {
@@ -282,4 +283,12 @@ export interface UserVoucher {
   claim_date: Date
   used_date: Date
   is_used: boolean
+  shop_id: string | null
+  discount_amount: number
+  min_amount_to_apply: number
+  max_discount_amount: number
+  discount_type: 'percentage' | 'fixed_amount'
+  applicable_scope: 'shop' | 'platform'
+  start_date: Date
+  expiry_date: Date
 }

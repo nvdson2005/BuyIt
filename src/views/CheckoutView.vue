@@ -6,7 +6,8 @@ import { notify, notifyAsync } from '@/utils/notify'
 import PageFooter from '@/components/layout/PageFooter.vue'
 import CustomImage from '@/components/ui/CustomImage.vue'
 import apiClient from '@/api/client'
-import type { Address, Payment, PaymentMethod, CartItem } from '@/utils/interface'
+import VoucherSelector from '@/components/layout/VoucherSelector.vue'
+import type { Address, Payment, PaymentMethod, CartItem, UserVoucher } from '@/utils/interface'
 
 const router = useRouter()
 const route = useRoute()
@@ -20,7 +21,8 @@ const selectedAddress = ref('')
 const shippingMethod = ref('express')
 const showAddressDialog = ref(false)
 const showNewAddressForm = ref(false)
-
+const userVouchers = ref<UserVoucher[] | null>(null)
+const selectedVoucher = ref<UserVoucher | null>(null)
 // Computed
 const item_ids = computed(() => {
   const ids = route.query.ids
@@ -33,11 +35,25 @@ const item_ids = computed(() => {
   return []
 })
 const card_methods = computed(() => methods.value.filter((m) => m.name === 'Online Banking'))
+const discount_subtotal = computed(() =>{
+  if(selectedVoucher.value !== null){
+    if(selectedVoucher.value?.discount_type === 'fixed_amount'){
+      return subtotal.value - selectedVoucher.value.discount_amount
+    }
+    else{
+      return subtotal.value*(1-selectedVoucher.value.discount_amount/100)
+    }
+  }
+  else{
+    return subtotal.value
+  }
+}
+)
 const subtotal = computed(() =>
   checkoutItems.value.reduce((total, item) => total + item.price * item.quantity, 0),
 )
 const shippingFee = computed(() => (shippingMethod.value === 'express' ? 17000 : 0))
-const total = computed(() => subtotal.value + shippingFee.value)
+const total = computed(() => discount_subtotal.value + shippingFee.value)
 const payment = ref<Payment>({
   method_name: 'Cash',
   method_id: '',
@@ -136,7 +152,9 @@ const handlePlaceOrder = async () => {
       shippingCost: shippingFee.value,
     })
     );
-
+    if(selectedVoucher.value !== null){
+      await apiClient.patch(`buyer/use-voucher/${selectedVoucher.value.id}`)
+    }
     notify("Place Order successfully!", 'success')
     router.back()
   } catch (error) {
@@ -155,29 +173,15 @@ onMounted(async () => {
       apiClient.get(`/products/get-by-items/${item_ids.value.join(',')}`),
       apiClient.get<{ addresses: Address[] }>(`/user/addresses`),
       apiClient.get(`/buyer/payments`),
+
     ])
-
-    checkoutItems.value = productsRes.data.products.map((item: CartItem) => ({
-      id: item.id,
-      quantity: item.quantity,
-      prod_id: item.prod_id,
-      prod_var_id: item.prod_var_id,
-      variant_name: item.variant_name,
-      price: item.price,
-      image_url: item.image_url,
-      product_name: item.product_name,
-      stock_quantity: item.stock_quantity,
-    }))
-
+    checkoutItems.value = productsRes.data.products
     addresses.value = addressRes.data.addresses
-    methods.value = methodsRes.data.payments.map((method: PaymentMethod) => ({
-      name: method.name,
-      method_id: method.method_id,
-      option_id: method.option_id,
-      account_number: method.account_number,
-      is_default: method.is_default,
-    }))
+    methods.value = methodsRes.data.payments
     currentAddress.value = addresses.value.find((addr) => addr.is_default) || addresses.value[0]
+    const uservoucher_response = await apiClient.get(`/buyer/user-vouchers/${checkoutItems.value[0]?.shop_id}`)
+    userVouchers.value = uservoucher_response.data.userVouchers.filter((v: UserVoucher) => v.is_used === false)
+
   } catch (err) {
     console.error('Getting data failed:', err)
   }
@@ -328,16 +332,36 @@ onMounted(async () => {
         </div>
       </div>
 
+      <!-- VOUCHER -->
+      <div class="bg-white rounded-lg shadow-sm p-6 mb-4">
+        <h3 class="mb-4 font-semibold">Voucher</h3>
+        <VoucherSelector
+          v-model="selectedVoucher"
+          :vouchers="userVouchers"
+        />
+
+      </div>
       <!-- ORDER SUMMARY -->
       <div class="bg-white rounded-lg shadow-sm p-6">
         <div class="space-y-3 mb-6">
           <div class="flex justify-between text-gray-600">
             <span>Merchandise Subtotal</span>
-            <span>₫{{ subtotal.toLocaleString('vi-VN') }}</span>
+            <div class="flex flex-col text-right">
+            <span
+            :class="selectedVoucher !== null? 'text-gray-500 line-through':'text-[var(--red)]'">
+              ₫{{ subtotal.toLocaleString('vi-VN') }}
+            </span>
+            <span v-if="selectedVoucher !== null"
+                class="text-[var(--red)]">
+              ₫{{ discount_subtotal.toLocaleString('vi-VN') }}
+            </span>
+            </div>
           </div>
           <div class="flex justify-between text-gray-600">
             <span>Shipping Subtotal</span>
-            <span>₫{{ shippingFee.toLocaleString('vi-VN') }}</span>
+            <span class="text-[var(--red)]">
+            ₫{{ shippingFee.toLocaleString('vi-VN') }}
+          </span>
           </div>
           <div class="border-t border-gray-300 pt-3 flex justify-between items-center">
             <span>Total Payment</span>
