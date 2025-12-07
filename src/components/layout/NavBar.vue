@@ -45,11 +45,11 @@ const navigateToSeller: () => void = () => {
 
 const logOut: () => Promise<void> = async () => {
   isLoggedIn.value = false
-  await cookieStore.delete('connect.sid')
   localStorage.removeItem('username')
   localStorage.removeItem('role')
   localStorage.removeItem('id')
   router.push('/login')
+  await cookieStore.delete('connect.sid')
 }
 
 const handleSearch = (e: KeyboardEvent) => {
@@ -92,19 +92,17 @@ watch(isShowingDropdown, (value) => {
   }
 })
 
-function handleNotification(){
+function handleNotification() {
   isShowingNotificationsDropdown.value = !isShowingNotificationsDropdown.value
-  if(isShowingNotificationsDropdown.value){
-    RetrieveNotifications();
-  }
-  else{
+  if (isShowingNotificationsDropdown.value) {
+    RetrieveNotifications()
+  } else {
     UpdateReadStatus()
   }
 }
 </script>
 
 <template>
-
   <nav class="w-full bg-(--red) text-white shadow-md sticky top-0 z-50">
     <!-- Top Bar -->
     <div class="w-full max-w-7xl mx-auto px-4 lg:px-8">
