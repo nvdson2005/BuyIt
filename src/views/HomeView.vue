@@ -2,7 +2,6 @@
 import '../assets/styles/Variables.css'
 import NavBar from '@/components/layout/NavBar.vue'
 import SlideNotification from '@/components/layout/SlideNotification.vue'
-import MainPageHighlightPanel from '@/components/layout/MainPageHighlightPanel.vue'
 import MainPageCategoryPanel from '@/components/layout/MainPageCategoryPanel.vue'
 import MainPageFlashSalePanel from '@/components/layout/MainPageFlashSalePanel.vue'
 import PageFooter from '@/components/layout/PageFooter.vue'
@@ -14,30 +13,42 @@ import router from '@/router'
 const isLoading = ref(true)
 const username = ref('')
 onMounted(async () => {
-  const cookie = await cookieStore.get('connect.sid')
+  const usernameLocalStorage = localStorage.getItem('username') || ''
   const role = localStorage.getItem('role')
 
-  if (!cookie) {
-    router.push('/login')
-    return
-  } else if (role === 'shop') {
+  console.log('Username:', username)
+  console.log('Role:', role)
+
+  // Use localStorage as primary check since cookie might be httpOnly
+  if (!usernameLocalStorage) {
+    // Try to check cookie as fallback, but don't rely on it
+    const cookie = await cookieStore.get('connect.sid').catch(() => null)
+    console.log('Cookie check (may be null if httpOnly):', cookie)
+
+    if (!cookie) {
+      router.push('/login')
+      return
+    }
+  }
+
+  if (role === 'shop') {
     router.push('/dashboard')
     return
-  } else {
-    username.value = localStorage.getItem('username') || ''
-    if (username.value) {
-      setTimeout(() => {
-        isLoading.value = false
-      }, 1000)
-      return
-    } else {
-      await RetrieveUsername()
-      isLoading.value = false
-    }
+  }
+
+  username.value = usernameLocalStorage || ''
+  if (username.value) {
     setTimeout(() => {
       isLoading.value = false
     }, 1000)
+    return
+  } else {
+    await RetrieveUsername()
+    isLoading.value = false
   }
+  setTimeout(() => {
+    isLoading.value = false
+  }, 1000)
 })
 
 async function RetrieveUsername() {
