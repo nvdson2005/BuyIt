@@ -2,7 +2,6 @@
 import '../assets/styles/Variables.css'
 import NavBar from '@/components/layout/NavBar.vue'
 import SlideNotification from '@/components/layout/SlideNotification.vue'
-import MainPageHighlightPanel from '@/components/layout/MainPageHighlightPanel.vue'
 import MainPageCategoryPanel from '@/components/layout/MainPageCategoryPanel.vue'
 import MainPageFlashSalePanel from '@/components/layout/MainPageFlashSalePanel.vue'
 import PageFooter from '@/components/layout/PageFooter.vue'
@@ -72,6 +71,7 @@ async function RetrieveUsername() {
     <div class="w-full">
       <PageFooter />
     </div>
+    <RouterView />
     <ChatBot />
   </div>
   <div v-else>
