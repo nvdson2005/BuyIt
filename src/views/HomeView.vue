@@ -5,7 +5,6 @@ import SlideNotification from '@/components/layout/SlideNotification.vue'
 import MainPageCategoryPanel from '@/components/layout/MainPageCategoryPanel.vue'
 import MainPageFlashSalePanel from '@/components/layout/MainPageFlashSalePanel.vue'
 import PageFooter from '@/components/layout/PageFooter.vue'
-import ChatBot from '@/components/layout/ChatBot.vue'
 import LoadingScreen from '@/components/layout/LoadingScreen.vue'
 import apiClient from '@/api/client'
 import { onMounted, ref } from 'vue'
@@ -83,8 +82,6 @@ async function RetrieveUsername() {
     <div class="w-full">
       <PageFooter />
     </div>
-    <RouterView />
-    <ChatBot />
   </div>
   <div v-else>
     <LoadingScreen />

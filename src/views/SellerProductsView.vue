@@ -74,7 +74,7 @@ watch(tab, (tabChange) => {
 
 onMounted(async () => {
   try {
-    const response = await apiClient.get(`/shop/get-by-shopid/${shopId}`)
+    const response = await apiClient.get(`/shop/get-products/${shopId}`)
     const subcategory_res = await apiClient.get(`/category/subcategories/${shopId}`)
     products.value = response.data.products.map((p: SellerProductShow) => ({
       id: p.id,

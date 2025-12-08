@@ -48,6 +48,17 @@ const logOut: () => Promise<void> = async () => {
   localStorage.removeItem('username')
   localStorage.removeItem('role')
   localStorage.removeItem('id')
+  window.botpress.updateUser({
+    data: {
+      userId: '',
+      role: ''
+
+    },
+  });
+  window.botpress.close();
+  // Tạm thời không thể restart
+  // await window.botpress.restartConversation();
+
   router.push('/login')
   await cookieStore.delete('connect.sid')
 }

@@ -74,6 +74,14 @@ const handleLogout: () => Promise<void> = async () => {
   localStorage.removeItem('username')
   localStorage.removeItem('role')
   localStorage.removeItem('id')
+  window.botpress.updateUser({
+    data: {
+      userId: '',
+      role: ''
+
+    },
+  });
+  window.botpress.close()
   router.push('/sellerlog')
 }
 

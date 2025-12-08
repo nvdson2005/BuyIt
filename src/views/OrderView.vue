@@ -6,7 +6,6 @@ import { OrderFilterOptions } from '@/utils/enum'
 import { Search, Store, CalendarCheck2 } from 'lucide-vue-next'
 import CustomImage from '@/components/ui/CustomImage.vue'
 import apiClient from '@/api/client'
-import UploadImageButton from '@/components/ui/UploadImageButton.vue'
 import { type BuyerOrder } from '@/utils/interface'
 import { notify, notifyAsync } from '@/utils/notify'
 const selectedFilterOption: Ref<OrderFilterOptions> = ref(OrderFilterOptions.ALL)
