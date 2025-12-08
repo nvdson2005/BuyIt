@@ -140,7 +140,7 @@ function handleNotification() {
               <Bell class="w-5 h-5" />
               <span
                 class="absolute -top-1 -right-1 w-2 h-2 bg-orange-400 rounded-full"
-                v-if="notifications.length > 0"
+                v-if="notifications.some((notification) => !notification.is_read)"
               ></span>
             </button>
             <div
