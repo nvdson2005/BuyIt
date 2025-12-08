@@ -5,8 +5,11 @@ import { ChevronDown } from 'lucide-vue-next'
 import CustomImage from '@/components/ui/CustomImage.vue'
 import { type SellerOrder, type SellerOrderItem } from '@/utils/interface'
 import apiClient from '@/api/client'
-import { notify, notifyAsync } from '@/utils/notify';
+import { notify, notifyAsync } from '@/utils/notify'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/utils/Table.ts'
+import SellerDashBoard from '@/views/SellerDashBoard.vue'
+
+const emit = defineEmits(['update:status'])
 
 const checked_all = ref(false)
 const isOpen = ref(true)
@@ -27,17 +30,10 @@ const toggleAccordion = () => {
   isOpen.value = !isOpen.value
 }
 
-const tabs = [
-  'All',
-  'Pending',
-  'Packing',
-  'Delivering',
-  'Delivered',
-  'Cancelled',
-]
+const tabs = ['All', 'Pending', 'Packing', 'Delivering', 'Delivered', 'Cancelled']
 
 const activeTab = ref('All')
-const filteredOrders = ref<SellerOrder[]>([])
+const filteredOrders = ref<SellerOrder[]>(orders.value)
 const statusColors: Record<string, string> = {
   Pending: 'text-orange-600',
   Packing: 'text-orange-400',
@@ -46,13 +42,41 @@ const statusColors: Record<string, string> = {
   Cancelled: 'text-red-500',
 }
 
-watch(activeTab, () => {
-  if (activeTab.value === 'All') {
-    filteredOrders.value = orders.value
-  } else {
-    filteredOrders.value = orders.value.filter((o) => o.order_status === activeTab.value)
+// Function to apply all active filters
+function applyFilters() {
+  let result = [...orders.value]
+
+  // Apply tab filter (status)
+  if (activeTab.value !== 'All') {
+    result = result.filter((o) => o.order_status === activeTab.value)
   }
+
+  // Apply date filter
+  if (start_date.value && end_date.value) {
+    const start = new Date(start_date.value)
+    const end = new Date(end_date.value)
+    result = result.filter((o) => new Date(o.order_date) >= start && new Date(o.order_date) <= end)
+  }
+
+  // Apply carrier filter
+  if (selectedCarrier.value && carriers.value.includes(selectedCarrier.value)) {
+    result = result.filter((o) => o.carrier_name === selectedCarrier.value)
+  }
+
+  filteredOrders.value = result
+}
+
+watch(activeTab, () => {
+  applyFilters()
 })
+
+watch(
+  orders,
+  () => {
+    applyFilters()
+  },
+  { deep: true },
+)
 
 watch(
   () => checked_all.value,
@@ -63,7 +87,7 @@ watch(
   },
 )
 
-onMounted(async () => {
+async function retrieveOrders() {
   try {
     const res = await apiClient.get(`/shop/orders/${shopId}`)
     orderItems.value = res.data.orderItems.map((item: SellerOrderItem) => ({
@@ -105,7 +129,16 @@ onMounted(async () => {
     })
 
     orders.value = Object.values(groupedOrders)
-    filteredOrders.value = orders.value
+    // Apply filters after fetching orders
+    applyFilters()
+  } catch (err) {
+    console.error('Get orders failed: ', err)
+  }
+}
+
+onMounted(async () => {
+  try {
+    await retrieveOrders()
   } catch (err) {
     console.error('Get category failed: ', err)
     // alert('An unknown error occurred')
@@ -131,27 +164,15 @@ const formatted = (t: Date | null) => {
 }
 
 function filter() {
-  if (start_date.value && end_date.value) {
-    const start = new Date(start_date.value)
-    const end = new Date(end_date.value)
-
-    filteredOrders.value = filteredOrders.value.filter(
-      (o) => new Date(o.order_date) >= start && new Date(o.order_date) <= end,
-    )
-  }
-  if (carriers.value.includes(selectedCarrier.value)) {
-    filteredOrders.value = filteredOrders.value.filter(
-      (o) => o.carrier_name === selectedCarrier.value,
-    )
-  }
+  applyFilters()
 }
 
 function resetFilter() {
-  filteredOrders.value = orders.value
-  activeTab.value = 'Tất cả'
+  activeTab.value = 'All'
   start_date.value = null
   end_date.value = null
   selectedCarrier.value = 'Chọn đơn vị vận chuyển'
+  applyFilters()
 }
 
 function selectCarrier(carrier: string) {
@@ -159,56 +180,52 @@ function selectCarrier(carrier: string) {
   showCarrier.value = false
 }
 
-function changeTab(status: string){
+function changeTab(status: string) {
   activeTab.value = status
 }
 
-function showOperation(status: string){
-  if(status === 'Pending'){
-    return 'Confirm Order';
-  }
-  else if(status === 'Packing'){
-    return 'Packed and Delivering';
-  }
-  else if(status === 'Delivering'){
-    return 'Confirm Buyer Receipt';
+function showOperation(status: string) {
+  if (status === 'Pending') {
+    return 'Confirm Order'
+  } else if (status === 'Packing') {
+    return 'Packed and Delivering'
+  } else if (status === 'Delivering') {
+    return 'Confirm Buyer Receipt'
   }
 }
 
-async function updateStatus(order: SellerOrder){
-  const nextStatus = ref('');
-  if(order.order_status === 'Pending'){
-    nextStatus.value = 'Packing';
-  }
-  else if(order.order_status === 'Packing'){
-    nextStatus.value = 'Delivering';
-  }
-  else if(order.order_status === 'Delivering'){
-    nextStatus.value = 'Delivered';
-
-  }
-  else if(order.order_status === 'Delivered'){
-    nextStatus.value = 'Cancelled';
-  }
-  else if(order.order_status === 'Cancelled'){
-    nextStatus.value = 'Return';
+async function updateStatus(order: SellerOrder) {
+  const nextStatus = ref('')
+  if (order.order_status === 'Pending') {
+    nextStatus.value = 'Packing'
+  } else if (order.order_status === 'Packing') {
+    nextStatus.value = 'Delivering'
+  } else if (order.order_status === 'Delivering') {
+    nextStatus.value = 'Delivered'
+  } else if (order.order_status === 'Delivered') {
+    nextStatus.value = 'Cancelled'
+  } else if (order.order_status === 'Cancelled') {
+    nextStatus.value = 'Return'
   }
   try {
     await notifyAsync(
       apiClient.patch(`/shop/order/${order.order_id}/status`, {
-      status: nextStatus.value
-    })
-    );
-    order.order_status = nextStatus.value
-    notify(`Update status of order to ${nextStatus.value} successfully!`, 'success')
-    activeTab.value = 'All'
+        status: nextStatus.value,
+      }),
+    )
+      .then(async () => {
+        emit('update:status', nextStatus.value)
+        await retrieveOrders()
+        notify(`Update status of order to ${nextStatus.value} successfully!`, 'success')
+      })
+      .catch((error) => {
+        notify(`Update status of order to ${nextStatus.value} failed!`, 'error')
+        console.error('Update product failed:', error)
+      })
   } catch (error) {
-    notify(`Update status of order to ${nextStatus.value} failed!`, 'error')
-
-    console.error('Update product failed:', error);
+    console.error('Update product failed:', error)
   }
 }
-
 </script>
 <template>
   <div class="space-y-4">
@@ -240,6 +257,16 @@ async function updateStatus(order: SellerOrder){
         {{ tab }}
       </button>
     </div>
+
+    <SellerDashBoard
+      :pending="filteredOrders.filter((o) => o.order_status === 'Pending').length"
+      :paid="filteredOrders.filter((o) => o.order_status === 'Paid').length"
+      :packing="filteredOrders.filter((o) => o.order_status === 'Packing').length"
+      :delivering="filteredOrders.filter((o) => o.order_status === 'Delivering').length"
+      :delivered="filteredOrders.filter((o) => o.order_status === 'Delivered').length"
+      :cancelled="filteredOrders.filter((o) => o.order_status === 'Cancelled').length"
+      :returned="filteredOrders.filter((o) => o.order_status === 'Returned').length"
+    />
 
     <!-- Bộ lọc -->
     <div id="accordion-card" data-accordion="collapse">
@@ -395,19 +422,25 @@ async function updateStatus(order: SellerOrder){
               <TableCell>{{ formatted(order.order_date) }}</TableCell>
               <TableCell>{{ formatted(order.actual_deliver_date) }}</TableCell>
               <TableCell>
-                <button v-if="activeTab === 'All'"
+                <button
+                  v-if="activeTab === 'All'"
                   class="inline-flex items-center gap-2 rounded-md text-sm font-medium transition-all focus-visible:ring-[3px] text-primary underline-offset-4 hover:underline text-[var(--red)] cursor-pointer"
                   @click="changeTab(order.order_status)"
                 >
                   Details
                 </button>
-                <div v-else-if="activeTab === 'Cancelled' || activeTab === 'Delivered'"
+                <div
+                  v-else-if="activeTab === 'Cancelled' || activeTab === 'Delivered'"
                   class="inline-flex items-center gap-2 text-sm text-gray-500 transition-all text-primary"
                 >
                   No operation
                 </div>
 
-                <button v-else class="bg-[var(--red)] text-sm font-semibold text-white px-3 py-2 rounded hover:bg-red-600 cursor-pointer active:bg-red-200" @click="updateStatus(order)">
+                <button
+                  v-else
+                  class="bg-[var(--red)] text-sm font-semibold text-white px-3 py-2 rounded hover:bg-red-600 cursor-pointer active:bg-red-200"
+                  @click="updateStatus(order)"
+                >
                   {{ showOperation(order.order_status) }}
                 </button>
               </TableCell>

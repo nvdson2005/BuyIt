@@ -29,7 +29,9 @@ async function onLoginClick(username: string, password: string) {
     localStorage.setItem('role', response.data.user.role)
     localStorage.setItem('id', response.data.user.id)
     notify('Login successful!', 'success')
+    // Remove setTimeout and redirect immediately
     router.push({ name: 'home' })
+    console.log('Redirecting to home')
   } catch (error: unknown) {
     if (error instanceof AxiosError) {
       if (error.response) {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, defineEmits, type Ref } from 'vue'
+import { ref, type Ref } from 'vue'
 import { Eye, EyeOff } from 'lucide-vue-next'
 
 const emit = defineEmits<{
@@ -11,11 +11,15 @@ const username: Ref<string, string> = ref('')
 const password: Ref<string, string> = ref('')
 const usernameError = ref(false)
 const passwordError = ref(false)
-
+const disableButton = ref(false)
 const handleLogin = () => {
   usernameError.value = !username.value
   passwordError.value = !password.value
   emit('login', username.value, password.value)
+  disableButton.value = true
+  setTimeout(() => {
+    disableButton.value = false
+  }, 5000)
 }
 defineProps({
   backgroundColor: {
@@ -31,6 +35,7 @@ defineProps({
       placeholder="Username"
       class="input-box w-full border border-gray-300 px-3 py-2 focus:outline-none focus:ring-[3px] focus:ring-gray-300"
       v-model="username"
+      :required="true"
     />
     <p v-if="usernameError" class="w-full text-left text-white text-sm mt-1">
       Please enter your username
@@ -42,7 +47,7 @@ defineProps({
         class="input-box w-full border border-gray-300 px-3 py-2 focus:outline-none focus:ring-[3px] focus:ring-gray-300"
         :type="isShowPassword ? 'text' : 'password'"
         v-model="password"
-        @keyup.enter="handleLogin"
+        :required="true"
       />
       <p v-if="passwordError" class="text-white text-sm mt-1">Please enter your password</p>
       <div
@@ -55,7 +60,8 @@ defineProps({
 
     <button
       type="submit"
-      class="inline-flex items-center justify-center gap-2 px-3 py-2 whitespace-nowrap bg-[var(--orange)] text-white rounded font-medium transition-all w-full hover:bg-orange-600 transition-colors duration-200 cursor-pointer"
+      class="inline-flex items-center justify-center gap-2 px-3 py-2 whitespace-nowrap bg-(--orange) text-white rounded font-medium transition-all w-full hover:bg-orange-600 transition-colors duration-200 cursor-pointer"
+      :disabled="disableButton"
     >
       Login
     </button>

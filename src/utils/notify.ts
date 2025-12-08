@@ -11,11 +11,8 @@ export function notify(message: string, type: 'success' | 'error' | 'warning' | 
   })
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function notifyAsync(promise: Promise<any>) {
-  return toast.promise(promise, {
+export function notifyAsync<T>(promise: Promise<T>): Promise<T> {
+  return toast.promise<T>(promise, {
     pending: 'Pending...',
-    // success: 'Success!',
-    // error: 'Error!',
   })
 }
