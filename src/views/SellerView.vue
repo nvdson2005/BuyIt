@@ -74,50 +74,27 @@ const handleLogout: () => Promise<void> = async () => {
   localStorage.removeItem('username')
   localStorage.removeItem('role')
   localStorage.removeItem('id')
-  // window.botpress.updateUser({
-  //   data: {
-  //     userId: '',
-  //     role: ''
-
-  //   },
-  // });
-  // window.botpress.close()
   router.push('/sellerlog')
 }
 
 onMounted(async () => {
-  const cookie = await cookieStore.get('connect.sid')
+  const usernameLocalStorage = localStorage.getItem('username') || ''
   const role = localStorage.getItem('role')
-  // console.log('Cookie:', cookie)
-  if (!cookie) {
-    router.push('/sellerlog')
-    return
+  console.log('Username:', usernameLocalStorage)
+  console.log('Role:', role)
+  if (!usernameLocalStorage) {
+    router.push('/sellerlogin')
   } else if (role === 'buyer') {
-    router.push('/')
+    router.push('/home')
   } else {
-    username.value = localStorage.getItem('username') || ''
+    username.value = usernameLocalStorage
     RetrieveNotifications()
     if (activeView.value === 'dashboard') {
       await retrieveOrders()
     }
-    if (username.value) {
-      setTimeout(() => {
-        isLoading.value = false
-      }, 1000)
-      return
-    } else {
-      await RetrieveUsername()
-      isLoading.value = false
-    }
-    setTimeout(() => {
-      isLoading.value = false
-    }, 1000)
+    isLoading.value = false
   }
 })
-
-async function RetrieveUsername() {
-  console.error('RetrieveUsername function is currently disabled.')
-}
 
 // onUnmounted(() => {
 //   UpdateReadStatus().catch((error) => {
