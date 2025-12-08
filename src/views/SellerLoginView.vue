@@ -31,13 +31,13 @@ async function onLoginClick(username: string, password: string) {
     localStorage.setItem('role', response.data.user.role)
     localStorage.setItem('id', response.data.user.id)
     notify('Login successful!', 'success')
-    window.botpress.updateUser({
-      data: {
-        userId: response.data.user.id,
-        role: response.data.user.role
-      },
-    });
-    window.botpress.close();
+    // window.botpress.updateUser({
+    //   data: {
+    //     userId: response.data.user.id,
+    //     role: response.data.user.role
+    //   },
+    // });
+    // window.botpress.close();
     router.push({ name: 'dashboard' })
   } catch (error: unknown) {
     if (error instanceof AxiosError) {
