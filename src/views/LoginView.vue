@@ -30,13 +30,19 @@ async function onLoginClick(username: string, password: string) {
     localStorage.setItem('id', response.data.user.id)
     notify('Login successful!', 'success')
     // Remove setTimeout and redirect immediately
-    // window.botpress.updateUser({
-    //   data: {
-    //     userId: response.data.user.id,
-    //     role: response.data.user.role
-    //   },
-    // });
-    // window.botpress.close();
+    window.botpress.on('webchat:initialized', () => {
+      console.log('Webchat has been initialized.');
+        // Insert your code here
+      window.botpress.updateUser({
+        data: {
+          userId: response.data.user.id,
+          role: response.data.user.role
+        },
+      });
+      window.botpress.close();
+
+    });
+
 
     router.push({ name: 'home' })
     console.log('Redirecting to home')
