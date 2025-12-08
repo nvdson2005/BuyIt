@@ -7,7 +7,7 @@ import MainPageFlashSalePanel from '@/components/layout/MainPageFlashSalePanel.v
 import PageFooter from '@/components/layout/PageFooter.vue'
 import LoadingScreen from '@/components/layout/LoadingScreen.vue'
 import apiClient from '@/api/client'
-import { onMounted, onUnmounted, ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import router from '@/router'
 const isLoading = ref(true)
 const username = ref('')
@@ -34,23 +34,7 @@ onMounted(async () => {
     router.push('/dashboard')
     return
   }
-  const inject = document.createElement("script");
-  inject.src = "https://cdn.botpress.cloud/webchat/v3.4/inject.js";
-  inject.id = "botpress-inject";
-  document.body.appendChild(inject);
 
-  const config = document.createElement("script");
-  config.src = "https://files.bpcontent.cloud/2025/12/07/06/20251207063844-POCTR7BA.js";
-  config.id = "botpress-config";
-  config.defer = true;
-  config.onload = () => {
-    window.botpress.updateUser({
-    data: {
-      userId: usernameLocalStorage
-    },
-  });
-  }
-  document.body.appendChild(config);
   username.value = usernameLocalStorage || ''
   if (username.value) {
     setTimeout(() => {
@@ -64,18 +48,7 @@ onMounted(async () => {
   setTimeout(() => {
     isLoading.value = false
   }, 1000)
-
-
 })
-
-onUnmounted(() => {
-  // Xoá script khi rời trang
-  document.getElementById("botpress-inject")?.remove();
-  document.getElementById("botpress-config")?.remove();
-
-  // Xoá container của webchat
-  document.querySelector("#bp-webchat")?.remove();
-});
 
 async function RetrieveUsername() {
   console.error('RetrieveUsername function is currently disabled.')
