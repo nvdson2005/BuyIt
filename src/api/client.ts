@@ -1,6 +1,5 @@
 import router from '@/router'
 import axios, { type AxiosInstance } from 'axios'
-import { notify } from '@/utils/notify'
 const apiClient: AxiosInstance = axios.create({
   // baseURL: `http://localhost:3001/api`,
   // baseURL: 'https://buy-it-backend-nine.vercel.app/api',
@@ -18,7 +17,6 @@ apiClient.interceptors.response.use(
       localStorage.removeItem('role')
       localStorage.removeItem('id')
       router.push('/login')
-      notify('Session expired. Please login again.', 'error')
     }
     return Promise.reject(error)
   },
