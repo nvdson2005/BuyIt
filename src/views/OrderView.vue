@@ -15,13 +15,13 @@ const showReviewForm = ref(false)
 const selectedOrder = ref<BuyerOrder>({
   order_id: '',
   addr_id: '',
-  order_date: new Date,
+  order_date: new Date(),
   total_amount: 0,
-  updated_at: new Date,
+  updated_at: new Date(),
   buyer_id: '',
   order_status: '',
   is_reviewed: false,
-  orderitems: []
+  orderitems: [],
 })
 onMounted(async () => {
   try {
@@ -38,6 +38,7 @@ onMounted(async () => {
       orderitems: o.orderitems,
     }))
     filteredOrders.value = orders.value
+    console.log('Filtered orders:', filteredOrders.value)
   } catch (err) {
     console.error('Getting orders failed:', err)
   }
@@ -48,7 +49,8 @@ function filterOrder(option: OrderFilterOptions) {
     filteredOrders.value = orders.value
   } else if (option === OrderFilterOptions.PENDING) {
     filteredOrders.value = orders.value.filter(
-      (o) => o.order_status === 'Pending' || o.order_status === 'Paid' || o.order_status === 'Packing',
+      (o) =>
+        o.order_status === 'Pending' || o.order_status === 'Paid' || o.order_status === 'Packing',
     )
   } else if (option === OrderFilterOptions.DELIVERING) {
     filteredOrders.value = orders.value.filter((o) => o.order_status === 'Shipped')
@@ -59,41 +61,40 @@ function filterOrder(option: OrderFilterOptions) {
   }
   selectedFilterOption.value = option
 }
-function handleReview(order: BuyerOrder){
+function handleReview(order: BuyerOrder) {
   selectedOrder.value = order
   showReviewForm.value = true
 }
 
-function handleSave(){
+function handleSave() {
   showReviewForm.value = false
   selectedOrder.value.is_reviewed = true
 }
 
-async function handleCancel(o: BuyerOrder){
+async function handleCancel(o: BuyerOrder) {
   try {
     await notifyAsync(
       apiClient.put(`/buyer/order/${o.order_id}/status`, {
-      status: 'Cancelled'
-      })
-    );
+        status: 'Cancelled',
+      }),
+    )
     o.order_status = 'Cancelled'
     notify(`Cancel order successfully!`, 'success')
   } catch (error) {
     notify(`Cancel order failed!`, 'error')
 
-    console.error('Update product failed:', error);
+    console.error('Update product failed:', error)
   }
 }
 
-async function handleReceive(o: BuyerOrder){
+async function handleReceive(o: BuyerOrder) {
   try {
     await apiClient.put(`/buyer/order/${o.order_id}/status`, {
-      status: 'Delivered'
-      })
+      status: 'Delivered',
+    })
     o.order_status = 'Delivered'
   } catch (error) {
-
-    console.error('Update product failed:', error);
+    console.error('Update product failed:', error)
   }
 }
 </script>
@@ -244,7 +245,8 @@ async function handleReceive(o: BuyerOrder){
               v-if="o.order_status === 'Delivered'"
               class="flex justify-end gap-4 mt-4 font-semibold text-sm"
             >
-              <button v-if="o.is_reviewed === false"
+              <button
+                v-if="o.is_reviewed === false"
                 class="w-32 px-4 py-2 border border-slate-300 rounded text-white bg-[var(--red)] hover:bg-red-600 cursor-pointer"
                 @click="handleReview(o)"
               >
@@ -266,7 +268,8 @@ async function handleReceive(o: BuyerOrder){
               v-if="o.order_status === 'Pending'"
               class="flex justify-end gap-4 mt-4 font-semibold text-sm"
             >
-              <button v-if="o.is_reviewed === false"
+              <button
+                v-if="o.is_reviewed === false"
                 class="w-32 px-4 py-2 border border-slate-300 rounded text-slate-600 hover:bg-gray-50 cursor-pointer"
                 @click="handleCancel(o)"
               >
@@ -277,7 +280,8 @@ async function handleReceive(o: BuyerOrder){
               v-if="o.order_status === 'Shipped'"
               class="flex justify-end gap-4 mt-4 font-semibold text-sm"
             >
-              <button v-if="o.is_reviewed === false"
+              <button
+                v-if="o.is_reviewed === false"
                 class="w-36 px-4 py-2 border border-slate-300 rounded text-white bg-[var(--red)] hover:bg-red-600 cursor-pointer"
                 @click="handleReceive(o)"
               >

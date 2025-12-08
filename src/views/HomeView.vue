@@ -15,8 +15,8 @@ onMounted(async () => {
   const usernameLocalStorage = localStorage.getItem('username') || ''
   const role = localStorage.getItem('role')
 
-  console.log('Username:', username)
-  console.log('Role:', role)
+  // console.log('Username:', username)
+  // console.log('Role:', role)
 
   // Use localStorage as primary check since cookie might be httpOnly
   if (!usernameLocalStorage) {
