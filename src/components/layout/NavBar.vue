@@ -60,7 +60,6 @@ const logOut: () => Promise<void> = async () => {
   // await window.botpress.restartConversation();
 
   router.push('/login')
-  await cookieStore.delete('connect.sid')
 }
 
 const handleSearch = (e: KeyboardEvent) => {

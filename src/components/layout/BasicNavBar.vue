@@ -14,6 +14,10 @@ const props = defineProps({
     type: String,
     default: '/help',
   },
+  isSeller: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 function navigateToHelp() {
@@ -24,8 +28,12 @@ function navigateToHome() {
   router.push({ name: 'home' })
 }
 
-function navigateToSeller() {
-  router.push({ name: 'sellerlog' })
+function navigateToLogin() {
+  if (!props.isSeller) {
+    router.push({ name: 'sellerlog' })
+  } else {
+    router.push({ name: 'login' })
+  }
 }
 </script>
 <template>
@@ -43,10 +51,10 @@ function navigateToSeller() {
     </div>
     <div class="ml-auto flex items-center gap-6">
       <button
-        @click="navigateToSeller"
+        @click="navigateToLogin"
         class="hover:text-white hover:underline text-gray-200 cursor-pointer"
       >
-        Seller Login
+        {{ isSeller ? 'Buyer Login' : 'Seller Login' }}
       </button>
       <button
         @click="navigateToHelp"

@@ -12,7 +12,7 @@ const router = useRouter()
 const errorMessage = ref('')
 
 onMounted(async () => {
-  if (localStorage.getItem('username') && (await cookieStore.get('connect.sid'))) {
+  if (localStorage.getItem('username')) {
     router.push({ name: 'dashboard' })
   }
 })
@@ -73,7 +73,7 @@ function onNavigateToLogin() {
 
 <template>
   <div class="relative w-full h-screen z-0">
-    <BasicNavBar title="Seller Login" />
+    <BasicNavBar :title="'Seller Login'" :isSeller="true" />
     <div class="absolute inset-0 -z-10 w-[65%] h-full">
       <img
         src="@/assets/images/hero-section.png"
@@ -87,9 +87,7 @@ function onNavigateToLogin() {
         <div class="w-full flex mb-6 border-b-2 border-gray-300 text-white h-10">
           <div class="flex-1 flex-col items-center">
             <button class="cursor-pointer px-4 h-full rounded font-semibold">Login</button>
-            <div
-              class="transition-all duration-200 ease-in-out w-full border-b-2 border-b-[var(--orange)]"
-            ></div>
+            <div class="transition-all duration-200 ease-in-out w-full"></div>
           </div>
           <div class="flex-1 flex-col items-center">
             <button class="cursor-pointer px-4 h-full rounded" @click="onSignupClick()">

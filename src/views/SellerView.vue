@@ -70,7 +70,6 @@ function toggleUserMenu() {
 
 const handleLogout: () => Promise<void> = async () => {
   isLoggedIn.value = false
-  await cookieStore.delete('connect.sid')
   localStorage.removeItem('username')
   localStorage.removeItem('role')
   localStorage.removeItem('id')
@@ -222,9 +221,7 @@ watch(activeView, (newView) => {
 
     <!-- Main Content -->
     <div class="flex-1 flex flex-col overflow-hidden">
-      <header
-        class="bg-[rgb(189,6,4)] text-white p-4 flex items-center justify-between flex-shrink-0"
-      >
+      <header class="bg-[rgb(189,6,4)] text-white p-4 flex items-center justify-between shrink-0">
         <div class="flex items-center gap-4 ml-auto">
           <div class="relative">
             <button

@@ -56,7 +56,7 @@ async function onLoginClick(username: string, password: string) {
 }
 
 onMounted(async () => {
-  if (localStorage.getItem('username') && (await cookieStore.get('connect.sid'))) {
+  if (localStorage.getItem('username')) {
     router.push({ name: 'home' })
   }
 })
@@ -64,7 +64,7 @@ onMounted(async () => {
 
 <template>
   <div class="relative w-full h-screen z-0">
-    <BasicNavBar title="Login" />
+    <BasicNavBar :title="'Buyer Login'" :isSeller="false" />
     <div class="absolute inset-0 -z-10 w-[65%] h-full">
       <img
         src="@/assets/images/hero-section.png"
