@@ -110,27 +110,16 @@ async function handleUnfollow() {
 
 <template>
   <NavBar />
-<<<<<<< HEAD
   <div v-if="!isLoading" class="min-h-screen bg-(--light-pink) pb-12">
     <!-- Shop Header Section -->
     <div
       class="bg-linear-to-br from-white via-(--pink) to-white w-full py-12 border-b-2 border-(--pink) shadow-lg"
-=======
-  <div v-if="!isLoading" class="min-h-screen bg-[var(--light-pink)] pb-12">
-    <!-- Shop Header Section -->
-    <div
-      class="bg-gradient-to-br from-white via-[var(--pink)] to-white w-full py-12 border-b-2 border-[var(--pink)] shadow-lg"
->>>>>>> main
     >
       <div class="max-w-7xl mx-auto px-6">
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
           <!-- Shop Info Card -->
           <div
-<<<<<<< HEAD
             class="lg:col-span-2 bg-white rounded-2xl p-8 shadow-xl border-2 border-(--red)/20 hover:shadow-2xl transition-shadow duration-300"
-=======
-            class="lg:col-span-2 bg-white rounded-2xl p-8 shadow-xl border-2 border-[var(--red)]/20 hover:shadow-2xl transition-shadow duration-300"
->>>>>>> main
           >
             <div class="flex items-start justify-between mb-6">
               <div class="flex-1">
@@ -150,11 +139,7 @@ async function handleUnfollow() {
             <div class="flex justify-end">
               <button
                 v-if="!isFollowed"
-<<<<<<< HEAD
                 class="flex items-center gap-2 px-6 py-3 rounded-lg text-white bg-(--red) hover:bg-red-700 cursor-pointer transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 font-semibold"
-=======
-                class="flex items-center gap-2 px-6 py-3 rounded-lg text-white bg-[var(--red)] hover:bg-red-700 cursor-pointer transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 font-semibold"
->>>>>>> main
                 @click="handleFollow()"
               >
                 <Plus :size="18" class="shrink-0" />
@@ -177,21 +162,12 @@ async function handleUnfollow() {
               class="bg-white rounded-xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-200"
             >
               <div class="flex items-center gap-4">
-<<<<<<< HEAD
                 <div class="p-3 bg-(--pink) rounded-lg">
                   <Store :size="24" class="text-(--red)" />
                 </div>
                 <div>
                   <p class="text-sm text-gray-500 font-medium">Products</p>
                   <p class="text-2xl font-bold text-(--red)">{{ products.length }}</p>
-=======
-                <div class="p-3 bg-[var(--pink)] rounded-lg">
-                  <Store :size="24" class="text-[var(--red)]" />
-                </div>
-                <div>
-                  <p class="text-sm text-gray-500 font-medium">Products</p>
-                  <p class="text-2xl font-bold text-[var(--red)]">{{ products.length }}</p>
->>>>>>> main
                 </div>
               </div>
             </div>
@@ -200,21 +176,12 @@ async function handleUnfollow() {
               class="bg-white rounded-xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-200"
             >
               <div class="flex items-center gap-4">
-<<<<<<< HEAD
                 <div class="p-3 bg-(--pink) rounded-lg">
                   <UserRoundPlus :size="24" class="text-(--red)" />
                 </div>
                 <div>
                   <p class="text-sm text-gray-500 font-medium">Followers</p>
                   <p class="text-2xl font-bold text-(--red)">{{ shop?.followers }}</p>
-=======
-                <div class="p-3 bg-[var(--pink)] rounded-lg">
-                  <UserRoundPlus :size="24" class="text-[var(--red)]" />
-                </div>
-                <div>
-                  <p class="text-sm text-gray-500 font-medium">Followers</p>
-                  <p class="text-2xl font-bold text-[var(--red)]">{{ shop?.followers }}</p>
->>>>>>> main
                 </div>
               </div>
             </div>
@@ -223,21 +190,12 @@ async function handleUnfollow() {
               class="bg-white rounded-xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-200"
             >
               <div class="flex items-center gap-4">
-<<<<<<< HEAD
                 <div class="p-3 bg-(--pink) rounded-lg">
                   <Star :size="24" class="text-(--red) fill-(--orange)" />
                 </div>
                 <div>
                   <p class="text-sm text-gray-500 font-medium">Rating</p>
                   <p class="text-2xl font-bold text-(--red)">
-=======
-                <div class="p-3 bg-[var(--pink)] rounded-lg">
-                  <Star :size="24" class="text-[var(--red)] fill-[var(--orange)]" />
-                </div>
-                <div>
-                  <p class="text-sm text-gray-500 font-medium">Rating</p>
-                  <p class="text-2xl font-bold text-[var(--red)]">
->>>>>>> main
                     {{ shop?.rating?.toFixed(1) || '0.0' }}
                   </p>
                 </div>
@@ -252,11 +210,7 @@ async function handleUnfollow() {
     <div class="max-w-7xl mx-auto px-6 mt-12">
       <div class="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
         <div class="flex items-center gap-3 mb-8">
-<<<<<<< HEAD
           <div class="h-1 w-12 bg-(--red) rounded-full"></div>
-=======
-          <div class="h-1 w-12 bg-[var(--red)] rounded-full"></div>
->>>>>>> main
           <h2 class="text-2xl font-bold text-gray-900">Available Vouchers</h2>
           <div class="flex-1 h-1 bg-gray-200 rounded-full"></div>
         </div>
@@ -287,11 +241,7 @@ async function handleUnfollow() {
     <!-- Products Section -->
     <div class="max-w-7xl mx-auto px-6 mt-12">
       <div class="flex items-center gap-3 mb-8">
-<<<<<<< HEAD
         <div class="h-1 w-12 bg-(--red) rounded-full"></div>
-=======
-        <div class="h-1 w-12 bg-[var(--red)] rounded-full"></div>
->>>>>>> main
         <h2 class="text-2xl font-bold text-gray-900">Shop Products</h2>
         <div class="flex-1 h-1 bg-gray-200 rounded-full"></div>
         <span class="text-sm text-gray-500 font-medium">({{ products.length }} items)</span>
