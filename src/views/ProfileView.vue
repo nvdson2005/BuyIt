@@ -738,7 +738,9 @@ watch(chosenSidebarOption, (newOption) => {
               <div class="text-lg font-semibold">
                 User Avatar
               </div>
-              <UploadImageButton v-model="editedProfile.image_url"></UploadImageButton>
+              <UploadImageButton v-if="isEditingProfile" v-model="editedProfile.image_url"></UploadImageButton>
+              <CustomImage v-else :src="editedProfile.image_url" class="w-full h-32 object-cover rounded"></CustomImage>
+
             </div>
           </div>
         </div>

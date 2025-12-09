@@ -14,7 +14,7 @@ import NotificationItem from '@/components/ui/NotificationItem.vue'
 import apiClient from '@/api/client'
 import { type AxiosResponse } from 'axios'
 import CustomImage from '@/components/ui/CustomImage.vue'
-
+import ShopInformation from '@/components/layout/ShopInformation.vue'
 const router = useRouter()
 const activeView = ref('dashboard')
 const isUserMenuOpen = ref(false)
@@ -25,7 +25,8 @@ const isShowingNotificationsDropdown: Ref<boolean> = ref(false)
 const notifications = ref<Notification[]>([])
 const orders = ref<SellerOrder[]>([])
 const shopId = localStorage.getItem('id')
-const profile = ref<ProfileDetail | null>(null)
+const profile = ref<ProfileDetail| null>(null)
+const editingInfo = ref(false)
 const sidebarNav = {
   'Order Management': ['All Orders', 'Order Handover'],
   'Product Management': ['All Products', 'Add New Product'],
@@ -44,6 +45,11 @@ function handleNavClick(item: string) {
   else if (item === 'Marketing Centre') activeView.value = 'marketing'
   else if (item === 'Shop Promotions') activeView.value = 'program'
   else if (item === 'Shop Vouchers') activeView.value = 'voucher'
+}
+
+function handleProfile(){
+  isUserMenuOpen.value = false
+  editingInfo.value = true
 }
 
 const currentView = computed(() => {
@@ -90,7 +96,7 @@ onMounted(async () => {
   } else {
     username.value = usernameLocalStorage
     RetrieveNotifications()
-    const result: AxiosResponse = await apiClient.get('/user/profile')
+    const result: AxiosResponse = await apiClient.get(`user/profile`)
     const raw = result.data.user
     profile.value = {
       username: raw.username ?? '',
@@ -284,11 +290,16 @@ watch(activeView, (newView) => {
               >
                 Log Out
               </button>
+              <button
+                @click="handleProfile"
+                class="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm cursor-pointer"
+              >
+                Profile
+              </button>
             </div>
           </div>
         </div>
       </header>
-
       <main class="flex-1 p-6 overflow-y-auto">
         <component
           :is="currentView"
@@ -303,5 +314,7 @@ watch(activeView, (newView) => {
       </main>
     </div>
   </div>
+  <ShopInformation v-if="editingInfo" :profile="profile" @onCancel="editingInfo = false"></ShopInformation>
+
 </template>
 <style scoped></style>
