@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, onMounted, computed, defineEmits } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import apiClient from '@/api/client'
 import CustomImage from '@/components/ui/CustomImage.vue'
 import { Plus, Save, Trash } from 'lucide-vue-next'
@@ -173,8 +173,9 @@ async function handleDelete(product_id: string, price: number) {
               <TableCell>
                 <div class="flex gap-2 items-center">
                   <CustomImage
-                    :src="product.image_url"
-                    class="w-15 h-15 object-cover rounded"
+                    :source="product.image_url"
+                    :alt="product.name"
+                    className="w-15 h-15 object-cover rounded"
                   ></CustomImage>
                   <div>
                     <div class="w-full font-medium whitespace-normal">{{ product.name }}</div>
@@ -244,7 +245,11 @@ async function handleDelete(product_id: string, price: number) {
             @click="selectedProduct = product.id"
           >
             <div class="flex items-center gap-2 mb-1">
-              <CustomImage :src="product.image_url" class="w-15 h-15 object-cover rounded" />
+              <CustomImage
+                :source="product.image_url"
+                :alt="product.name"
+                className="w-15 h-15 object-cover rounded"
+              />
               <strong>{{ product.name }}</strong>
               <span class="text-gray-400">|</span>
               <span>{{ product.price }}đ</span>

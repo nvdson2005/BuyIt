@@ -232,9 +232,9 @@ function isAnySelected(): boolean {
           >
             <!-- Variant image -->
             <CustomImage
-              :src="item.productVariant.image_url"
-              alt=""
-              class="w-20 h-20 object-cover rounded-md"
+              :source="item.productVariant.image_url"
+              :alt="item.product.name"
+              className="w-20 h-20 object-cover rounded-md"
             />
             <div>
               <div class="font-medium text-slate-800 text-base">{{ item.product.name }}</div>
@@ -335,9 +335,9 @@ function isAnySelected(): boolean {
         <div class="flex items-center gap-4">
           <!-- Variant image -->
           <CustomImage
-            :src="item.productVariant.image_url || item.product.image_url"
-            alt="Sản phẩm"
-            class="w-20 h-20 object-cover gray-scale rounded-md"
+            :source="item.productVariant.image_url || item.product.image_url"
+            :alt="item.product.name || 'Product'"
+            className="w-20 h-20 object-cover rounded-md"
           />
           <div>
             <button

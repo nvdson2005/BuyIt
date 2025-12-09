@@ -35,20 +35,17 @@ const item_ids = computed(() => {
   return []
 })
 const card_methods = computed(() => methods.value.filter((m) => m.name === 'Online Banking'))
-const discount_subtotal = computed(() =>{
-  if(selectedVoucher.value !== null){
-    if(selectedVoucher.value?.discount_type === 'fixed_amount'){
+const discount_subtotal = computed(() => {
+  if (selectedVoucher.value !== null) {
+    if (selectedVoucher.value?.discount_type === 'fixed_amount') {
       return subtotal.value - selectedVoucher.value.discount_amount
+    } else {
+      return subtotal.value * (1 - selectedVoucher.value.discount_amount / 100)
     }
-    else{
-      return subtotal.value*(1-selectedVoucher.value.discount_amount/100)
-    }
-  }
-  else{
+  } else {
     return subtotal.value
   }
-}
-)
+})
 const subtotal = computed(() =>
   checkoutItems.value.reduce((total, item) => total + item.price * item.quantity, 0),
 )
@@ -144,18 +141,18 @@ const handlePlaceOrder = async () => {
   try {
     await notifyAsync(
       apiClient.post('buyer/order/create', {
-      addressId: currentAddress.value.address_id,
-      orderItems: order_items,
-      methodId: payment.value.method_id,
-      optionId: payment.value.option_id,
-      amount: total.value,
-      shippingCost: shippingFee.value,
-    })
-    );
-    if(selectedVoucher.value !== null){
+        addressId: currentAddress.value.address_id,
+        orderItems: order_items,
+        methodId: payment.value.method_id,
+        optionId: payment.value.option_id,
+        amount: total.value,
+        shippingCost: shippingFee.value,
+      }),
+    )
+    if (selectedVoucher.value !== null) {
       await apiClient.patch(`buyer/use-voucher/${selectedVoucher.value.id}`)
     }
-    notify("Place Order successfully!", 'success')
+    notify('Place Order successfully!', 'success')
     router.back()
   } catch (error) {
     console.error('Order creation failed:', error)
@@ -173,15 +170,17 @@ onMounted(async () => {
       apiClient.get(`/products/get-by-items/${item_ids.value.join(',')}`),
       apiClient.get<{ addresses: Address[] }>(`/user/addresses`),
       apiClient.get(`/buyer/payments`),
-
     ])
     checkoutItems.value = productsRes.data.products
     addresses.value = addressRes.data.addresses
     methods.value = methodsRes.data.payments
     currentAddress.value = addresses.value.find((addr) => addr.is_default) || addresses.value[0]
-    const uservoucher_response = await apiClient.get(`/buyer/user-vouchers/${checkoutItems.value[0]?.shop_id}`)
-    userVouchers.value = uservoucher_response.data.userVouchers.filter((v: UserVoucher) => v.is_used === false)
-
+    const uservoucher_response = await apiClient.get(
+      `/buyer/user-vouchers/${checkoutItems.value[0]?.shop_id}`,
+    )
+    userVouchers.value = uservoucher_response.data.userVouchers.filter(
+      (v: UserVoucher) => v.is_used === false,
+    )
   } catch (err) {
     console.error('Getting data failed:', err)
   }
@@ -207,7 +206,10 @@ onMounted(async () => {
             <MapPin class="w-5 h-5 text-[#ee4d2d]" />
             <h2 class="text-[#ee4d2d]">Delivery Address</h2>
           </div>
-          <button @click="showAddressDialog = true" class="text-blue-600 cursor-pointer hover:text-blue-900">
+          <button
+            @click="showAddressDialog = true"
+            class="text-blue-600 cursor-pointer hover:text-blue-900"
+          >
             Change
           </button>
         </div>
@@ -232,11 +234,7 @@ onMounted(async () => {
           </div>
         </template>
 
-        <button
-          v-else
-          @click="showAddressDialog = true"
-          class="text-blue-600 hover:text-blue-700"
-        >
+        <button v-else @click="showAddressDialog = true" class="text-blue-600 hover:text-blue-700">
           + Add new address
         </button>
       </div>
@@ -259,7 +257,11 @@ onMounted(async () => {
         >
           <div class="flex items-center gap-4">
             <div class="flex-1 flex items-center gap-3">
-              <CustomImage :src="item.image_url" class="w-20 h-20 object-cover rounded" />
+              <CustomImage
+                :source="item.image_url"
+                :alt="item.product_name || 'Product'"
+                className="w-20 h-20 object-cover rounded"
+              />
               <div class="flex-1">
                 <h3 class="line-clamp-2 mb-1">{{ item.product_name }}</h3>
                 <p class="text-sm">{{ item.variant_name }}</p>
@@ -335,11 +337,7 @@ onMounted(async () => {
       <!-- VOUCHER -->
       <div class="bg-white rounded-lg shadow-sm p-6 mb-4">
         <h3 class="mb-4 font-semibold">Voucher</h3>
-        <VoucherSelector
-          v-model="selectedVoucher"
-          :vouchers="userVouchers"
-        />
-
+        <VoucherSelector v-model="selectedVoucher" :vouchers="userVouchers" />
       </div>
       <!-- ORDER SUMMARY -->
       <div class="bg-white rounded-lg shadow-sm p-6">
@@ -347,21 +345,21 @@ onMounted(async () => {
           <div class="flex justify-between text-gray-600">
             <span>Merchandise Subtotal</span>
             <div class="flex flex-col text-right">
-            <span
-            :class="selectedVoucher !== null? 'text-gray-500 line-through':'text-[var(--red)]'">
-              ₫{{ subtotal.toLocaleString('vi-VN') }}
-            </span>
-            <span v-if="selectedVoucher !== null"
-                class="text-[var(--red)]">
-              ₫{{ discount_subtotal.toLocaleString('vi-VN') }}
-            </span>
+              <span
+                :class="
+                  selectedVoucher !== null ? 'text-gray-500 line-through' : 'text-[var(--red)]'
+                "
+              >
+                ₫{{ subtotal.toLocaleString('vi-VN') }}
+              </span>
+              <span v-if="selectedVoucher !== null" class="text-[var(--red)]">
+                ₫{{ discount_subtotal.toLocaleString('vi-VN') }}
+              </span>
             </div>
           </div>
           <div class="flex justify-between text-gray-600">
             <span>Shipping Subtotal</span>
-            <span class="text-[var(--red)]">
-            ₫{{ shippingFee.toLocaleString('vi-VN') }}
-          </span>
+            <span class="text-[var(--red)]"> ₫{{ shippingFee.toLocaleString('vi-VN') }} </span>
           </div>
           <div class="border-t border-gray-300 pt-3 flex justify-between items-center">
             <span>Total Payment</span>
@@ -414,7 +412,8 @@ onMounted(async () => {
                 <span
                   v-if="addr.is_default"
                   class="px-2 py-0.5 bg-red-100 text-[#ee4d2d] text-xs rounded border border-[#ee4d2d]"
-                >Default</span>
+                  >Default</span
+                >
               </div>
               <p class="text-sm text-gray-600">
                 {{ addr.street }}, {{ addr.ward }}, {{ addr.district }}, {{ addr.city }}
@@ -431,8 +430,16 @@ onMounted(async () => {
           </button>
 
           <div class="flex gap-3">
-            <button class="flex-1 text-sm border border-gray-300 py-2 rounded hover:bg-gray-100 cursor-pointer" @click="showAddressDialog = false">Cancel</button>
-            <button class="flex-1 bg-[#ee4d2d] text-sm text-white py-2 rounded hover:bg-[#d73211] cursor-pointer" @click="handleConfirmAddress">
+            <button
+              class="flex-1 text-sm border border-gray-300 py-2 rounded hover:bg-gray-100 cursor-pointer"
+              @click="showAddressDialog = false"
+            >
+              Cancel
+            </button>
+            <button
+              class="flex-1 bg-[#ee4d2d] text-sm text-white py-2 rounded hover:bg-[#d73211] cursor-pointer"
+              @click="handleConfirmAddress"
+            >
               Confirm
             </button>
           </div>
@@ -501,9 +508,7 @@ onMounted(async () => {
             </div>
 
             <div>
-              <label class="text-sm font-medium">
-                City <span class="text-red-500">*</span>
-              </label>
+              <label class="text-sm font-medium"> City <span class="text-red-500">*</span> </label>
               <input
                 v-model="newAddress.city"
                 class="w-full rounded-md bg-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-[3px] focus:ring-gray-300"
@@ -513,8 +518,18 @@ onMounted(async () => {
           </div>
 
           <div class="flex gap-3 mt-6">
-            <button class="flex-1 border border-gray-300 py-2 rounded hover:bg-gray-100 cursor-pointer" @click="showNewAddressForm = false">Cancel</button>
-            <button class="flex-1 bg-[#ee4d2d] text-white py-2 rounded hover:bg-[#d73211] cursor-pointer" @click="handleAddNewAddress">Submit</button>
+            <button
+              class="flex-1 border border-gray-300 py-2 rounded hover:bg-gray-100 cursor-pointer"
+              @click="showNewAddressForm = false"
+            >
+              Cancel
+            </button>
+            <button
+              class="flex-1 bg-[#ee4d2d] text-white py-2 rounded hover:bg-[#d73211] cursor-pointer"
+              @click="handleAddNewAddress"
+            >
+              Submit
+            </button>
           </div>
         </template>
       </div>

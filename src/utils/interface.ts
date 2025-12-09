@@ -105,6 +105,7 @@ export interface Shop {
   description: string
   rating: number
   followers: number
+  image_url: string
 }
 
 export interface ProductVariant {
@@ -152,6 +153,7 @@ export interface ProfileDetail {
   phone: string
   email: string
   description: string
+  image_url: string
 }
 
 export interface SellerProduct {

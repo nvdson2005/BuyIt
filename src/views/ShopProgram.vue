@@ -151,8 +151,9 @@ const handleOnsaleProducts = (value: SellerProductShow[]) => {
                 <TableCell>
                   <div class="flex gap-2 items-center">
                     <CustomImage
-                      :src="product.image_url"
-                      class="w-15 h-15 object-cover rounded"
+                      :source="product.image_url"
+                      :alt="product.name"
+                      className="w-15 h-15 object-cover rounded"
                     ></CustomImage>
                     <div>
                       <div class="w-full font-medium whitespace-normal">{{ product.name }}</div>

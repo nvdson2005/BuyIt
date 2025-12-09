@@ -401,9 +401,9 @@ async function updateStatus(order: SellerOrder) {
                   class="flex gap-3 mb-2"
                 >
                   <CustomImage
-                    :src="item.image_url"
+                    :source="item.image_url"
                     :alt="item.product_name"
-                    class="w-16 h-16 object-cover rounded"
+                    className="w-16 h-16 object-cover rounded"
                   />
                   <div>
                     <p class="font-medium">{{ item.product_name }}</p>
