@@ -124,8 +124,12 @@ async function handleUnfollow() {
             <div class="flex items-start justify-between mb-6">
               <div class="flex-1">
                 <div class="flex gap-4">
-                <CustomImage :src="shop.image_url" class="w-16 h-16 object-cover rounded"></CustomImage>
-                <h1 class="text-3xl font-bold text-gray-900 mb-3">{{ shop?.name }}</h1>
+                  <CustomImage
+                    :source="shop.image_url"
+                    :alt="shop?.name || 'Shop'"
+                    className="w-16 h-16 object-cover rounded"
+                  ></CustomImage>
+                  <h1 class="text-3xl font-bold text-gray-900 mb-3">{{ shop?.name }}</h1>
                 </div>
                 <p class="text-gray-600 leading-relaxed">
                   {{ shop?.description || 'Welcome to our shop!' }}

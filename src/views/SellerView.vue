@@ -1,7 +1,12 @@
 <script setup lang="ts">
 import { ref, type Ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { type Notification, type ProfileDetail, type SellerOrder, type SellerOrderItem } from '@/utils/interface'
+import {
+  type Notification,
+  type ProfileDetail,
+  type SellerOrder,
+  type SellerOrderItem,
+} from '@/utils/interface'
 import { Bell } from 'lucide-vue-next'
 import AddProductView from './AddProductView.vue'
 import SellerDashBoard from './SellerDashBoard.vue'
@@ -25,7 +30,7 @@ const isShowingNotificationsDropdown: Ref<boolean> = ref(false)
 const notifications = ref<Notification[]>([])
 const orders = ref<SellerOrder[]>([])
 const shopId = localStorage.getItem('id')
-const profile = ref<ProfileDetail| null>(null)
+const profile = ref<ProfileDetail | null>(null)
 const editingInfo = ref(false)
 const sidebarNav = {
   'Order Management': ['All Orders', 'Order Handover'],
@@ -47,7 +52,7 @@ function handleNavClick(item: string) {
   else if (item === 'Shop Vouchers') activeView.value = 'voucher'
 }
 
-function handleProfile(){
+function handleProfile() {
   isUserMenuOpen.value = false
   editingInfo.value = true
 }
@@ -105,7 +110,6 @@ onMounted(async () => {
       phone: raw.phone_number ?? '',
       description: raw.description ?? '',
       image_url: raw.image_url ?? '',
-
     }
     if (activeView.value === 'dashboard') {
       await retrieveOrders()
@@ -268,14 +272,16 @@ watch(activeView, (newView) => {
 
           <div class="relative">
             <button @click="toggleUserMenu" class="flex items-center gap-2">
-              <div v-if="!profile?.image_url"
+              <div
+                v-if="!profile?.image_url"
                 class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 text-4xl cursor-pointer"
-              >
-              </div>
-              <CustomImage v-else :src="profile.image_url"
-                    :alt="profile?.username"
-                    class="w-8 h-8 object-cover rounded-full cursor-pointer">
-              </CustomImage>
+              ></div>
+              <CustomImage
+                v-else
+                :source="profile.image_url"
+                :alt="profile?.username"
+                className="w-8 h-8 object-cover rounded-full cursor-pointer"
+              ></CustomImage>
               <span class="text-sm cursor-pointer">{{ username }}</span>
             </button>
 
@@ -314,7 +320,10 @@ watch(activeView, (newView) => {
       </main>
     </div>
   </div>
-  <ShopInformation v-if="editingInfo" :profile="profile" @onCancel="editingInfo = false"></ShopInformation>
-
+  <ShopInformation
+    v-if="editingInfo"
+    :profile="profile"
+    @onCancel="editingInfo = false"
+  ></ShopInformation>
 </template>
 <style scoped></style>

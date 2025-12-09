@@ -211,9 +211,9 @@ async function handleReceive(o: BuyerOrder) {
             <div v-for="item in o.orderitems" :key="item.order_item_id" class="px-6 py-4 gap-4">
               <div class="flex gap-4">
                 <CustomImage
-                  :src="item.productVariant.image_url"
+                  :source="item.productVariant.image_url"
                   :alt="item.product.name || 'Product'"
-                  class="w-20 h-20 object-cover rounded"
+                  className="w-20 h-20 object-cover rounded"
                 />
 
                 <div class="flex justify-between flex-1">

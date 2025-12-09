@@ -93,7 +93,6 @@ onMounted(async () => {
     phone: raw.phone_number ?? '',
     description: raw.description ?? '',
     image_url: raw.image_url ?? '',
-
   }
   editedProfile.value = { ...profile.value }
 })
@@ -553,14 +552,16 @@ watch(chosenSidebarOption, (newOption) => {
       <!-- Sidebar -->
       <aside class="flex-1 bg-white rounded-xl shadow p-6 flex flex-col gap-4">
         <div class="flex items-center gap-4 pb-4 border-b">
-          <div v-if="!profile?.image_url"
+          <div
+            v-if="!profile?.image_url"
             class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 text-4xl"
-          >
-          </div>
-            <CustomImage v-else :src="profile.image_url"
-                    :alt="profile?.username"
-                    class="w-12 h-12 object-cover rounded-full">
-            </CustomImage>
+          ></div>
+          <CustomImage
+            v-else
+            :source="profile.image_url"
+            :alt="profile?.username"
+            className="w-12 h-12 object-cover rounded-full"
+          ></CustomImage>
           <div class="flex flex-col">
             <div class="font-semibold text-lg">{{ profile?.name }}</div>
             <div class="text-xs text-slate-500 flex items-center gap-1 cursor-pointer">
@@ -735,12 +736,17 @@ watch(chosenSidebarOption, (newOption) => {
             </form>
             <!-- Avatar section -->
             <div class="w-80 flex flex-col items-center border-l pl-8">
-              <div class="text-lg font-semibold">
-                User Avatar
-              </div>
-              <UploadImageButton v-if="isEditingProfile" v-model="editedProfile.image_url"></UploadImageButton>
-              <CustomImage v-else :src="editedProfile.image_url" class="w-full h-32 object-cover rounded"></CustomImage>
-
+              <div class="text-lg font-semibold">User Avatar</div>
+              <UploadImageButton
+                v-if="isEditingProfile"
+                v-model="editedProfile.image_url"
+              ></UploadImageButton>
+              <CustomImage
+                v-else
+                :source="editedProfile.image_url"
+                :alt="editedProfile?.username || 'Profile'"
+                className="w-full h-32 object-cover rounded"
+              ></CustomImage>
             </div>
           </div>
         </div>
