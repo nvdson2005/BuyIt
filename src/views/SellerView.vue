@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, type Ref, computed, onMounted, watch } from 'vue'
+import { ref, type Ref, computed, onMounted, watch, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   type Notification,
@@ -118,11 +118,11 @@ onMounted(async () => {
   }
 })
 
-// onUnmounted(() => {
-//   UpdateReadStatus().catch((error) => {
-//     console.error('Error updating read status:', error)
-//   })
-// })
+onUnmounted(() => {
+  UpdateReadStatus().catch((error) => {
+    console.error('Error updating read status:', error)
+  })
+})
 
 async function RetrieveNotifications() {
   const response = await apiClient.get('/user/notifications')
