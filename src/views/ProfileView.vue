@@ -4,6 +4,8 @@ import { User, Lock, MapPin, CreditCard, Users, Star, Ticket } from 'lucide-vue-
 import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import PasswordInput from '@/components/ui/PasswordInput.vue'
+import UploadImageButton from '@/components/ui/UploadImageButton.vue'
+import CustomImage from '@/components/ui/CustomImage.vue'
 // Sidebar section options
 type SidebarOption =
   | 'PROFILE'
@@ -77,6 +79,7 @@ const editedProfile = ref<ProfileDetail>({
   email: '',
   phone: '',
   description: '',
+  image_url: '',
 })
 
 onMounted(async () => {
@@ -89,6 +92,8 @@ onMounted(async () => {
     email: raw.email ?? '',
     phone: raw.phone_number ?? '',
     description: raw.description ?? '',
+    image_url: raw.image_url ?? '',
+
   }
   editedProfile.value = { ...profile.value }
 })
@@ -115,6 +120,7 @@ const handleSubmit = async (e: Event) => {
         email: editedProfile.value?.email,
         phone_number: editedProfile.value?.phone,
         description: editedProfile.value?.description,
+        image_url: editedProfile.value?.image_url,
       }),
     )
     if (response.status === 200) {
@@ -547,11 +553,14 @@ watch(chosenSidebarOption, (newOption) => {
       <!-- Sidebar -->
       <aside class="flex-1 bg-white rounded-xl shadow p-6 flex flex-col gap-4">
         <div class="flex items-center gap-4 pb-4 border-b">
-          <div
+          <div v-if="!profile?.image_url"
             class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 text-4xl"
           >
-            <User class="w-10 h-10" />
           </div>
+            <CustomImage v-else :src="profile.image_url"
+                    :alt="profile?.username"
+                    class="w-12 h-12 object-cover rounded-full">
+            </CustomImage>
           <div class="flex flex-col">
             <div class="font-semibold text-lg">{{ profile?.name }}</div>
             <div class="text-xs text-slate-500 flex items-center gap-1 cursor-pointer">
@@ -726,29 +735,10 @@ watch(chosenSidebarOption, (newOption) => {
             </form>
             <!-- Avatar section -->
             <div class="w-80 flex flex-col items-center border-l pl-8">
-              <div
-                class="w-32 h-32 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 text-6xl mb-4"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="w-28 h-28"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M5.121 17.804A13.937 13.937 0 0112 15c2.5 0 4.847.655 6.879 1.804M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                </svg>
+              <div class="text-lg font-semibold">
+                User Avatar
               </div>
-              <button
-                class="border px-6 py-2 rounded font-medium text-slate-700 hover:bg-gray-50 mb-2"
-              >
-                Change Avatar
-              </button>
+              <UploadImageButton v-model="editedProfile.image_url"></UploadImageButton>
             </div>
           </div>
         </div>

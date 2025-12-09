@@ -322,7 +322,7 @@ const onNavigateToShop = () => {
       class="w-full max-w-6xl bg-white rounded-xl shadow flex items-center justify-between px-8 py-4 mb-6"
     >
       <div class="flex items-center gap-4">
-        <img class="w-14 h-14 rounded object-cover" />
+        <img :src="shop?.image_url" class="w-14 h-14 rounded object-cover" />
         <div>
           <div class="font-semibold text-slate-800 cursor-pointer" @click="onNavigateToShop()">{{ shop?.name }}</div>
           <div class="text-xs text-slate-500 mt-1">
@@ -439,7 +439,7 @@ const onNavigateToShop = () => {
         <div v-for="review in reviews" :key="review.id" class="flex flex-col gap-8">
           <div class="flex gap-4 items-start my-4">
             <img
-              src="https://randomuser.me/api/portraits/men/32.jpg"
+              :src="review.buyer_avatar_url"
               class="w-10 h-10 rounded-full"
             />
             <div class="flex-1">

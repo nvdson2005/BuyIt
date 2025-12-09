@@ -10,6 +10,7 @@ import { notify, notifyAsync } from '@/utils/notify'
 import NavBar from '@/components/layout/NavBar.vue'
 import VoucherCard from '@/components/ui/VoucherCard.vue'
 import LoadingScreen from '@/components/layout/LoadingScreen.vue'
+import CustomImage from '@/components/ui/CustomImage.vue'
 const route = useRoute()
 const shopId = route.params.id
 const shop = ref<Shop>({
@@ -18,6 +19,7 @@ const shop = ref<Shop>({
   description: '',
   rating: 0,
   followers: 0,
+  image_url: '',
 })
 const products = ref<Product[]>([])
 const vouchers = ref<Voucher[]>([])
@@ -33,7 +35,7 @@ onMounted(async () => {
       apiClient.get(`/voucher/get-by-shopId/${shopId}`),
       apiClient.get(`/products/get-by-shopid/${shopId}`),
       apiClient.get(`/buyer/shop/${shopId}/is-following`),
-      apiClient.get(`/buyer/user-vouchers`),
+      apiClient.get(`/buyer/user-vouchers/${shopId}`),
     ])
 
     // Process shop details
@@ -121,7 +123,10 @@ async function handleUnfollow() {
           >
             <div class="flex items-start justify-between mb-6">
               <div class="flex-1">
+                <div class="flex gap-4">
+                <CustomImage :src="shop.image_url" class="w-16 h-16 object-cover rounded"></CustomImage>
                 <h1 class="text-3xl font-bold text-gray-900 mb-3">{{ shop?.name }}</h1>
+                </div>
                 <p class="text-gray-600 leading-relaxed">
                   {{ shop?.description || 'Welcome to our shop!' }}
                 </p>
