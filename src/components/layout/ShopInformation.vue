@@ -9,7 +9,10 @@ import CustomImage from '../ui/CustomImage.vue'
 const props = defineProps<{
   profile: ProfileDetail | null
 }>()
-const emit = defineEmits(['onCancel'])
+const emit = defineEmits<{
+  (e: 'onCancel'): void
+  (e: 'onSave', profileUsername: string, profileNewImageUrl: string): void
+}>()
 const profile = ref({ ...props.profile })
 const isEditingProfile = ref(false)
 
@@ -26,12 +29,13 @@ async function handleUpdateProfile() {
       }),
     )
     if (response.status === 200) {
-      console.log('Profile updated successfully')
+      // console.log('Profile updated successfully')
       notify('Profile updated successfully!', 'success')
     } else {
       console.error('Failed to update profile')
       notify('Failed to update profile', 'error')
     }
+    emit('onSave', profile.value?.username || '', profile.value?.image_url || '')
     emit('onCancel')
   } catch (error) {
     console.error('Error updating profile:', error)
@@ -60,7 +64,15 @@ async function handleUpdateProfile() {
 
       <div class="flex gap-8">
         <!-- Profile form -->
-        <form class="flex-1 flex flex-col gap-4" @submit="handleUpdateProfile">
+        <form
+          class="flex-1 flex flex-col gap-4"
+          @submit="
+            (e) => {
+              e.preventDefault()
+              handleUpdateProfile()
+            }
+          "
+        >
           <div class="flex items-center gap-4">
             <label class="w-40 text-slate-600 font-medium">Username</label>
             <input
@@ -150,7 +162,7 @@ async function handleUpdateProfile() {
           <div class="text-lg font-semibold">Shop Avatar</div>
           <UploadImageButton
             v-if="isEditingProfile"
-            v-model="profile.image_url"
+            v-model:imageUrl="profile.image_url"
           ></UploadImageButton>
           <CustomImage
             v-else

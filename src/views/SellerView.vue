@@ -218,7 +218,7 @@ watch(activeView, (newView) => {
 <template>
   <div class="min-h-screen bg-gray-100 flex">
     <!-- Sidebar -->
-    <aside class="w-64 bg-white text-gray-800 flex flex-col border-r border-gray-300 flex-shrink-0">
+    <aside class="w-64 bg-white text-gray-800 flex flex-col border-r border-gray-300 shrink-0">
       <div
         class="p-4 bg-[rgb(189,6,4)] text-white shadow cursor-pointer"
         @click="activeView = 'dashboard'"
@@ -324,6 +324,13 @@ watch(activeView, (newView) => {
     v-if="editingInfo"
     :profile="profile"
     @onCancel="editingInfo = false"
+    @onSave="
+      (profileUsername, profileNewImageUrl) => {
+        profile!.username = profileUsername
+        profile!.image_url = profileNewImageUrl
+        username = profileUsername
+      }
+    "
   ></ShopInformation>
 </template>
 <style scoped></style>
