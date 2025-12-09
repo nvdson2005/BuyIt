@@ -96,7 +96,7 @@ function handleSignup(
       />
     </div>
     <div
-      class="w-[30%] bg-[var(--red)] shadow-2xl absolute rounded-2xl mx-4 top-1/4 right-0"
+      class="w-[30%] bg-(--red) shadow-2xl absolute rounded-2xl mx-4 top-1/4 right-0"
       :class="{ 'top-1/6': activeTab === 'signup' }"
     >
       <div class="w-full h-full flex flex-col items-center px-6 pt-8">
@@ -112,7 +112,7 @@ function handleSignup(
             </button>
             <div
               v-if="activeTab === 'login'"
-              class="transition-all duration-200 ease-in-out w-full border-b-2 border-b-[var(--pure-light)]"
+              class="transition-all duration-200 ease-in-out w-full border-b-2 border-b-(--pure-light)"
             ></div>
           </div>
           <div class="flex-1 flex-col items-center">
@@ -125,7 +125,7 @@ function handleSignup(
             </button>
             <div
               v-if="activeTab === 'signup'"
-              class="transition-all duration-200 ease-in-out w-full border-b-2 border-b-[var(--pure-light)]"
+              class="transition-all duration-200 ease-in-out w-full border-b-2 border-b-(--pure-light)"
             ></div>
           </div>
         </div>
@@ -157,4 +157,3 @@ function handleSignup(
 </template>
 
 <style scoped></style>
-
