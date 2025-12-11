@@ -291,16 +291,16 @@ watch(activeView, (newView) => {
               class="absolute right-0 mt-2 w-40 bg-white text-gray-800 rounded-md shadow-lg py-2 z-50"
             >
               <button
-                @click="handleLogout"
-                class="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm cursor-pointer"
-              >
-                Log Out
-              </button>
-              <button
                 @click="handleProfile"
                 class="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm cursor-pointer"
               >
                 Profile
+              </button>
+              <button
+                @click="handleLogout"
+                class="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm cursor-pointer"
+              >
+                Log Out
               </button>
             </div>
           </div>

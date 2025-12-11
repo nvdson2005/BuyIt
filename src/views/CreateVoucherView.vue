@@ -3,6 +3,7 @@ import { ref } from "vue";
 import RadioGroup from "@/components/ui/RadioGroup.vue";
 import apiClient from "@/api/client";
 import { type Voucher } from "@/utils/interface";
+import { notify, notifyAsync } from "@/utils/notify";
 const emit = defineEmits(["cancel", "save"]);
 
 const voucher = ref<Voucher>({
@@ -28,11 +29,11 @@ const discountCapType = ref("limited");
 
 async function handleSave() {
   if (!voucher.value.applicable_scope || !voucher.value.discount_amount || !voucher.value.usage_limit) {
-    alert('Vui lòng điền đầy đủ thông tin bắt buộc!')
+    alert('Please enter all obligated information!')
     return
   }
   try {
-    await apiClient.post('/voucher/insert_voucher', {
+    await notifyAsync(apiClient.post('/voucher/insert_voucher', {
       shop_id: voucher.value.shop_id,
       description: voucher.value.description,
       discount_amount: voucher.value.discount_amount,
@@ -44,7 +45,10 @@ async function handleSave() {
       discount_type: voucher.value.discount_type,
       applicable_scope: voucher.value.applicable_scope,
       program_name: voucher.value.program_name
-    });
+    })
+    );
+    notify("Create new voucher successfully!", 'success');
+
 
     // alert("Thêm voucher thành công!");
   } catch (error) {
@@ -56,7 +60,7 @@ async function handleSave() {
 </script>
 
 <template>
-  <div class="space-y-6">
+  <div class="space-y-6 max-w-[95%] ">
     <h2 class="text-2xl font-semibold">Create New Voucher</h2>
 
     <!-- Thông tin cơ bản -->

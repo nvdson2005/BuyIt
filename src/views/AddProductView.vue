@@ -153,7 +153,6 @@ async function handleSave() {
 
     const prod_id = response.data.product.id;
 
-    alert(newProduct.value.variants)
     await notifyAsync(
       apiClient.post('/products/insert_variants', {
       product_id: prod_id,
@@ -200,7 +199,7 @@ async function handleSave() {
 
 
 <template>
-  <div class="space-y-6">
+  <div class="space-y-6 max-w-[95%]">
     <!-- 1. Thông tin cơ bản -->
     <FormSection title="Basic Information" :required="true">
       <div class="space-y-6">

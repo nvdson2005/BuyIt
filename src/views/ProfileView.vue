@@ -92,7 +92,7 @@ onMounted(async () => {
     email: raw.email ?? '',
     phone: raw.phone_number ?? '',
     description: raw.description ?? '',
-    image_url: raw.image_url ?? '',
+    image_url: raw.image_url,
   }
   editedProfile.value = { ...profile.value }
 })
@@ -739,13 +739,13 @@ watch(chosenSidebarOption, (newOption) => {
               <div class="text-lg font-semibold">User Avatar</div>
               <UploadImageButton
                 v-if="isEditingProfile"
-                v-model="editedProfile.image_url"
+                v-model:imageUrl="editedProfile.image_url"
               ></UploadImageButton>
               <CustomImage
                 v-else
-                :source="editedProfile.image_url"
-                :alt="editedProfile?.username || 'Profile'"
-                className="w-full h-32 object-cover rounded"
+                :source="profile?.image_url"
+                :alt="profile?.username || 'Profile'"
+                className="w-32 h-32 object-cover rounded"
               ></CustomImage>
             </div>
           </div>
