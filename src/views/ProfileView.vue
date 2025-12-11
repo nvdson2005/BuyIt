@@ -743,7 +743,7 @@ watch(chosenSidebarOption, (newOption) => {
               ></UploadImageButton>
               <CustomImage
                 v-else
-                :source="profile?.image_url"
+                :source="profile?.image_url || ''"
                 :alt="profile?.username || 'Profile'"
                 className="w-32 h-32 object-cover rounded"
               ></CustomImage>
