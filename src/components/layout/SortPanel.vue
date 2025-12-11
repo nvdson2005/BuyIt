@@ -1,32 +1,32 @@
 <script lang="ts" setup>
-import { ref, defineEmits } from 'vue'
+import { ref } from 'vue'
 import { SortOption, PriceFilterOption } from '@/utils/enum'
 const currentSort = ref(SortOption.MOST_SOLD)
-const currentPriceFilter = ref(PriceFilterOption.ALL_PRICES)
+// const currentPriceFilter = ref(PriceFilterOption.ALL_PRICES)
 
 const emits = defineEmits<{
   (e: 'sort-changed', sortOption: SortOption): void
   (e: 'price-filter-changed', priceFilter: PriceFilterOption): void
 }>()
 
-const handleFilterPriceChange = (e: Event) => {
-  const target = e.target as HTMLSelectElement
-  if (!target) {
-    console.error('No target found in event')
-    return
-  }
-  const newFilter = target.value as PriceFilterOption
-  if (!newFilter) {
-    console.error('No price filter option selected')
-    return
-  }
-  if (!Object.values(PriceFilterOption).includes(target.value as PriceFilterOption)) {
-    console.error('Invalid price filter option selected')
-    return
-  }
-  currentPriceFilter.value = newFilter
-  emits('price-filter-changed', newFilter)
-}
+// const handleFilterPriceChange = (e: Event) => {
+//   const target = e.target as HTMLSelectElement
+//   if (!target) {
+//     console.error('No target found in event')
+//     return
+//   }
+//   const newFilter = target.value as PriceFilterOption
+//   if (!newFilter) {
+//     console.error('No price filter option selected')
+//     return
+//   }
+//   if (!Object.values(PriceFilterOption).includes(target.value as PriceFilterOption)) {
+//     console.error('Invalid price filter option selected')
+//     return
+//   }
+//   currentPriceFilter.value = newFilter
+//   emits('price-filter-changed', newFilter)
+// }
 
 const handleSortChange = (newSort: SortOption) => {
   currentSort.value = newSort
@@ -101,7 +101,7 @@ const handleSortChange = (newSort: SortOption) => {
       </button>
     </div>
 
-    <div class="flex items-center gap-3">
+    <!-- <div class="flex items-center gap-3">
       <select
         class="p-3 rounded-xl text-sm"
         @change="
@@ -115,7 +115,7 @@ const handleSortChange = (newSort: SortOption) => {
         <option>{{ PriceFilterOption.FROM_5MIL_TO_20MIL }}</option>
         <option>{{ PriceFilterOption.ABOVE_20MIL }}</option>
       </select>
-    </div>
+    </div> -->
   </div>
 </template>
 <style scoped></style>

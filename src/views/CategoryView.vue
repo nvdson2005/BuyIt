@@ -78,11 +78,6 @@ function SortProducts(sortOption: SortOption) {
               SortProducts(newSort)
             }
           "
-          @price-filter-changed="
-            (newFilter) => {
-              console.log('Price filter changed to:', newFilter)
-            }
-          "
         />
       </div>
 
