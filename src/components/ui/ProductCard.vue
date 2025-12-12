@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineProps, ref } from 'vue'
+import { ref } from 'vue'
 import { Star } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
 const router = useRouter()

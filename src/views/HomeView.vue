@@ -20,14 +20,8 @@ onMounted(async () => {
 
   // Use localStorage as primary check since cookie might be httpOnly
   if (!usernameLocalStorage) {
-    // check cookie as fallback, but don't rely on it
-    const cookie = await cookieStore.get('token').catch(() => null)
-    console.log('Cookie check (may be null if httpOnly):', cookie)
-
-    if (!cookie) {
-      router.push('/login')
-      return
-    }
+    router.push('/login')
+    return
   }
 
   if (role === 'shop') {
